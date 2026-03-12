@@ -43,7 +43,7 @@ export function SessionComposerRegion(props: {
   const prompt = usePrompt()
   const language = useLanguage()
 
-  const sessionKey = createMemo(() => `${params.dir}${params.id ? "/" + params.id : ""}`)
+  const sessionKey = createMemo(() => `${params.projectId}${params.id ? "/" + params.id : ""}`)
   const handoffPrompt = createMemo(() => getSessionHandoff(sessionKey())?.prompt)
 
   const previewPrompt = () =>

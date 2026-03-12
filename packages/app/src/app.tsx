@@ -26,14 +26,13 @@ import { PromptProvider } from "@/context/prompt"
 import { type ServerConnection, ServerProvider, useServer } from "@/context/server"
 import { SettingsProvider } from "@/context/settings"
 import { TerminalProvider } from "@/context/terminal"
-import DirectoryLayout from "@/pages/directory-layout"
+import ProjectLayout from "@/pages/project-layout"
 import Layout from "@/pages/layout"
 import { ErrorPage } from "./pages/error"
 import { Dynamic } from "solid-js/web"
 
 const Home = lazy(() => import("@/pages/home"))
 const Session = lazy(() => import("@/pages/session"))
-const Project = lazy(() => import("@/pages/project"))
 const Loading = () => <div class="size-full" />
 
 const HomeRoute = () => (
@@ -51,11 +50,6 @@ const SessionRoute = () => (
 )
 
 const SessionIndexRoute = () => <Navigate href="session" />
-const ProjectRoute = () => (
-  <Suspense fallback={<Loading />}>
-    <Project />
-  </Suspense>
-)
 
 function UiI18nBridge(props: ParentProps) {
   const language = useLanguage()
@@ -166,8 +160,7 @@ export function AppInterface(props: {
               root={(routerProps) => <RouterRoot appChildren={props.children}>{routerProps.children}</RouterRoot>}
             >
               <Route path="/" component={HomeRoute} />
-              <Route path="/project/:projectId" component={ProjectRoute} />
-              <Route path="/:dir" component={DirectoryLayout}>
+              <Route path="/project/:projectId" component={ProjectLayout}>
                 <Route path="/" component={SessionIndexRoute} />
                 <Route path="/session/:id?" component={SessionRoute} />
               </Route>

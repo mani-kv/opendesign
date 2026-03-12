@@ -99,10 +99,15 @@ function nextSessionTabsForOpen(current: SessionTabs | undefined, tab: string): 
   return { all, active: tab }
 }
 
-const sessionPath = (key: string) => {
-  const dir = key.split("/")[0]
-  if (!dir) return
-  const root = decode64(dir)
+const createSessionPath = (getHome: () => string) => (key: string) => {
+  const first = key.split("/")[0]
+  if (!first) return
+  const root =
+    decode64(first) ??
+    (() => {
+      const home = getHome().replace(/[/\\]+$/, "")
+      return `${home}/.opendesign/projects/${first}`
+    })()
   if (!root) return
   return createPathHelpers(() => root)
 }
@@ -123,8 +128,12 @@ const normalizeSessionTabList = (path: ReturnType<typeof createPathHelpers> | un
   })
 }
 
-const normalizeStoredSessionTabs = (key: string, tabs: SessionTabs) => {
-  const path = sessionPath(key)
+const normalizeStoredSessionTabs = (
+  getPath: (k: string) => ReturnType<typeof createPathHelpers> | undefined,
+  key: string,
+  tabs: SessionTabs,
+) => {
+  const path = getPath(key)
   return {
     all: normalizeSessionTabList(path, tabs.all),
     active: tabs.active ? normalizeSessionTab(path, tabs.active) : tabs.active,
@@ -138,6 +147,8 @@ export const { use: useLayout, provider: LayoutProvider } = createSimpleContext(
     const globalSync = useGlobalSync()
     const server = useServer()
     const platform = usePlatform()
+
+    const sessionPath = createSessionPath(() => globalSync.data.path.home ?? "/")
 
     const isRecord = (value: unknown): value is Record<string, unknown> =>
       typeof value === "object" && value !== null && !Array.isArray(value)
@@ -208,7 +219,7 @@ export const { use: useLayout, provider: LayoutProvider } = createSimpleContext(
                   ? mapReviewToCanvas(tabs.active)
                   : undefined,
             }
-            const normalized = normalizeStoredSessionTabs(key, current)
+            const normalized = normalizeStoredSessionTabs(sessionPath, key, current)
             if (tabs.all.some((t) => t === "review") || tabs.active === "review") changed = true
             if (current.all.length !== tabs.all.length) changed = true
             if (!same(current.all, normalized.all) || current.active !== normalized.active) changed = true

@@ -37,10 +37,14 @@ export default function Home() {
     return "bg-border-weak-base"
   })
 
-  function openProject(directory: string) {
+  function openProject(directory: string, projectId?: string) {
     layout.projects.open(directory)
     server.projects.touch(directory)
-    navigate(`/${base64Encode(directory)}`)
+    const home = (sync.data.path.home ?? "/").replace(/[/\\]+$/, "")
+    const prefix = `${home}/.opendesign/projects/`
+    const pid =
+      projectId ?? (directory.startsWith(prefix) ? directory.slice(prefix.length).split(/[/\\]/)[0] : undefined)
+    navigate(pid ? `/project/${pid}/session` : `/${base64Encode(directory)}`)
   }
 
   async function chooseProject() {
@@ -101,7 +105,7 @@ export default function Home() {
                     size="large"
                     variant="ghost"
                     class="text-14-mono text-left justify-between px-3"
-                    onClick={() => openProject(project.worktree)}
+                    onClick={() => openProject(project.worktree, project.id)}
                   >
                     {project.worktree.replace(homedir(), "~")}
                     <div class="text-14-regular text-text-weak">

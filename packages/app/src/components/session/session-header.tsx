@@ -18,12 +18,12 @@ import { useCommand } from "@/context/command"
 import { useGlobalSDK } from "@/context/global-sdk"
 import { useLanguage } from "@/context/language"
 import { useLayout } from "@/context/layout"
+import { useSDK } from "@/context/sdk"
 import { usePlatform } from "@/context/platform"
 import { useServer } from "@/context/server"
 import { useSync } from "@/context/sync"
 import { useTerminal } from "@/context/terminal"
 import { focusTerminalById } from "@/pages/session/helpers"
-import { decode64 } from "@/utils/base64"
 import { Persist, persisted } from "@/utils/persist"
 import { StatusPopover } from "../status-popover"
 
@@ -233,7 +233,8 @@ export function SessionHeader() {
   const language = useLanguage()
   const terminal = useTerminal()
 
-  const projectDirectory = createMemo(() => decode64(params.dir) ?? "")
+  const sdk = useSDK()
+  const projectDirectory = createMemo(() => sdk.directory)
   const project = createMemo(() => {
     const directory = projectDirectory()
     if (!directory) return
@@ -249,7 +250,7 @@ export function SessionHeader() {
   const currentSession = createMemo(() => (params.id ? sync.session.get(params.id) : undefined))
   const shareEnabled = createMemo(() => sync.data.config.share !== "disabled")
   const showShare = createMemo(() => shareEnabled() && !!params.id)
-  const sessionKey = createMemo(() => `${params.dir}${params.id ? "/" + params.id : ""}`)
+  const sessionKey = createMemo(() => `${params.projectId}${params.id ? "/" + params.id : ""}`)
   const view = createMemo(() => layout.view(sessionKey))
   const os = createMemo(() => detectOS(platform))
 

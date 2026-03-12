@@ -14,6 +14,7 @@ import { Agent } from "../../agent/agent"
 import { Snapshot } from "@/snapshot"
 import { Log } from "../../util/log"
 import { PermissionNext } from "@/permission/next"
+import { Identifier } from "@/id/id"
 import { errors } from "../error"
 import { lazy } from "../../util/lazy"
 
@@ -173,7 +174,7 @@ export const SessionRoutes = lazy(() =>
       validator(
         "param",
         z.object({
-          sessionID: z.string().meta({ description: "Session ID" }),
+          sessionID: Identifier.schema("session").meta({ description: "Session ID" }),
         }),
       ),
       async (c) => {
@@ -258,7 +259,7 @@ export const SessionRoutes = lazy(() =>
       validator(
         "param",
         z.object({
-          sessionID: z.string(),
+          sessionID: Identifier.schema("session"),
         }),
       ),
       validator(
@@ -309,7 +310,7 @@ export const SessionRoutes = lazy(() =>
       validator(
         "param",
         z.object({
-          sessionID: z.string().meta({ description: "Session ID" }),
+          sessionID: Identifier.schema("session").meta({ description: "Session ID" }),
         }),
       ),
       validator("json", Session.initialize.schema.omit({ sessionID: true })),
@@ -372,7 +373,7 @@ export const SessionRoutes = lazy(() =>
       validator(
         "param",
         z.object({
-          sessionID: z.string(),
+          sessionID: Identifier.schema("session"),
         }),
       ),
       async (c) => {
@@ -401,7 +402,7 @@ export const SessionRoutes = lazy(() =>
       validator(
         "param",
         z.object({
-          sessionID: z.string(),
+          sessionID: Identifier.schema("session"),
         }),
       ),
       async (c) => {
@@ -502,7 +503,7 @@ export const SessionRoutes = lazy(() =>
       validator(
         "param",
         z.object({
-          sessionID: z.string().meta({ description: "Session ID" }),
+          sessionID: Identifier.schema("session").meta({ description: "Session ID" }),
         }),
       ),
       validator(
@@ -561,7 +562,7 @@ export const SessionRoutes = lazy(() =>
       validator(
         "param",
         z.object({
-          sessionID: z.string().meta({ description: "Session ID" }),
+          sessionID: Identifier.schema("session").meta({ description: "Session ID" }),
         }),
       ),
       validator(
@@ -571,12 +572,19 @@ export const SessionRoutes = lazy(() =>
         }),
       ),
       async (c) => {
-        const query = c.req.valid("query")
-        const messages = await Session.messages({
-          sessionID: c.req.valid("param").sessionID,
-          limit: query.limit,
-        })
-        return c.json(messages)
+        try {
+          const query = c.req.valid("query")
+          const messages = await Session.messages({
+            sessionID: c.req.valid("param").sessionID,
+            limit: query.limit,
+          })
+          return c.json(messages)
+        } catch (e) {
+          if (e instanceof z.ZodError) {
+            return c.json({ success: false, data: null, errors: e.errors }, 400)
+          }
+          throw e
+        }
       },
     )
     .get(
@@ -605,17 +613,24 @@ export const SessionRoutes = lazy(() =>
       validator(
         "param",
         z.object({
-          sessionID: z.string().meta({ description: "Session ID" }),
-          messageID: z.string().meta({ description: "Message ID" }),
+          sessionID: Identifier.schema("session").meta({ description: "Session ID" }),
+          messageID: Identifier.schema("message").meta({ description: "Message ID" }),
         }),
       ),
       async (c) => {
-        const params = c.req.valid("param")
-        const message = await MessageV2.get({
-          sessionID: params.sessionID,
-          messageID: params.messageID,
-        })
-        return c.json(message)
+        try {
+          const params = c.req.valid("param")
+          const message = await MessageV2.get({
+            sessionID: params.sessionID,
+            messageID: params.messageID,
+          })
+          return c.json(message)
+        } catch (e) {
+          if (e instanceof z.ZodError) {
+            return c.json({ success: false, data: null, errors: e.errors }, 400)
+          }
+          throw e
+        }
       },
     )
     .delete(
@@ -640,8 +655,8 @@ export const SessionRoutes = lazy(() =>
       validator(
         "param",
         z.object({
-          sessionID: z.string().meta({ description: "Session ID" }),
-          messageID: z.string().meta({ description: "Message ID" }),
+          sessionID: Identifier.schema("session").meta({ description: "Session ID" }),
+          messageID: Identifier.schema("message").meta({ description: "Message ID" }),
         }),
       ),
       async (c) => {
@@ -674,8 +689,8 @@ export const SessionRoutes = lazy(() =>
       validator(
         "param",
         z.object({
-          sessionID: z.string().meta({ description: "Session ID" }),
-          messageID: z.string().meta({ description: "Message ID" }),
+          sessionID: Identifier.schema("session").meta({ description: "Session ID" }),
+          messageID: Identifier.schema("message").meta({ description: "Message ID" }),
           partID: z.string().meta({ description: "Part ID" }),
         }),
       ),
@@ -709,8 +724,8 @@ export const SessionRoutes = lazy(() =>
       validator(
         "param",
         z.object({
-          sessionID: z.string().meta({ description: "Session ID" }),
-          messageID: z.string().meta({ description: "Message ID" }),
+          sessionID: Identifier.schema("session").meta({ description: "Session ID" }),
+          messageID: Identifier.schema("message").meta({ description: "Message ID" }),
           partID: z.string().meta({ description: "Part ID" }),
         }),
       ),
@@ -753,7 +768,7 @@ export const SessionRoutes = lazy(() =>
       validator(
         "param",
         z.object({
-          sessionID: z.string().meta({ description: "Session ID" }),
+          sessionID: Identifier.schema("session").meta({ description: "Session ID" }),
         }),
       ),
       validator("json", SessionPrompt.PromptInput.omit({ sessionID: true })),
@@ -785,7 +800,7 @@ export const SessionRoutes = lazy(() =>
       validator(
         "param",
         z.object({
-          sessionID: z.string().meta({ description: "Session ID" }),
+          sessionID: Identifier.schema("session").meta({ description: "Session ID" }),
         }),
       ),
       validator("json", SessionPrompt.PromptInput.omit({ sessionID: true })),
@@ -825,7 +840,7 @@ export const SessionRoutes = lazy(() =>
       validator(
         "param",
         z.object({
-          sessionID: z.string().meta({ description: "Session ID" }),
+          sessionID: Identifier.schema("session").meta({ description: "Session ID" }),
         }),
       ),
       validator("json", SessionPrompt.CommandInput.omit({ sessionID: true })),
@@ -857,7 +872,7 @@ export const SessionRoutes = lazy(() =>
       validator(
         "param",
         z.object({
-          sessionID: z.string().meta({ description: "Session ID" }),
+          sessionID: Identifier.schema("session").meta({ description: "Session ID" }),
         }),
       ),
       validator("json", SessionPrompt.ShellInput.omit({ sessionID: true })),
@@ -889,7 +904,7 @@ export const SessionRoutes = lazy(() =>
       validator(
         "param",
         z.object({
-          sessionID: z.string(),
+          sessionID: Identifier.schema("session"),
         }),
       ),
       validator("json", SessionRevert.RevertInput.omit({ sessionID: true })),
@@ -924,7 +939,7 @@ export const SessionRoutes = lazy(() =>
       validator(
         "param",
         z.object({
-          sessionID: z.string(),
+          sessionID: Identifier.schema("session"),
         }),
       ),
       async (c) => {
@@ -955,8 +970,8 @@ export const SessionRoutes = lazy(() =>
       validator(
         "param",
         z.object({
-          sessionID: z.string(),
-          permissionID: z.string(),
+          sessionID: Identifier.schema("session"),
+          permissionID: Identifier.schema("permission"),
         }),
       ),
       validator("json", z.object({ response: PermissionNext.Reply })),

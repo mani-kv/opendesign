@@ -216,7 +216,7 @@ export function MessageTimeline(props: {
   const language = useLanguage()
 
   const rendered = createMemo(() => props.renderedUserMessages.map((message) => message.id))
-  const sessionKey = createMemo(() => `${params.dir}${params.id ? "/" + params.id : ""}`)
+  const sessionKey = createMemo(() => `${params.projectId}${params.id ? "/" + params.id : ""}`)
   const sessionID = createMemo(() => params.id)
   const sessionMessages = createMemo(() => {
     const id = sessionID()
@@ -376,15 +376,16 @@ export function MessageTimeline(props: {
 
   const navigateAfterSessionRemoval = (sessionID: string, parentID?: string, nextSessionID?: string) => {
     if (params.id !== sessionID) return
+    const base = `/project/${params.projectId}/session`
     if (parentID) {
-      navigate(`/${params.dir}/session/${parentID}`)
+      navigate(`${base}/${parentID}`)
       return
     }
     if (nextSessionID) {
-      navigate(`/${params.dir}/session/${nextSessionID}`)
+      navigate(`${base}/${nextSessionID}`)
       return
     }
-    navigate(`/${params.dir}/session`)
+    navigate(base)
   }
 
   const archiveSession = async (sessionID: string) => {
@@ -477,7 +478,7 @@ export function MessageTimeline(props: {
   const navigateParent = () => {
     const id = parentID()
     if (!id) return
-    navigate(`/${params.dir}/session/${id}`)
+    navigate(`/project/${params.projectId}/session/${id}`)
   }
 
   function DialogDeleteSession(props: { sessionID: string }) {

@@ -264,7 +264,7 @@ export const { use: usePrompt, provider: PromptProvider } = createSimpleContext(
       return entry.value
     }
 
-    const session = createMemo(() => load(params.dir!, params.id))
+    const session = createMemo(() => load(params.projectId!, params.id))
 
     return {
       ready: () => session().ready(),

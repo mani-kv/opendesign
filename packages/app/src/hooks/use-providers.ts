@@ -18,7 +18,14 @@ const popularProviderSet = new Set(popularProviders)
 export function useProviders() {
   const globalSync = useGlobalSync()
   const params = useParams()
-  const currentDirectory = createMemo(() => decode64(params.dir) ?? "")
+  const currentDirectory = createMemo(() => {
+    const pid = params.projectId
+    if (pid) {
+      const home = globalSync.data.path.home ?? "/"
+      return `${home.replace(/[/\\]+$/, "")}/.opendesign/projects/${pid}`
+    }
+    return decode64(params.dir) ?? ""
+  })
   const providers = createMemo(() => {
     if (currentDirectory()) {
       const [projectStore] = globalSync.child(currentDirectory())

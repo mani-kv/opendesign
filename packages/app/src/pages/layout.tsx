@@ -16,7 +16,6 @@ import { useLayout, LocalProject } from "@/context/layout"
 import { useGlobalSync } from "@/context/global-sync"
 import { Persist, persisted } from "@/utils/persist"
 import { base64Encode } from "@opencode-ai/util/encode"
-import { decode64 } from "@/utils/base64"
 import { ResizeHandle } from "@opencode-ai/ui/resize-handle"
 import { Button } from "@opencode-ai/ui/button"
 import { IconButton } from "@opencode-ai/ui/icon-button"
@@ -129,7 +128,30 @@ export default function Layout(props: ParentProps) {
   const command = useCommand()
   const theme = useTheme()
   const language = useLanguage()
-  const initialDirectory = decode64(params.dir)
+  const projectDir = (proj: { id: string }) => {
+    const home = globalSync.data.path.home ?? "/"
+    const base = home.replace(/[/\\]+$/, "")
+    return `${base}/.opendesign/projects/${proj.id}`
+  }
+  const projectIdFromDir = (dir: string) => {
+    const home = globalSync.data.path.home ?? "/"
+    const prefix = `${home.replace(/[/\\]+$/, "")}/.opendesign/projects/`
+    return dir.startsWith(prefix) ? dir.slice(prefix.length).split(/[/\\]/)[0] : undefined
+  }
+  const sessionHref = (dir: string, sessionId?: string) => {
+    const pid = projectIdFromDir(dir)
+    if (pid) return sessionId ? `/project/${pid}/session/${sessionId}` : `/project/${pid}/session`
+    const enc = base64Encode(dir)
+    return sessionId ? `/${enc}/session/${sessionId}` : `/${enc}/session`
+  }
+  const currentProjectId = createMemo(() => params.projectId ?? "")
+  const currentDir = createMemo(() => {
+    const pid = currentProjectId()
+    if (!pid) return ""
+    const proj = workspace.projects.get(pid)
+    if (!proj) return ""
+    return projectDir(proj)
+  })
   const availableThemeEntries = createMemo(() => Object.entries(theme.themes()))
   const colorSchemeOrder: ColorScheme[] = ["system", "light", "dark"]
   const colorSchemeKey: Record<ColorScheme, "theme.scheme.system" | "theme.scheme.light" | "theme.scheme.dark"> = {
@@ -138,10 +160,9 @@ export default function Layout(props: ParentProps) {
     dark: "theme.scheme.dark",
   }
   const colorSchemeLabel = (scheme: ColorScheme) => language.t(colorSchemeKey[scheme])
-  const currentDir = createMemo(() => decode64(params.dir) ?? "")
 
   const [state, setState] = createStore({
-    autoselect: !initialDirectory,
+    autoselect: !params.projectId,
     busyWorkspaces: {} as Record<string, boolean>,
     hoverSession: undefined as string | undefined,
     hoverProject: undefined as string | undefined,
@@ -176,25 +197,18 @@ export default function Layout(props: ParentProps) {
     if (pid) setStore("activeProjectId", pid)
   })
 
-  const projectDir = (proj: { id: string }) => {
-    const home = globalSync.data.path.home ?? "/"
-    const base = home.replace(/[/\\]+$/, "")
-    return `${base}/.opendesign/projects/${proj.id}`
-  }
-
   createEffect(() => {
     if (!pageReady() || !workspace.ready()) return
-    if (params.projectId || params.dir) return
+    if (params.projectId) return
     const wsId = store.activeWorkspaceId ?? workspaceList()[0]?.id
     if (!wsId) return
     const list = workspace.projects.list(wsId)
     const first = list()[0]
     if (!first) return
     setStore("activeProjectId", first.id)
-    const dir = projectDir(first)
     const path = first.sessionId
-      ? `/${base64Encode(dir)}/session/${first.sessionId}`
-      : `/${base64Encode(dir)}/session`
+      ? `/project/${first.id}/session/${first.sessionId}`
+      : `/project/${first.id}/session`
     navigateWithSidebarReset(path)
   })
 
@@ -321,7 +335,7 @@ export default function Layout(props: ParentProps) {
   })
 
   const autoselecting = createMemo(() => {
-    if (params.dir) return false
+    if (params.projectId) return false
     if (!state.autoselect) return false
     if (!pageReady()) return true
     if (!layoutReady()) return true
@@ -332,10 +346,8 @@ export default function Layout(props: ParentProps) {
 
   createEffect(() => {
     if (!state.autoselect) return
-    const dir = params.dir
-    if (!dir) return
-    const directory = decode64(dir)
-    if (!directory) return
+    const pid = params.projectId
+    if (!pid) return
     setState("autoselect", false)
   })
 
@@ -513,7 +525,7 @@ export default function Layout(props: ParentProps) {
           e.details.type === "permission.asked"
             ? language.t("notification.permission.description", { sessionTitle, projectName })
             : language.t("notification.question.description", { sessionTitle, projectName })
-        const href = `/${base64Encode(directory)}/session/${props.sessionID}`
+        const href = sessionHref(directory, props.sessionID)
 
         const now = Date.now()
         const lastAlerted = alertedAtBySession.get(sessionKey) ?? 0
@@ -617,12 +629,12 @@ export default function Layout(props: ParentProps) {
 
   createEffect(
     on(
-      () => ({ ready: pageReady(), layoutReady: layoutReady(), dir: params.dir, list: layout.projects.list() }),
+      () => ({ ready: pageReady(), layoutReady: layoutReady(), projectId: params.projectId, list: layout.projects.list() }),
       (value) => {
         if (!value.ready) return
         if (!value.layoutReady) return
         if (!state.autoselect) return
-        if (value.dir) return
+        if (value.projectId) return
 
         const last = server.projects.last()
 
@@ -743,12 +755,12 @@ export default function Layout(props: ParentProps) {
       seen: lru,
       keep: sessionID,
       limit: PREFETCH_MAX_SESSIONS_PER_DIR,
-      preserve: directory === params.dir && params.id ? [params.id] : undefined,
+      preserve: directory === currentDir() && params.id ? [params.id] : undefined,
     })
   }
 
   createEffect(() => {
-    params.dir
+    params.projectId
     globalSDK.url
 
     prefetchToken.value += 1
@@ -992,10 +1004,11 @@ export default function Layout(props: ParentProps) {
       }),
     )
     if (session.id === params.id) {
+      const dir = currentDir()
       if (nextSession) {
-        navigate(`/${params.dir}/session/${nextSession.id}`)
+        navigate(sessionHref(dir, nextSession.id))
       } else {
-        navigate(`/${params.dir}/session`)
+        navigate(sessionHref(dir))
       }
     }
   }
@@ -1068,7 +1081,7 @@ export default function Layout(props: ParentProps) {
         title: language.t("command.session.archive"),
         category: language.t("command.category.session"),
         keybind: "mod+shift+backspace",
-        disabled: !params.dir || !params.id,
+        disabled: !params.projectId || !params.id,
         onSelect: () => {
           const session = currentSessions().find((s) => s.id === params.id)
           if (session) archiveSession(session)
@@ -1265,7 +1278,7 @@ export default function Layout(props: ParentProps) {
       const [data] = globalSync.child(target.directory, { bootstrap: false })
       if (data.session.some((item) => item.id === target.id)) {
         setStore("lastProjectSession", root, { directory: target.directory, id: target.id, at: Date.now() })
-        navigateWithSidebarReset(`/${base64Encode(target.directory)}/session/${target.id}`)
+        navigateWithSidebarReset(sessionHref(target.directory, target.id))
         return true
       }
       const resolved = await globalSDK.client.session
@@ -1275,7 +1288,7 @@ export default function Layout(props: ParentProps) {
       if (!resolved?.directory) return false
       if (!canOpen(resolved.directory)) return false
       setStore("lastProjectSession", root, { directory: resolved.directory, id: resolved.id, at: Date.now() })
-      navigateWithSidebarReset(`/${base64Encode(resolved.directory)}/session/${resolved.id}`)
+      navigateWithSidebarReset(sessionHref(resolved.directory, resolved.id))
       return true
     }
 
@@ -1311,12 +1324,12 @@ export default function Layout(props: ParentProps) {
       return
     }
 
-    navigateWithSidebarReset(`/${base64Encode(root)}/session`)
+    navigateWithSidebarReset(sessionHref(root))
   }
 
   function navigateToSession(session: Session | undefined) {
     if (!session) return
-    navigateWithSidebarReset(`/${base64Encode(session.directory)}/session/${session.id}`)
+    navigateWithSidebarReset(sessionHref(session.directory, session.id))
   }
 
   function openProject(directory: string, navigate = true) {
@@ -1333,11 +1346,13 @@ export default function Layout(props: ParentProps) {
 
     for (const link of collectNewSessionDeepLinks(urls)) {
       openProject(link.directory, false)
-      const slug = base64Encode(link.directory)
+      const pid = projectIdFromDir(link.directory)
+      const slug = pid ?? base64Encode(link.directory)
       if (link.prompt) {
         setSessionHandoff(slug, { prompt: link.prompt })
       }
-      const href = link.prompt ? `/${slug}/session?prompt=${encodeURIComponent(link.prompt)}` : `/${slug}/session`
+      const base = pid ? `/project/${pid}/session` : `/${base64Encode(link.directory)}/session`
+      const href = link.prompt ? `${base}?prompt=${encodeURIComponent(link.prompt)}` : base
       navigateWithSidebarReset(href)
     }
   }
@@ -1392,7 +1407,7 @@ export default function Layout(props: ParentProps) {
       return
     }
 
-    navigateWithSidebarReset(`/${base64Encode(next.worktree)}/session`)
+    navigateWithSidebarReset(sessionHref(next.worktree))
     layout.projects.close(directory)
     queueMicrotask(() => {
       void navigateToProject(next.worktree)
@@ -1443,7 +1458,7 @@ export default function Layout(props: ParentProps) {
     const current = currentDir()
     const currentKey = workspaceKey(current)
     const deletedKey = workspaceKey(directory)
-    const shouldLeave = leaveDeletedWorkspace || (!!params.dir && currentKey === deletedKey)
+    const shouldLeave = leaveDeletedWorkspace || (!!params.projectId && currentKey === deletedKey)
     if (!leaveDeletedWorkspace && shouldLeave) {
       navigateWithSidebarReset(`/${base64Encode(root)}/session`)
     }
@@ -1492,8 +1507,8 @@ export default function Layout(props: ParentProps) {
       : [root]
     const valid = dirs.some((item) => workspaceKey(item) === nextKey)
 
-    if (params.dir && projectRoot(nextCurrent) === root && !valid) {
-      navigateWithSidebarReset(`/${base64Encode(root)}/session`)
+    if (params.projectId && projectRoot(nextCurrent) === root && !valid) {
+      navigateWithSidebarReset(sessionHref(root))
     }
   }
 
@@ -1562,7 +1577,7 @@ export default function Layout(props: ParentProps) {
         {
           label: language.t("command.session.new"),
           onClick: () => {
-            const href = `/${base64Encode(directory)}/session`
+            const href = sessionHref(directory)
             navigate(href)
             layout.mobileSidebar.hide()
           },
@@ -1596,9 +1611,9 @@ export default function Layout(props: ParentProps) {
     })
 
     const handleDelete = () => {
-      const leaveDeletedWorkspace = !!params.dir && workspaceKey(currentDir()) === workspaceKey(props.directory)
+      const leaveDeletedWorkspace = !!params.projectId && workspaceKey(currentDir()) === workspaceKey(props.directory)
       if (leaveDeletedWorkspace) {
-        navigateWithSidebarReset(`/${base64Encode(props.root)}/session`)
+        navigateWithSidebarReset(sessionHref(props.root))
       }
       dialog.close()
       void deleteWorkspace(props.root, props.directory, leaveDeletedWorkspace)
@@ -1716,16 +1731,13 @@ export default function Layout(props: ParentProps) {
 
   createEffect(
     on(
-      () => [pageReady(), params.dir, params.id, currentProject()?.worktree] as const,
-      ([ready, dir, id]) => {
-        if (!ready || !dir) {
+      () => [pageReady(), params.projectId, params.id, currentDir(), currentProject()?.worktree] as const,
+      ([ready, projectId, id, directory]) => {
+        if (!ready || !projectId || !directory) {
           activeRoute.session = ""
           activeRoute.sessionProject = ""
           return
         }
-
-        const directory = decode64(dir)
-        if (!directory) return
 
         const root = touchProjectRoute() ?? activeProjectRoot(directory)
 
@@ -1735,7 +1747,7 @@ export default function Layout(props: ParentProps) {
           return
         }
 
-        const session = `${dir}/${id}`
+        const session = `${projectId}/${id}`
         if (session !== activeRoute.session) {
           activeRoute.session = session
           activeRoute.sessionProject = syncSessionRoute(directory, id, root)
@@ -1908,7 +1920,7 @@ export default function Layout(props: ParentProps) {
     })
 
     globalSync.child(created.directory)
-    navigateWithSidebarReset(`/${base64Encode(created.directory)}/session`)
+    navigateWithSidebarReset(sessionHref(created.directory))
   }
 
   const workspaceSidebarCtx: WorkspaceSidebarContext = {
@@ -2087,10 +2099,7 @@ export default function Layout(props: ParentProps) {
                   }}
                   onClick={() => {
                     setStore("activeProjectId", proj.id)
-                    const dir = projectDir(proj)
-                    const path = proj.sessionId
-                      ? `/${base64Encode(dir)}/session/${proj.sessionId}`
-                      : `/${base64Encode(dir)}/session`
+                    const path = sessionHref(projectDir(proj), proj.sessionId)
                     navigateWithSidebarReset(path)
                   }}
                 >

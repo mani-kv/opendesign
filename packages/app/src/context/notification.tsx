@@ -118,7 +118,12 @@ export const { use: useNotification, provider: NotificationProvider } = createSi
     const empty: Notification[] = []
 
     const currentDirectory = createMemo(() => {
-      return decode64(params.dir)
+      const pid = params.projectId
+      if (pid) {
+        const home = globalSync.data.path.home ?? "/"
+        return `${home.replace(/[/\\]+$/, "")}/.opendesign/projects/${pid}`
+      }
+      return decode64(params.dir) ?? ""
     })
 
     const currentSession = createMemo(() => params.id)

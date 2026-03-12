@@ -203,8 +203,9 @@ export function createPromptSubmit(input: PromptSubmitInput) {
         })
       if (session) {
         if (shouldAutoAccept) permission.enableAutoAccept(session.id, sessionDirectory)
-        layout.handoff.setTabs(base64Encode(sessionDirectory), session.id)
-        navigate(`/${base64Encode(sessionDirectory)}/session/${session.id}`)
+        const handoffKey = params.projectId ?? base64Encode(sessionDirectory)
+        layout.handoff.setTabs(handoffKey, session.id)
+        navigate(params.projectId ? `/project/${params.projectId}/session/${session.id}` : `/${base64Encode(sessionDirectory)}/session/${session.id}`)
       }
     }
     if (!session) {

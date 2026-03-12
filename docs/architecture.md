@@ -1,6 +1,183 @@
-# OpenDesign / OpenCode Architecture & Data Flow
+# OpenDesign Architecture & Data Flow
 
-## High-Level Architecture
+OpenDesign is a fork of OpenCode, evolved into a separate product. It reuses much of OpenCode's structure (server, SDK, tooling) but introduces a different model: **directory lives at the agent level, not the project level**. Projects are logical containers; agents own filesystem context (via Git branches and Sandpack).
+
+---
+
+## OpenDesign vs OpenCode
+
+| Aspect | OpenCode | OpenDesign |
+|--------|----------|------------|
+| **Project** | Has a worktree (directory on disk) | No directory; logical container with ID |
+| **Scope of work** | One directory per project | One directory per agent |
+| **Execution** | Tools run in project directory | Tools run in agent's branch checkout |
+| **Analogy** | 1 OpenCode = 1 project | 1 OpenDesign project = several OpenCodes in parallel (one per agent) |
+
+---
+
+## OpenDesign Core Model
+
+```mermaid
+flowchart TB
+    subgraph Project["Project"]
+        direction TB
+        Repo["Git Repo (1 per project)"]
+        Main["main branch"]
+        Repo --> Main
+    end
+
+    subgraph Agents["Agents"]
+        A1["Agent A (concept 1)"]
+        A2["Agent B (concept 2)"]
+        A3["Agent C (concept 3)"]
+    end
+
+    subgraph Branches["Branches"]
+        B1["agent-a"]
+        B2["agent-b"]
+        B3["agent-c"]
+    end
+
+    subgraph Sandpacks["Sandpack (Canvas)"]
+        S1["Sandpack A"]
+        S2["Sandpack B"]
+        S3["Sandpack C"]
+    end
+
+    Project --> Agents
+    A1 --> B1
+    A2 --> B2
+    A3 --> B3
+    B1 --> S1
+    B2 --> S2
+    B3 --> S3
+    Main -.->|"approve → merge"| B1
+    Main -.->|"approve → merge"| B2
+    Main -.->|"approve → merge"| B3
+```
+
+### Key Concepts
+
+| Concept | Description |
+|---------|-------------|
+| **Project** | Logical container. One Git repo. No directory at project level. Identified by `projectId`. |
+| **Agent** | Spawned per concept. Gets: (1) a branch in the project repo, (2) a working directory (branch checkout), (3) a Sandpack instance on the canvas, (4) tools that operate on its directory. |
+| **Concept** | A distinct sub-task from the user request. Orchestrator infers concepts and spawns agents. |
+| **Canvas** | UI surface displaying multiple Sandpack containers—one per active agent. |
+| **Session** | Conversation context. Scoped to project (and agents). No directory at session level. |
+
+---
+
+## Git Model (OpenDesign)
+
+- **1 repo per project** — all agents share the same Git repository. No worktrees.
+- **1 branch per agent** — each agent works on its own branch (e.g. `agent/{agentId}`).
+- **Same file tree** — all agents work on the same file structure; branches differ in content.
+- **Auto-commit** — when an agent completes a task, changes are committed to its branch.
+- **Rollback** — reverting an agent's work = resetting its branch to a previous commit.
+- **Merge** — user approves agent results → that agent's branch merges into `main`.
+
+---
+
+## Merge Flow & Conflict Handling
+
+- **Approval → merge**: User approves an agent's work → that branch merges into `main`. When all approvals are done, `main` is the unified prototype.
+- **1 repo required**: Multiple repos per agent would make "unified prototype" impossible; one repo is necessary.
+- **Sequential approval**: Merge one agent at a time. Each merge is against current `main`. Conflicts are resolved before the next approval.
+- **Orchestrator reduces conflicts**: Scope concepts and route agents so they tend to touch different files (e.g. validation vs layout). Reduces overlap; conflicts still possible.
+- **No worktrees**: Single checkout per agent is sufficient.
+
+### Visual Conflict Resolution (Designer-Focused)
+
+Designers should resolve conflicts by **outcome**, not by editing code. Avoid raw code diffs and merge markers.
+
+- **Side-by-side Sandpack previews**: When a merge conflict occurs, show two Sandpack instances—left = `main` (current prototype), right = agent branch (incoming changes). User sees the rendered behavior of both versions.
+- **Choose outcome**: User selects "keep left" or "take right" based on visual comparison. System maps that to file-level resolution (ours vs theirs). No code-editing required.
+- **Behavior over code**: Example—one version has an icon, the other removes it. User sees both in preview and picks which behavior to keep. The UI translates that choice into the merge resolution.
+
+---
+
+## Storage & Backend Layout (OpenDesign)
+
+```
+~/.opendesign/
+└── projects/
+    └── {projectId}/
+        ├── .git/                 # Single repo for the project
+        ├── main                  # main branch (unified prototype when all merged)
+        └── agents/
+            └── {agentId}/        # Working directory (checkout of agent's branch)
+                ├── src/
+                ├── ...
+```
+
+- Git repo lives at `~/.opendesign/projects/{projectId}/`.
+- Each agent has a working directory = checkout of its branch.
+- Tools run against that directory; Sandpack is fed file state via API.
+
+---
+
+## Agent Lifecycle
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant O as Orchestrator
+    participant A as Agent
+    participant G as Git
+    participant S as Sandpack
+
+    U->>O: "Check validation UI and layout"
+    O->>O: Identify concepts
+    O->>A: Spawn Agent A (validation)
+    O->>A: Spawn Agent B (layout)
+    A->>G: Create branch agent-a from main
+    A->>G: Checkout → working dir
+    A->>A: Run tools (edit, read) on working dir
+    A->>G: Auto-commit on completion
+    A->>S: Push file state → Sandpack canvas
+    U->>U: Review results
+    U->>A: "Approve"
+    A->>G: Merge agent-a → main
+```
+
+---
+
+## Agent-Scoped Request Flow
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant M as Middleware
+    participant I as Instance
+    participant R as Route Handler
+
+    C->>M: Request + projectId, agentId
+    M->>M: Resolve directory = agents/{agentId}
+    M->>M: Ensure branch exists, checkout if needed
+    M->>I: Instance.provide({ directory })
+    I->>I: Create/cache Instance context
+    M->>R: next()
+    R->>R: Tools use Instance.directory
+```
+
+Backend reuses OpenCode's `Instance.provide({ directory })`; directory is derived from `(projectId, agentId)` instead of being project-level.
+
+---
+
+## Sandpack Integration
+
+- **Backend** owns the working directory; tools (edit, read, grep) operate on it.
+- **Sandpack** displays the current file tree; state is fetched from the backend.
+- **Sync** — after tool edits or commits, backend exposes file state via API; frontend updates Sandpack's `files` prop.
+
+---
+
+## Shared Infrastructure (OpenCode-derived)
+
+The following sections describe the current server and client architecture, which OpenDesign reuses and adapts.
+
+### High-Level Architecture
 
 ```mermaid
 flowchart TB

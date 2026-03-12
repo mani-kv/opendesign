@@ -84,8 +84,8 @@ export default function Page() {
 
   const composer = createSessionComposerState()
 
-  const sessionKey = createMemo(() => `${params.dir}${params.id ? "/" + params.id : ""}`)
-  const workspaceKey = createMemo(() => params.dir ?? "")
+  const sessionKey = createMemo(() => `${params.projectId}${params.id ? "/" + params.id : ""}`)
+  const workspaceKey = createMemo(() => params.projectId ?? "")
   const workspaceTabs = createMemo(() => layout.tabs(workspaceKey))
   const tabs = createMemo(() => layout.tabs(sessionKey))
   const view = createMemo(() => layout.view(sessionKey))
@@ -106,7 +106,7 @@ export default function Page() {
 
         if (pending.id !== id) return
         layout.handoff.clearTabs()
-        if (pending.dir !== (params.dir ?? "")) return
+        if (pending.dir !== (params.projectId ?? "")) return
 
         const from = workspaceTabs().tabs()
         if (from.all.length === 0 && !from.active) return
@@ -190,7 +190,7 @@ export default function Page() {
 
   createEffect(
     on(
-      () => ({ dir: params.dir, id: params.id }),
+      () => ({ dir: params.projectId, id: params.id }),
       (next, prev) => {
         if (!prev) return
         if (next.dir === prev.dir && next.id === prev.id) return
@@ -334,9 +334,9 @@ export default function Page() {
 
   createEffect(
     on(
-      () => params.dir,
-      (dir) => {
-        if (!dir) return
+      () => params.projectId,
+      (pid) => {
+        if (!pid) return
         setStore("newSessionWorktree", "main")
       },
       { defer: true },

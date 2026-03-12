@@ -32,7 +32,7 @@ export function SessionContextUsage(props: SessionContextUsageProps) {
   const language = useLanguage()
 
   const variant = createMemo(() => props.variant ?? "button")
-  const sessionKey = createMemo(() => `${params.dir}${params.id ? "/" + params.id : ""}`)
+  const sessionKey = createMemo(() => `${params.projectId}${params.id ? "/" + params.id : ""}`)
   const tabs = createMemo(() => layout.tabs(sessionKey))
   const view = createMemo(() => layout.view(sessionKey))
   const messages = createMemo(() => (params.id ? (sync.data.message[params.id] ?? []) : []))

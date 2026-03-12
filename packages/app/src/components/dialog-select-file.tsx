@@ -264,7 +264,7 @@ export function DialogSelectFile(props: { mode?: DialogSelectFileMode; onOpenFil
   const globalSDK = useGlobalSDK()
   const globalSync = useGlobalSync()
   const filesOnly = () => props.mode === "files"
-  const sessionKey = createMemo(() => `${params.dir}${params.id ? "/" + params.id : ""}`)
+  const sessionKey = createMemo(() => `${params.projectId}${params.id ? "/" + params.id : ""}`)
   const tabs = createMemo(() => layout.tabs(sessionKey))
   const view = createMemo(() => layout.view(sessionKey))
   const state = { cleanup: undefined as (() => void) | void, committed: false }
@@ -272,7 +272,14 @@ export function DialogSelectFile(props: { mode?: DialogSelectFileMode; onOpenFil
   const commandEntries = createCommandEntries({ filesOnly, command, language })
   const fileEntries = createFileEntries({ file, tabs, language })
 
-  const projectDirectory = createMemo(() => decode64(params.dir) ?? "")
+  const projectDirectory = createMemo(() => {
+    const pid = params.projectId
+    if (pid) {
+      const home = globalSync.data.path.home ?? "/"
+      return `${home.replace(/[/\\]+$/, "")}/.opendesign/projects/${pid}`
+    }
+    return decode64(params.dir) ?? ""
+  })
   const project = createMemo(() => {
     const directory = projectDirectory()
     if (!directory) return

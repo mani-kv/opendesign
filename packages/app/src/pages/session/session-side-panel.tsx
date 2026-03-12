@@ -44,7 +44,7 @@ export function SessionSidePanel(props: {
   const dialog = useDialog()
 
   const isDesktop = createMediaQuery("(min-width: 768px)")
-  const sessionKey = createMemo(() => `${params.dir}${params.id ? "/" + params.id : ""}`)
+  const sessionKey = createMemo(() => `${params.projectId}${params.id ? "/" + params.id : ""}`)
   const tabs = createMemo(() => layout.tabs(sessionKey))
   const view = createMemo(() => layout.view(sessionKey))
 

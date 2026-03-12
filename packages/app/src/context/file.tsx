@@ -61,7 +61,7 @@ export const { use: useFile, provider: FileProvider } = createSimpleContext({
 
     const scope = createMemo(() => sdk.directory)
     const path = createPathHelpers(scope)
-    const tabs = layout.tabs(() => `${params.dir}${params.id ? "/" + params.id : ""}`)
+    const tabs = layout.tabs(() => `${params.projectId}${params.id ? "/" + params.id : ""}`)
 
     const inflight = new Map<string, Promise<void>>()
     const [store, setStore] = createStore<{

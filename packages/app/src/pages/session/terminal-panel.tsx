@@ -26,7 +26,7 @@ export function TerminalPanel() {
   const language = useLanguage()
   const command = useCommand()
 
-  const sessionKey = createMemo(() => `${params.dir}${params.id ? "/" + params.id : ""}`)
+  const sessionKey = createMemo(() => `${params.projectId}${params.id ? "/" + params.id : ""}`)
   const view = createMemo(() => layout.view(sessionKey))
 
   const opened = createMemo(() => view().terminal.opened())
@@ -124,13 +124,13 @@ export function TerminalPanel() {
   })
 
   createEffect(() => {
-    const dir = params.dir
-    if (!dir) return
+    const pid = params.projectId
+    if (!pid) return
     if (!terminal.ready()) return
     language.locale()
 
     setTerminalHandoff(
-      dir,
+      pid,
       terminal.all().map((pty) =>
         terminalTabLabel({
           title: pty.title,
@@ -142,9 +142,9 @@ export function TerminalPanel() {
   })
 
   const handoff = createMemo(() => {
-    const dir = params.dir
-    if (!dir) return []
-    return getTerminalHandoff(dir) ?? []
+    const pid = params.projectId
+    if (!pid) return []
+    return getTerminalHandoff(pid) ?? []
   })
 
   const all = createMemo(() => terminal.all())

@@ -61,7 +61,7 @@ export function FileTabContent(props: { tab: string }) {
   const prompt = usePrompt()
   const fileComponent = useFileComponent()
 
-  const sessionKey = createMemo(() => `${params.dir}${params.id ? "/" + params.id : ""}`)
+  const sessionKey = createMemo(() => `${params.projectId}${params.id ? "/" + params.id : ""}`)
   const tabs = createMemo(() => layout.tabs(sessionKey))
   const view = createMemo(() => layout.view(sessionKey))
 

@@ -51,10 +51,17 @@ export const { use: usePermission, provider: PermissionProvider } = createSimple
     const globalSDK = useGlobalSDK()
     const globalSync = useGlobalSync()
 
+    const directory = createMemo(() => {
+      const pid = params.projectId
+      if (!pid) return decode64(params.dir) ?? ""
+      const home = globalSync.data.path.home ?? "/"
+      return `${home.replace(/[/\\]+$/, "")}/.opendesign/projects/${pid}`
+    })
+
     const permissionsEnabled = createMemo(() => {
-      const directory = decode64(params.dir)
-      if (!directory) return false
-      const [store] = globalSync.child(directory)
+      const dir = directory()
+      if (!dir) return false
+      const [store] = globalSync.child(dir)
       return hasPermissionPromptRules(store.config.permission)
     })
 
@@ -84,12 +91,12 @@ export const { use: usePermission, provider: PermissionProvider } = createSimple
     // When config has permission: "allow", auto-enable directory-level auto-accept
     createEffect(() => {
       if (!ready()) return
-      const directory = decode64(params.dir)
-      if (!directory) return
-      const [childStore] = globalSync.child(directory)
+      const dir = directory()
+      if (!dir) return
+      const [childStore] = globalSync.child(dir)
       const perm = childStore.config.permission
       if (typeof perm === "string" && perm === "allow") {
-        const key = directoryAcceptKey(directory)
+        const key = directoryAcceptKey(dir)
         if (store.autoAccept[key] === undefined) {
           setStore(
             produce((draft) => {
