@@ -1972,6 +1972,12 @@ export default function Layout(props: ParentProps) {
 
   const projectList = (wid: string) => createMemo(() => workspace.projects.list(wid)())
 
+  const hasWorkspaceProjects = createMemo(() => {
+    const ws = selectedWorkspace()
+    if (!ws) return false
+    return workspace.projects.list(ws.id)().length > 0
+  })
+
   const addProject = (wid: string) => {
     dialog.show(() => (
       <DialogAddProject
@@ -2306,7 +2312,37 @@ export default function Layout(props: ParentProps) {
                 }}
               >
                 <Show when={!autoselecting()} fallback={<div class="size-full" />}>
-                  {props.children}
+                  <Show
+                    when={hasWorkspaceProjects()}
+                    fallback={
+                      <div class="size-full flex flex-col items-center justify-center gap-6 px-4">
+                        <div class="flex flex-col gap-2 text-center max-w-sm">
+                          <div class="text-14-medium text-text-strong">
+                            {language.t("workspace.empty.title")}
+                          </div>
+                          <div
+                            class="text-14-regular text-text-weak"
+                            style={{ "line-height": "var(--line-height-normal)" }}
+                          >
+                            {language.t("workspace.empty.description")}
+                          </div>
+                        </div>
+                        <Show when={selectedWorkspace()} keyed>
+                          {(ws) => (
+                            <Button
+                              size="large"
+                              icon="plus-small"
+                              onClick={() => addProject(ws.id)}
+                            >
+                              {language.t("command.project.add")}
+                            </Button>
+                          )}
+                        </Show>
+                      </div>
+                    }
+                  >
+                    {props.children}
+                  </Show>
                 </Show>
               </main>
             </div>

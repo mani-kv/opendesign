@@ -516,6 +516,9 @@ export const dict = {
   "home.empty.title": "No recent projects",
   "home.empty.description": "Get started by opening a local project",
 
+  "workspace.empty.title": "Add a project to get started",
+  "workspace.empty.description": "Projects contain your sessions. Add a project to start working with agents.",
+
   "session.tab.session": "Session",
   "session.tab.review": "Review",
   "session.tab.canvas": "Canvas",
