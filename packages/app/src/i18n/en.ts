@@ -34,6 +34,9 @@ export const dict = {
   "dialog.project.add.placeholder": "Project name",
   "dialog.project.add.linkDirectory": "Link directory",
   "dialog.project.add.changeDirectory": "Change directory",
+
+  "project.unknown": "Unknown project",
+  "project.canvas.comingSoon": "Canvas coming soon",
   "command.provider.connect": "Connect provider",
   "command.server.switch": "Switch server",
   "command.settings.open": "Open settings",
@@ -515,6 +518,9 @@ export const dict = {
 
   "session.tab.session": "Session",
   "session.tab.review": "Review",
+  "session.tab.canvas": "Canvas",
+  "agents.panel.title": "Agents",
+  "agents.panel.empty": "Agents will appear here when you ask something",
   "session.tab.context": "Context",
   "session.panel.reviewAndFiles": "Review and files",
   "session.review.filesChanged": "{{count}} Files Changed",

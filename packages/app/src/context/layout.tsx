@@ -15,6 +15,7 @@ import { createPathHelpers } from "./file/path"
 const AVATAR_COLOR_KEYS = ["pink", "mint", "orange", "purple", "cyan", "lime"] as const
 const DEFAULT_PANEL_WIDTH = 344
 const DEFAULT_SESSION_WIDTH = 600
+const AGENTS_PANEL_WIDTH = 200
 const DEFAULT_TERMINAL_HEIGHT = 280
 export type AvatarColorKey = (typeof AVATAR_COLOR_KEYS)[number]
 
@@ -92,7 +93,7 @@ export function pruneSessionKeys(input: {
 
 function nextSessionTabsForOpen(current: SessionTabs | undefined, tab: string): SessionTabs {
   const all = current?.all ?? []
-  if (tab === "review") return { all: all.filter((x) => x !== "review"), active: tab }
+  if (tab === "canvas") return { all: all.filter((x) => x !== "canvas"), active: tab }
   if (tab === "context") return { all: [tab, ...all.filter((x) => x !== tab)], active: tab }
   if (!all.includes(tab)) return { all: [...all, tab], active: tab }
   return { all, active: tab }
@@ -181,9 +182,17 @@ export const { use: useLayout, provider: LayoutProvider } = createSimpleContext(
         }
       })()
 
+      const agents = value.agents
+      const migratedAgents = (() => {
+        if (isRecord(agents) && typeof agents.width === "number") return agents
+        return { width: AGENTS_PANEL_WIDTH }
+      })()
+
       const sessionTabs = value.sessionTabs
       const migratedSessionTabs = (() => {
         if (!isRecord(sessionTabs)) return sessionTabs
+
+        const mapReviewToCanvas = (tab: string) => (tab === "review" ? "canvas" : tab)
 
         let changed = false
         const next = Object.fromEntries(
@@ -191,10 +200,16 @@ export const { use: useLayout, provider: LayoutProvider } = createSimpleContext(
             if (!isRecord(tabs) || !Array.isArray(tabs.all)) return [key, tabs]
 
             const current = {
-              all: tabs.all.filter((tab): tab is string => typeof tab === "string"),
-              active: typeof tabs.active === "string" ? tabs.active : undefined,
+              all: tabs.all
+                .filter((tab): tab is string => typeof tab === "string")
+                .map(mapReviewToCanvas),
+              active:
+                typeof tabs.active === "string"
+                  ? mapReviewToCanvas(tabs.active)
+                  : undefined,
             }
             const normalized = normalizeStoredSessionTabs(key, current)
+            if (tabs.all.some((t) => t === "review") || tabs.active === "review") changed = true
             if (current.all.length !== tabs.all.length) changed = true
             if (!same(current.all, normalized.all) || current.active !== normalized.active) changed = true
             if (tabs.active !== undefined && typeof tabs.active !== "string") changed = true
@@ -210,7 +225,8 @@ export const { use: useLayout, provider: LayoutProvider } = createSimpleContext(
         migratedSidebar === sidebar &&
         migratedReview === review &&
         migratedFileTree === fileTree &&
-        migratedSessionTabs === sessionTabs
+        migratedSessionTabs === sessionTabs &&
+        migratedAgents === agents
       ) {
         return value
       }
@@ -221,10 +237,11 @@ export const { use: useLayout, provider: LayoutProvider } = createSimpleContext(
         review: migratedReview,
         fileTree: migratedFileTree,
         sessionTabs: migratedSessionTabs,
+        agents: migratedAgents,
       }
     }
 
-    const target = Persist.global("layout", ["layout.v6"])
+    const target = Persist.global("layout", ["layout.v7"])
     const [store, setStore, _, ready] = persisted(
       { ...target, migrate },
       createStore({
@@ -249,6 +266,9 @@ export const { use: useLayout, provider: LayoutProvider } = createSimpleContext(
         },
         session: {
           width: DEFAULT_SESSION_WIDTH,
+        },
+        agents: {
+          width: AGENTS_PANEL_WIDTH,
         },
         mobileSidebar: {
           opened: false,
@@ -666,6 +686,16 @@ export const { use: useLayout, provider: LayoutProvider } = createSimpleContext(
           setStore("fileTree", "width", width)
         },
       },
+      agents: {
+        width: createMemo(() => store.agents?.width ?? AGENTS_PANEL_WIDTH),
+        resize(width: number) {
+          if (!store.agents) {
+            setStore("agents", { width })
+            return
+          }
+          setStore("agents", "width", width)
+        },
+      },
       session: {
         width: createMemo(() => store.session?.width ?? DEFAULT_SESSION_WIDTH),
         resize(width: number) {
@@ -820,7 +850,7 @@ export const { use: useLayout, provider: LayoutProvider } = createSimpleContext(
         return {
           tabs,
           active: createMemo(() => tabs().active),
-          all: createMemo(() => tabs().all.filter((tab) => tab !== "review")),
+          all: createMemo(() => tabs().all.filter((tab) => tab !== "canvas")),
           setActive(tab: string | undefined) {
             const session = key()
             const next = tab ? normalize(tab) : tab
@@ -832,7 +862,7 @@ export const { use: useLayout, provider: LayoutProvider } = createSimpleContext(
           },
           setAll(all: string[]) {
             const session = key()
-            const next = normalizeAll(all).filter((tab) => tab !== "review")
+            const next = normalizeAll(all).filter((tab) => tab !== "canvas")
             if (!store.sessionTabs[session]) {
               setStore("sessionTabs", session, { all: next, active: undefined })
             } else {
@@ -849,7 +879,7 @@ export const { use: useLayout, provider: LayoutProvider } = createSimpleContext(
             const current = store.sessionTabs[session]
             if (!current) return
 
-            if (tab === "review") {
+            if (tab === "canvas") {
               if (current.active !== tab) return
               setStore("sessionTabs", session, "active", current.all[0])
               return

@@ -673,7 +673,7 @@ export function SessionHeader() {
                       onClick={() => view().reviewPanel.toggle()}
                       aria-label={language.t("command.review.toggle")}
                       aria-expanded={view().reviewPanel.opened()}
-                      aria-controls="review-panel"
+                      aria-controls="canvas-panel"
                     >
                       <div class="relative flex items-center justify-center size-4 [&>*]:absolute [&>*]:inset-0">
                         <Icon

@@ -135,7 +135,7 @@
     }
   }
 
-  #review-panel &[data-variant="normal"][data-orientation="horizontal"] {
+  #canvas-panel &[data-variant="normal"][data-orientation="horizontal"] {
     background-color: var(--background-stronger);
 
     [data-slot="tabs-list"] {
@@ -201,7 +201,7 @@
           transform 120ms ease;
       }
 
-      &[data-value="review"] {
+      &[data-value="canvas"] {
         padding-left: 8px;
         padding-right: 8px;
       }

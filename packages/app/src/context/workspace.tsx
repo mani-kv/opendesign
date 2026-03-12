@@ -4,16 +4,16 @@ import { createMemo } from "solid-js"
 import { Persist, persisted } from "@/utils/persist"
 
 export type Workspace = { id: string; name: string; order: number }
-export type Project = { id: string; workspaceId: string; name: string; order: number; linkedDir?: string }
+export type Project = { id: string; workspaceId: string; name: string; order: number; sessionId: string }
 
 function uuid() {
   return crypto.randomUUID?.() ?? `xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx`.replace(/x/g, () => ((Math.random() * 16) | 0).toString(16))
 }
 
-const target = Persist.global("opendesign.workspace", ["opendesign.workspace.v1"])
+const target = Persist.global("opendesign.workspace", ["opendesign.workspace.v2", "opendesign.workspace.v1"])
 
 function migrate(value: unknown): unknown {
-  if (typeof value !== "object" || value === null || Array.isArray(value)) return value
+  if (typeof value !== "object" || value === null) return value
   const v = value as Record<string, unknown>
   const workspaces = Array.isArray(v.workspaces) ? v.workspaces : []
   const projects = Array.isArray(v.projects) ? v.projects : []
@@ -28,14 +28,16 @@ function migrate(value: unknown): unknown {
       }
     }),
     projects: projects.map((p: unknown) => {
-      if (typeof p !== "object" || p === null) return { id: uuid(), workspaceId: "", name: "Project", order: 0 }
+      if (typeof p !== "object" || p === null) return { id: uuid(), workspaceId: "", name: "Project", order: 0, sessionId: uuid() }
       const x = p as Record<string, unknown>
+      const id = typeof x.id === "string" ? x.id : uuid()
+      const sessionId = typeof x.sessionId === "string" ? x.sessionId : uuid()
       return {
-        id: typeof x.id === "string" ? x.id : uuid(),
+        id,
         workspaceId: typeof x.workspaceId === "string" ? x.workspaceId : "",
         name: typeof x.name === "string" ? x.name : "Project",
         order: typeof x.order === "number" ? x.order : 0,
-        linkedDir: typeof x.linkedDir === "string" ? x.linkedDir : undefined,
+        sessionId,
       }
     }),
   }
@@ -96,11 +98,11 @@ export const { use: useWorkspace, provider: WorkspaceProvider } = createSimpleCo
       )
     }
 
-    const addProject = (workspaceId: string, name: string, linkedDir?: string) => {
+    const addProject = (workspaceId: string, name: string, sessionId: string, projectId?: string) => {
       const list = store.projects.filter((p) => p.workspaceId === workspaceId)
       const max = list.reduce((m, p) => Math.max(m, p.order), -1)
-      const id = uuid()
-      setStore("projects", (prev) => [...prev, { id, workspaceId, name, order: max + 1, linkedDir }])
+      const id = projectId ?? uuid()
+      setStore("projects", (prev) => [...prev, { id, workspaceId, name, order: max + 1, sessionId }])
       return id
     }
 
@@ -108,7 +110,7 @@ export const { use: useWorkspace, provider: WorkspaceProvider } = createSimpleCo
       setStore("projects", (prev) => prev.filter((p) => p.id !== id))
     }
 
-    const updateProject = (id: string, patch: Partial<Pick<Project, "name" | "linkedDir">>) => {
+    const updateProject = (id: string, patch: Partial<Pick<Project, "name" | "sessionId">>) => {
       const idx = store.projects.findIndex((p) => p.id === id)
       if (idx === -1) return
       setStore("projects", idx, (prev) => ({ ...prev, ...patch }))

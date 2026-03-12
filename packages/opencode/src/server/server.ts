@@ -43,6 +43,7 @@ import { PermissionRoutes } from "./routes/permission"
 import { GlobalRoutes } from "./routes/global"
 import { MDNS } from "./mdns"
 import { lazy } from "@/util/lazy"
+import path from "path"
 
 // @ts-ignore This global is needed to prevent ai-sdk from logging warnings to stdout https://github.com/vercel/ai/blob/2dc67e0ef538307f21368db32d5a12345d98831b/packages/ai/src/logger/log-warnings.ts#L85
 globalThis.AI_SDK_LOG_WARNINGS = false
@@ -192,7 +193,7 @@ export namespace Server {
         if (c.req.path === "/log") return next()
         const workspaceID = c.req.query("workspace") || c.req.header("x-opencode-workspace")
         const raw = c.req.query("directory") || c.req.header("x-opencode-directory") || process.cwd()
-        const directory = Filesystem.resolve(
+        let directory = Filesystem.resolve(
           (() => {
             try {
               return decodeURIComponent(raw)
@@ -201,6 +202,15 @@ export namespace Server {
             }
           })(),
         )
+
+        const projectsRoot = path.join(Global.Path.home, ".opendesign", "projects")
+        if (
+          directory === projectsRoot ||
+          (directory.startsWith(projectsRoot + path.sep) && directory.length > projectsRoot.length)
+        ) {
+          const { mkdir } = await import("fs/promises")
+          await mkdir(directory, { recursive: true }).catch(() => {})
+        }
 
         return WorkspaceContext.provide({
           workspaceID,

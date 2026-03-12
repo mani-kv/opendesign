@@ -169,6 +169,35 @@ export default function Layout(props: ParentProps) {
     const first = workspaceList()[0]
     if (first) setStore("activeWorkspaceId", first.id)
   })
+
+  createEffect(() => {
+    if (!pageReady()) return
+    const pid = params.projectId
+    if (pid) setStore("activeProjectId", pid)
+  })
+
+  const projectDir = (proj: { id: string }) => {
+    const home = globalSync.data.path.home ?? "/"
+    const base = home.replace(/[/\\]+$/, "")
+    return `${base}/.opendesign/projects/${proj.id}`
+  }
+
+  createEffect(() => {
+    if (!pageReady() || !workspace.ready()) return
+    if (params.projectId || params.dir) return
+    const wsId = store.activeWorkspaceId ?? workspaceList()[0]?.id
+    if (!wsId) return
+    const list = workspace.projects.list(wsId)
+    const first = list()[0]
+    if (!first) return
+    setStore("activeProjectId", first.id)
+    const dir = projectDir(first)
+    const path = first.sessionId
+      ? `/${base64Encode(dir)}/session/${first.sessionId}`
+      : `/${base64Encode(dir)}/session`
+    navigateWithSidebarReset(path)
+  })
+
   const setBusy = (directory: string, value: boolean) => {
     const key = workspaceKey(directory)
     if (value) {
@@ -2045,14 +2074,18 @@ export default function Layout(props: ParentProps) {
               {(proj) => (
                 <button
                   type="button"
-                  class="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-14-regular text-text-strong hover:bg-surface-base-hover"
+                  classList={{
+                    "flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-14-regular text-text-strong hover:bg-surface-base-hover":
+                      true,
+                    "bg-surface-base-active text-text-strong": store.activeProjectId === proj.id,
+                  }}
                   onClick={() => {
                     setStore("activeProjectId", proj.id)
-                    if (proj.linkedDir) {
-                      navigateWithSidebarReset(`/${base64Encode(proj.linkedDir)}/session`)
-                    } else {
-                      navigateWithSidebarReset(`/project/${proj.id}`)
-                    }
+                    const dir = projectDir(proj)
+                    const path = proj.sessionId
+                      ? `/${base64Encode(dir)}/session/${proj.sessionId}`
+                      : `/${base64Encode(dir)}/session`
+                    navigateWithSidebarReset(path)
                   }}
                 >
                   {proj.name}

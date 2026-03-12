@@ -51,10 +51,10 @@ export function SessionSidePanel(props: {
   const reviewOpen = createMemo(() => isDesktop() && view().reviewPanel.opened())
   const fileOpen = createMemo(() => isDesktop() && layout.fileTree.opened())
   const open = createMemo(() => reviewOpen() || fileOpen())
-  const reviewTab = createMemo(() => isDesktop())
+  const canvasTab = createMemo(() => isDesktop())
   const panelWidth = createMemo(() => {
     if (!open()) return "0px"
-    if (reviewOpen()) return `calc(100% - ${layout.session.width()}px)`
+    if (reviewOpen()) return `calc(100% - ${layout.agents.width()}px)`
     return `${layout.fileTree.width()}px`
   })
   const treeWidth = createMemo(() => (fileOpen() ? `${layout.fileTree.width()}px` : "0px"))
@@ -140,19 +140,19 @@ export function SessionSidePanel(props: {
   const openedTabs = createMemo(() =>
     tabs()
       .all()
-      .filter((tab) => tab !== "context" && tab !== "review"),
+      .filter((tab) => tab !== "context" && tab !== "canvas"),
   )
 
   const activeTab = createMemo(() => {
     const active = tabs().active()
     if (active === "context") return "context"
-    if (active === "review" && reviewTab()) return "review"
+    if (active === "canvas" && canvasTab()) return "canvas"
     if (active && file.pathFromTab(active)) return normalizeTab(active)
 
     const first = openedTabs()[0]
     if (first) return first
     if (contextOpen()) return "context"
-    if (reviewTab() && hasReview()) return "review"
+    if (canvasTab() && hasReview()) return "canvas"
     return "empty"
   })
 
@@ -222,7 +222,7 @@ export function SessionSidePanel(props: {
   return (
     <Show when={isDesktop()}>
       <aside
-        id="review-panel"
+        id="canvas-panel"
         aria-label={language.t("session.panel.reviewAndFiles")}
         aria-hidden={!open()}
         inert={!open()}
@@ -260,10 +260,10 @@ export function SessionSidePanel(props: {
                         onCleanup(stop)
                       }}
                     >
-                      <Show when={reviewTab()}>
-                        <Tabs.Trigger value="review">
+                      <Show when={canvasTab()}>
+                        <Tabs.Trigger value="canvas">
                           <div class="flex items-center gap-1.5">
-                            <div>{language.t("session.tab.review")}</div>
+                            <div>{language.t("session.tab.canvas")}</div>
                             <Show when={hasReview()}>
                               <div>{reviewCount()}</div>
                             </Show>
@@ -322,10 +322,10 @@ export function SessionSidePanel(props: {
                     </Tabs.List>
                   </div>
 
-                  <Show when={reviewTab()}>
-                    <Tabs.Content value="review" class="relative flex flex-col h-full overflow-hidden contain-strict">
+                  <Show when={canvasTab()}>
+                    <Tabs.Content value="canvas" class="relative flex flex-col h-full overflow-hidden contain-strict">
                       <div class="relative flex-1 min-h-0 overflow-hidden pb-24">
-                        <Show when={activeTab() === "review"}>{props.reviewPanel()}</Show>
+                        <Show when={activeTab() === "canvas"}>{props.reviewPanel()}</Show>
                       </div>
                       <Show when={props.floatingPrompt && reviewOpen()}>
                         <div class="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex justify-center px-4 pb-4">

@@ -11,6 +11,6 @@ describe("messageIdFromHash", () => {
   })
 
   test("ignores non-message anchors", () => {
-    expect(messageIdFromHash("#review-panel")).toBeUndefined()
+    expect(messageIdFromHash("#canvas-panel")).toBeUndefined()
   })
 })

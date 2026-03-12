@@ -79,7 +79,7 @@ export function SessionReviewTab(props: SessionReviewTabProps) {
     if (!el || !layout.ready() || userInteracted) return
     if (el.clientHeight === 0 || el.clientWidth === 0) return
 
-    const s = props.view().scroll("review")
+    const s = props.view().scroll("canvas")
     if (!s || (s.x === 0 && s.y === 0)) return
 
     const maxY = Math.max(0, el.scrollHeight - el.clientHeight)
@@ -113,7 +113,7 @@ export function SessionReviewTab(props: SessionReviewTabProps) {
     if (!layout.ready()) return
     if (el.clientHeight === 0 || el.clientWidth === 0) return
 
-    props.view().setScroll("review", {
+    props.view().setScroll("canvas", {
       x: el.scrollLeft,
       y: el.scrollTop,
     })

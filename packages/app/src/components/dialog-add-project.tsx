@@ -4,32 +4,56 @@ import { TextField } from "@opencode-ai/ui/text-field"
 import { createStore } from "solid-js/store"
 import { useLanguage } from "@/context/language"
 import { useWorkspace } from "@/context/workspace"
-import { DialogSelectDirectory } from "./dialog-select-directory"
 import { useDialog } from "@opencode-ai/ui/context/dialog"
+import { useGlobalSDK } from "@/context/global-sdk"
+import { useGlobalSync } from "@/context/global-sync"
+import { showToast } from "@opencode-ai/ui/toast"
+
+function projectDir(home: string, projectId: string) {
+  const base = home.replace(/[/\\]+$/, "")
+  return `${base}/.opendesign/projects/${projectId}`
+}
+
+function uuid() {
+  return crypto.randomUUID?.() ?? "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/x/g, () => ((Math.random() * 16) | 0).toString(16))
+}
 
 export function DialogAddProject(props: { workspaceId: string; onAdded?: (id: string) => void }) {
   const language = useLanguage()
   const workspace = useWorkspace()
   const dialog = useDialog()
-  const [store, setStore] = createStore({ name: "", linkedDir: undefined as string | undefined })
+  const globalSDK = useGlobalSDK()
+  const globalSync = useGlobalSync()
+  const [store, setStore] = createStore({ name: "", busy: false })
 
-  const submit = (e: Event) => {
+  const submit = async (e: Event) => {
     e.preventDefault()
     const name = store.name.trim() || "New Project"
-    const id = workspace.projects.add(props.workspaceId, name, store.linkedDir)
-    dialog.close()
-    props.onAdded?.(id)
-  }
-
-  const pickDirectory = () => {
-    dialog.show(() => (
-      <DialogSelectDirectory
-        onSelect={(result) => {
-          const dir = Array.isArray(result) ? result[0] : result
-          if (dir) setStore("linkedDir", dir)
-        }}
-      />
-    ))
+    const home = globalSync.data.path.home ?? ""
+    if (!home) {
+      showToast({ variant: "error", title: language.t("error.title"), description: "Server not ready" })
+      return
+    }
+    setStore("busy", true)
+    try {
+      const projectId = uuid()
+      const dir = projectDir(home, projectId)
+      const client = globalSDK.createClient({ directory: dir })
+      const res = await client.session.create({ title: name })
+      const session = res.data
+      if (!session?.id) throw new Error("No session created")
+      workspace.projects.add(props.workspaceId, name, session.id, projectId)
+      dialog.close()
+      props.onAdded?.(projectId)
+    } catch (err) {
+      showToast({
+        variant: "error",
+        title: language.t("error.title"),
+        description: err instanceof Error ? err.message : "Failed to create project",
+      })
+    } finally {
+      setStore("busy", false)
+    }
   }
 
   return (
@@ -42,18 +66,8 @@ export function DialogAddProject(props: { workspaceId: string; onAdded?: (id: st
           placeholder={language.t("dialog.project.add.placeholder")}
           label={language.t("dialog.project.add.name")}
         />
-        <div class="flex flex-col gap-2">
-          <Button type="button" variant="secondary" onClick={pickDirectory}>
-            {store.linkedDir
-              ? language.t("dialog.project.add.changeDirectory")
-              : language.t("dialog.project.add.linkDirectory")}
-          </Button>
-          {store.linkedDir && (
-            <div class="text-12-regular text-text-weak truncate">{store.linkedDir}</div>
-          )}
-        </div>
-        <Button type="submit" class="w-auto self-start">
-          {language.t("common.save")}
+        <Button type="submit" class="w-auto self-start" disabled={store.busy}>
+          {store.busy ? language.t("common.saving") : language.t("common.save")}
         </Button>
       </form>
     </Dialog>
