@@ -372,6 +372,10 @@ export default function Page() {
   }
 
   createEffect(() => {
+    if (isDesktop() && !view().reviewPanel.opened()) view().reviewPanel.open()
+  })
+
+  createEffect(() => {
     const active = tabs().active()
     if (!active) return
 
@@ -1362,24 +1366,26 @@ export default function Page() {
             </Switch>
           </div>
 
-          <SessionComposerRegion
-            state={composer}
-            ready={!store.deferRender && messagesReady()}
-            centered={centered()}
-            inputRef={(el) => {
-              inputRef = el
-            }}
-            newSessionWorktree={newSessionWorktree()}
-            onNewSessionWorktreeReset={() => setStore("newSessionWorktree", "main")}
-            onSubmit={() => {
-              comments.clear()
-              resumeScroll()
-            }}
-            onResponseSubmit={resumeScroll}
-            setPromptDockRef={(el) => {
-              promptDock = el
-            }}
-          />
+          <Show when={!isDesktop()}>
+            <SessionComposerRegion
+              state={composer}
+              ready={!store.deferRender && messagesReady()}
+              centered={true}
+              inputRef={(el) => {
+                inputRef = el
+              }}
+              newSessionWorktree={newSessionWorktree()}
+              onNewSessionWorktreeReset={() => setStore("newSessionWorktree", "main")}
+              onSubmit={() => {
+                comments.clear()
+                resumeScroll()
+              }}
+              onResponseSubmit={resumeScroll}
+              setPromptDockRef={(el) => {
+                promptDock = el
+              }}
+            />
+          </Show>
 
           <Show when={desktopReviewOpen()}>
             <div onPointerDown={() => size.start()}>
@@ -1399,6 +1405,26 @@ export default function Page() {
 
         <SessionSidePanel
           reviewPanel={reviewPanel}
+          floatingPrompt={() => (
+            <SessionComposerRegion
+              state={composer}
+              ready={!store.deferRender && messagesReady()}
+              centered={false}
+              inputRef={(el) => {
+                inputRef = el
+              }}
+              newSessionWorktree={newSessionWorktree()}
+              onNewSessionWorktreeReset={() => setStore("newSessionWorktree", "main")}
+              onSubmit={() => {
+                comments.clear()
+                resumeScroll()
+              }}
+              onResponseSubmit={resumeScroll}
+              setPromptDockRef={(el) => {
+                promptDock = el
+              }}
+            />
+          )}
           activeDiff={tree.activeDiff}
           focusReviewDiff={focusReviewDiff}
           reviewSnap={ui.reviewSnap}

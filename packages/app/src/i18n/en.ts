@@ -23,6 +23,17 @@ export const dict = {
 
   "command.sidebar.toggle": "Toggle sidebar",
   "command.project.open": "Open project",
+  "command.project.add": "Add project",
+  "command.workspace.new": "New workspace",
+
+  "dialog.workspace.add.title": "Add workspace",
+  "dialog.workspace.add.name": "Name",
+  "dialog.workspace.add.placeholder": "Workspace name",
+  "dialog.project.add.title": "Add project",
+  "dialog.project.add.name": "Name",
+  "dialog.project.add.placeholder": "Project name",
+  "dialog.project.add.linkDirectory": "Link directory",
+  "dialog.project.add.changeDirectory": "Change directory",
   "command.provider.connect": "Connect provider",
   "command.server.switch": "Switch server",
   "command.settings.open": "Open settings",

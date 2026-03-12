@@ -10,22 +10,22 @@ import {
 import { ConstrainDragXAxis } from "@/utils/solid-dnd"
 import { IconButton } from "@opencode-ai/ui/icon-button"
 import { Tooltip, TooltipKeybind } from "@opencode-ai/ui/tooltip"
-import { type LocalProject } from "@/context/layout"
+import { type Workspace } from "@/context/workspace"
 import { sidebarExpanded } from "./sidebar-shell-helpers"
 
 export const SidebarContent = (props: {
   mobile?: boolean
   opened: Accessor<boolean>
   aimMove: (event: MouseEvent) => void
-  projects: Accessor<LocalProject[]>
-  renderProject: (project: LocalProject) => JSX.Element
+  workspaces: Accessor<Workspace[]>
+  renderWorkspace: (workspace: Workspace) => JSX.Element
   handleDragStart: (event: unknown) => void
   handleDragEnd: () => void
   handleDragOver: (event: DragEvent) => void
-  openProjectLabel: JSX.Element
-  openProjectKeybind: Accessor<string | undefined>
-  onOpenProject: () => void
-  renderProjectOverlay: () => JSX.Element
+  addWorkspaceLabel: JSX.Element
+  addWorkspaceKeybind: Accessor<string | undefined>
+  onAddWorkspace: () => void
+  renderWorkspaceOverlay: () => JSX.Element
   settingsLabel: Accessor<string>
   settingsKeybind: Accessor<string | undefined>
   onOpenSettings: () => void
@@ -64,16 +64,16 @@ export const SidebarContent = (props: {
             <DragDropSensors />
             <ConstrainDragXAxis />
             <div class="h-full w-full flex flex-col items-center gap-3 px-3 py-3 overflow-y-auto no-scrollbar">
-              <SortableProvider ids={props.projects().map((p) => p.worktree)}>
-                <For each={props.projects()}>{(project) => props.renderProject(project)}</For>
+              <SortableProvider ids={props.workspaces().map((w) => w.id)}>
+                <For each={props.workspaces()}>{(workspace) => props.renderWorkspace(workspace)}</For>
               </SortableProvider>
               <Tooltip
                 placement={placement()}
                 value={
                   <div class="flex items-center gap-2">
-                    <span>{props.openProjectLabel}</span>
-                    <Show when={!props.mobile && !!props.openProjectKeybind()}>
-                      <span class="text-icon-base text-12-medium">{props.openProjectKeybind()}</span>
+                    <span>{props.addWorkspaceLabel}</span>
+                    <Show when={!props.mobile && !!props.addWorkspaceKeybind()}>
+                      <span class="text-icon-base text-12-medium">{props.addWorkspaceKeybind()}</span>
                     </Show>
                   </div>
                 }
@@ -82,12 +82,12 @@ export const SidebarContent = (props: {
                   icon="plus"
                   variant="ghost"
                   size="large"
-                  onClick={props.onOpenProject}
-                  aria-label={typeof props.openProjectLabel === "string" ? props.openProjectLabel : undefined}
+                  onClick={props.onAddWorkspace}
+                  aria-label={typeof props.addWorkspaceLabel === "string" ? props.addWorkspaceLabel : undefined}
                 />
               </Tooltip>
             </div>
-            <DragOverlay>{props.renderProjectOverlay()}</DragOverlay>
+            <DragOverlay>{props.renderWorkspaceOverlay()}</DragOverlay>
           </DragDropProvider>
         </div>
         <div class="shrink-0 w-full pt-3 pb-6 flex flex-col items-center gap-2">

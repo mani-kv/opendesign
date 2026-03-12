@@ -29,6 +29,7 @@ import { setSessionHandoff } from "@/pages/session/handoff"
 
 export function SessionSidePanel(props: {
   reviewPanel: () => JSX.Element
+  floatingPrompt?: () => JSX.Element
   activeDiff?: string
   focusReviewDiff: (path: string) => void
   reviewSnap: boolean
@@ -322,8 +323,17 @@ export function SessionSidePanel(props: {
                   </div>
 
                   <Show when={reviewTab()}>
-                    <Tabs.Content value="review" class="flex flex-col h-full overflow-hidden contain-strict">
-                      <Show when={activeTab() === "review"}>{props.reviewPanel()}</Show>
+                    <Tabs.Content value="review" class="relative flex flex-col h-full overflow-hidden contain-strict">
+                      <div class="relative flex-1 min-h-0 overflow-hidden pb-24">
+                        <Show when={activeTab() === "review"}>{props.reviewPanel()}</Show>
+                      </div>
+                      <Show when={props.floatingPrompt && reviewOpen()}>
+                        <div class="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex justify-center px-4 pb-4">
+                          <div class="pointer-events-auto w-full max-w-[600px]">
+                            {props.floatingPrompt?.()}
+                          </div>
+                        </div>
+                      </Show>
                     </Tabs.Content>
                   </Show>
 

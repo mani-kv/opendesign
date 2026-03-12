@@ -17,6 +17,7 @@ import { GlobalSyncProvider } from "@/context/global-sync"
 import { HighlightsProvider } from "@/context/highlights"
 import { LanguageProvider, useLanguage } from "@/context/language"
 import { LayoutProvider } from "@/context/layout"
+import { WorkspaceProvider } from "@/context/workspace"
 import { ModelsProvider } from "@/context/models"
 import { NotificationProvider } from "@/context/notification"
 import { PermissionProvider } from "@/context/permission"
@@ -32,6 +33,7 @@ import { Dynamic } from "solid-js/web"
 
 const Home = lazy(() => import("@/pages/home"))
 const Session = lazy(() => import("@/pages/session"))
+const Project = lazy(() => import("@/pages/project"))
 const Loading = () => <div class="size-full" />
 
 const HomeRoute = () => (
@@ -49,6 +51,11 @@ const SessionRoute = () => (
 )
 
 const SessionIndexRoute = () => <Navigate href="session" />
+const ProjectRoute = () => (
+  <Suspense fallback={<Loading />}>
+    <Project />
+  </Suspense>
+)
 
 function UiI18nBridge(props: ParentProps) {
   const language = useLanguage()
@@ -74,8 +81,9 @@ function AppShellProviders(props: ParentProps) {
   return (
     <SettingsProvider>
       <PermissionProvider>
-        <LayoutProvider>
-          <NotificationProvider>
+        <WorkspaceProvider>
+          <LayoutProvider>
+            <NotificationProvider>
             <ModelsProvider>
               <CommandProvider>
                 <HighlightsProvider>
@@ -83,8 +91,9 @@ function AppShellProviders(props: ParentProps) {
                 </HighlightsProvider>
               </CommandProvider>
             </ModelsProvider>
-          </NotificationProvider>
-        </LayoutProvider>
+            </NotificationProvider>
+          </LayoutProvider>
+        </WorkspaceProvider>
       </PermissionProvider>
     </SettingsProvider>
   )
@@ -157,6 +166,7 @@ export function AppInterface(props: {
               root={(routerProps) => <RouterRoot appChildren={props.children}>{routerProps.children}</RouterRoot>}
             >
               <Route path="/" component={HomeRoute} />
+              <Route path="/project/:projectId" component={ProjectRoute} />
               <Route path="/:dir" component={DirectoryLayout}>
                 <Route path="/" component={SessionIndexRoute} />
                 <Route path="/session/:id?" component={SessionRoute} />
