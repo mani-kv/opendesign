@@ -1,5 +1,6 @@
 import { Avatar } from "@opencode-ai/ui/avatar"
 import { ContextMenu } from "@opencode-ai/ui/context-menu"
+import { Tooltip } from "@opencode-ai/ui/tooltip"
 import { createSortable } from "@thisbeyond/solid-dnd"
 import { Show, type Accessor, type JSX } from "solid-js"
 import { createStore } from "solid-js/store"
@@ -36,14 +37,17 @@ const WorkspaceTile = (props: {
   overlay: Accessor<boolean>
   suppressHover: Accessor<boolean>
   onSelect: () => void
-  onMouseEnter: (event: MouseEvent) => void
-  onMouseLeave: () => void
+  onMouseEnter?: (event: MouseEvent) => void
+  onMouseLeave?: () => void
   setMenu: (value: boolean) => void
   setSuppressHover: (value: boolean) => void
   language: ReturnType<typeof useLanguage>
 }): JSX.Element => {
   const workspace = useWorkspace()
   const initial = () => props.workspace.name.slice(0, 1).toUpperCase() || "W"
+  const placement = () => (props.mobile ? "bottom" : "right")
+  const nameTitle = () =>
+    props.workspace.name.slice(0, 1).toUpperCase() + props.workspace.name.slice(1)
 
   return (
     <ContextMenu
@@ -53,27 +57,38 @@ const WorkspaceTile = (props: {
         props.setSuppressHover(value)
       }}
     >
-      <ContextMenu.Trigger
-        as="button"
-        type="button"
-        aria-label={props.workspace.name}
-        data-action="workspace-switch"
-        data-workspace={props.workspace.id}
-        classList={{
-          "flex items-center justify-center size-10 p-1 rounded-lg overflow-hidden transition-colors cursor-default": true,
-          "bg-transparent border-2 border-icon-strong-base hover:bg-surface-base-hover": props.selected(),
-          "bg-transparent border border-transparent hover:bg-surface-base-hover hover:border-border-weak-base":
-            !props.selected(),
-        }}
-        onMouseEnter={(e: MouseEvent) => props.onMouseEnter(e)}
-        onMouseLeave={() => props.onMouseLeave()}
-        onFocus={() => {
-          if (props.suppressHover()) return
-          props.onMouseEnter({} as MouseEvent)
-        }}
-        onClick={() => props.onSelect()}
-        onBlur={() => {}}
+      <Tooltip
+        placement={placement()}
+        value={
+          <div class="flex flex-col gap-0.5">
+            <span class="text-[8px] font-medium uppercase tracking-wide text-text-weak">
+              {props.language.t("sidebar.context.workspace")}
+            </span>
+            <span class="text-12-medium text-text-strong">{nameTitle()}</span>
+          </div>
+        }
       >
+        <ContextMenu.Trigger
+          as="button"
+          type="button"
+          aria-label={props.workspace.name}
+          data-action="workspace-switch"
+          data-workspace={props.workspace.id}
+          classList={{
+            "flex items-center justify-center size-10 p-1 rounded-lg overflow-hidden transition-colors cursor-default": true,
+            "bg-transparent border-2 border-icon-strong-base hover:bg-surface-base-hover": props.selected(),
+            "bg-transparent border border-transparent hover:bg-surface-base-hover hover:border-border-weak-base":
+              !props.selected(),
+          }}
+          onMouseEnter={(e: MouseEvent) => props.onMouseEnter?.(e)}
+          onMouseLeave={() => props.onMouseLeave?.()}
+          onFocus={() => {
+            if (props.suppressHover()) return
+            props.onMouseEnter?.({} as MouseEvent)
+          }}
+          onClick={() => props.onSelect()}
+          onBlur={() => {}}
+        >
         <div class="relative size-8 shrink-0 rounded overflow-clip">
           <Avatar
             fallback={initial()}
@@ -82,6 +97,7 @@ const WorkspaceTile = (props: {
           />
         </div>
       </ContextMenu.Trigger>
+      </Tooltip>
       <ContextMenu.Portal>
         <ContextMenu.Content>
           <ContextMenu.Item onSelect={() => {}}>
@@ -105,8 +121,8 @@ export const SortableWorkspaceTile = (props: {
   selected: Accessor<boolean>
   overlay: Accessor<boolean>
   onSelect: () => void
-  onMouseEnter: (event: MouseEvent) => void
-  onMouseLeave: () => void
+  onMouseEnter?: (event: MouseEvent) => void
+  onMouseLeave?: () => void
 }): JSX.Element => {
   const [state, setState] = createStore({ menu: false, suppressHover: false })
   const language = useLanguage()

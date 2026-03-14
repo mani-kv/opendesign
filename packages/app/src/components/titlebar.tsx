@@ -222,26 +222,7 @@ export function Titlebar() {
             </Button>
           </TooltipKeybind>
           <div class="hidden xl:flex items-center shrink-0">
-            <Show when={params.projectId}>
-              <TooltipKeybind
-                placement="bottom"
-                title={language.t("command.session.new")}
-                keybind={command.keybind("session.new")}
-                openDelay={2000}
-              >
-                <Button
-                  variant="ghost"
-                  icon="new-session"
-                  class="titlebar-icon w-8 h-6 p-0 box-border"
-                  onClick={() => {
-                    if (!params.projectId) return
-                    navigate(`/project/${params.projectId}/session`)
-                  }}
-                  aria-label={language.t("command.session.new")}
-                />
-              </TooltipKeybind>
-            </Show>
-            <div class="flex items-center gap-0" classList={{ "ml-1": !!params.projectId }}>
+            <div class="flex items-center gap-0">
               <Tooltip placement="bottom" value={language.t("common.goBack")} openDelay={2000}>
                 <Button
                   variant="ghost"

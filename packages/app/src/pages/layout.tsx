@@ -90,10 +90,29 @@ import {
 import { useWorkspace, type Workspace } from "@/context/workspace"
 
 export default function Layout(props: ParentProps) {
+  const layoutPageTarget = Persist.global("layout.page", ["layout.page.v2", "layout.page.v1"])
+  const layoutPageMigrate = (v: unknown) => {
+    if (typeof v !== "object" || v === null) return v
+    const x = v as Record<string, unknown>
+    const next = { ...x }
+    const cur = x.lastProjectByWorkspace
+    if (cur === undefined || cur === null) {
+      next.lastProjectByWorkspace = {}
+    } else if (typeof cur === "object") {
+      const first = Object.values(cur)[0]
+      if (first != null && typeof first === "object" && "projectId" in first) return v
+      const legacy = cur as Record<string, string>
+      next.lastProjectByWorkspace = Object.fromEntries(
+        Object.entries(legacy).map(([k, id]) => [k, { projectId: id, at: Date.now() }]),
+      )
+    }
+    return next
+  }
   const [store, setStore, , ready] = persisted(
-    Persist.global("layout.page", ["layout.page.v1"]),
+    { ...layoutPageTarget, migrate: layoutPageMigrate },
     createStore({
       lastProjectSession: {} as { [directory: string]: { directory: string; id: string; at: number } },
+      lastProjectByWorkspace: {} as Record<string, { projectId: string; at: number }>,
       activeProject: undefined as string | undefined,
       activeWorkspace: undefined as string | undefined,
       activeWorkspaceId: undefined as string | undefined,
@@ -197,18 +216,23 @@ export default function Layout(props: ParentProps) {
     if (pid) setStore("activeProjectId", pid)
   })
 
+  const MS_24H = 24 * 60 * 60 * 1000
   createEffect(() => {
     if (!pageReady() || !workspace.ready()) return
-    if (params.projectId) return
     const wsId = store.activeWorkspaceId ?? workspaceList()[0]?.id
     if (!wsId) return
     const list = workspace.projects.list(wsId)
-    const first = list()[0]
-    if (!first) return
-    setStore("activeProjectId", first.id)
-    const path = first.sessionId
-      ? `/project/${first.id}/session/${first.sessionId}`
-      : `/project/${first.id}/session`
+    const projects = list()
+    if (projects.length === 0) return
+    const currentPid = params.projectId ?? store.activeProjectId
+    const valid = currentPid && projects.some((p) => p.id === currentPid)
+    if (valid) return
+    const last = store.lastProjectByWorkspace[wsId]
+    const within24h = last && Date.now() - last.at < MS_24H
+    const proj = (within24h && projects.find((p) => p.id === last.projectId)) ?? projects[0]
+    if (!proj) return
+    setStore("activeProjectId", proj.id)
+    const path = proj.sessionId ? `/project/${proj.id}/session/${proj.sessionId}` : `/project/${proj.id}/session`
     navigateWithSidebarReset(path)
   })
 
@@ -229,6 +253,7 @@ export default function Layout(props: ParentProps) {
   const navLeave = { current: undefined as number | undefined }
   const [sortNow, setSortNow] = createSignal(Date.now())
   const [sizing, setSizing] = createSignal(false)
+  const [contextBarExpanded, setContextBarExpanded] = createSignal(false)
   let sizet: number | undefined
   let sortNowInterval: ReturnType<typeof setInterval> | undefined
   const sortNowTimeout = setTimeout(
@@ -255,7 +280,6 @@ export default function Layout(props: ParentProps) {
     clearTimeout(sortNowTimeout)
     if (sortNowInterval) clearInterval(sortNowInterval)
     if (sizet !== undefined) clearTimeout(sizet)
-    if (peekt !== undefined) clearTimeout(peekt)
     aim.reset()
   })
 
@@ -271,8 +295,8 @@ export default function Layout(props: ParentProps) {
     })
   })
 
-  const sidebarHovering = createMemo(() => !layout.sidebar.opened() && state.hoverProject !== undefined)
-  const sidebarExpanded = createMemo(() => layout.sidebar.opened() || sidebarHovering())
+  const sidebarHovering = createMemo(() => false)
+  const sidebarExpanded = createMemo(() => layout.sidebar.opened())
   const setHoverProject = (value: string | undefined) => {
     setState("hoverProject", value)
     if (value !== undefined) return
@@ -297,42 +321,6 @@ export default function Layout(props: ParentProps) {
       setState("hoverSession", undefined)
     }, 300)
   }
-
-  const [peek, setPeek] = createSignal<Workspace | undefined>(undefined)
-  const [peeked, setPeeked] = createSignal(false)
-  let peekt: number | undefined
-
-  const hoverWorkspaceData = createMemo(() => {
-    const id = state.hoverProject
-    if (!id) return
-    return workspace.workspaces.get(id)
-  })
-
-  createEffect(() => {
-    const w = hoverWorkspaceData()
-    if (w) {
-      if (peekt !== undefined) {
-        clearTimeout(peekt)
-        peekt = undefined
-      }
-      setPeek(w)
-      setPeeked(true)
-      return
-    }
-
-    setPeeked(false)
-    if (peek() === undefined) return
-    if (peekt !== undefined) clearTimeout(peekt)
-    peekt = window.setTimeout(() => {
-      peekt = undefined
-      setPeek(undefined)
-    }, 180)
-  })
-
-  createEffect(() => {
-    if (!layout.sidebar.opened()) return
-    setHoverProject(undefined)
-  })
 
   const autoselecting = createMemo(() => {
     if (params.projectId) return false
@@ -625,6 +613,17 @@ export default function Layout(props: ParentProps) {
     if (!root) return
 
     return projects.find((p) => p.worktree === root)
+  })
+
+  const contextBarProjectName = createMemo(() => {
+    const fromRoute = currentProject()
+    if (fromRoute) return displayName(fromRoute)
+    const pid = store.activeProjectId
+    if (!pid) return
+    const ws = selectedWorkspace()
+    if (!ws) return
+    const proj = workspace.projects.list(ws.id)().find((p) => p.id === pid)
+    return proj?.name
   })
 
   createEffect(
@@ -1842,12 +1841,7 @@ export default function Layout(props: ParentProps) {
     return [...ordered, extra]
   }
 
-  const sidebarProject = createMemo(() => {
-    if (layout.sidebar.opened()) return currentProject()
-    const hovered = hoverWorkspaceData()
-    if (hovered) return undefined
-    return currentProject()
-  })
+  const sidebarProject = createMemo(() => currentProject())
 
   function handleWorkspaceDragStart(event: unknown) {
     const id = getDraggableId(event)
@@ -1994,7 +1988,12 @@ export default function Layout(props: ParentProps) {
     dialog.show(() => (
       <DialogAddProject
         workspaceId={wid}
-        onAdded={(id) => setStore("activeProjectId", id)}
+        onAdded={(id) => {
+          setStore("activeProjectId", id)
+          setStore("lastProjectByWorkspace", wid, { projectId: id, at: Date.now() })
+          const proj = workspace.projects.get(id)
+          if (proj) navigateWithSidebarReset(sessionHref(projectDir(proj), proj.sessionId))
+        }}
       />
     ))
   }
@@ -2026,7 +2025,10 @@ export default function Layout(props: ParentProps) {
       >
         <div class="shrink-0 px-2 py-1">
           <div class="group/workspace flex items-start justify-between gap-2 p-2 pr-1">
-            <div class="flex flex-col min-w-0 flex-1">
+            <div class="flex flex-col min-w-0 flex-1 h-fit gap-0">
+              <span class="mb-0.5 shrink-0 text-[10px] font-medium text-text-weak uppercase tracking-wide">
+                {language.t("sidebar.context.workspace")}
+              </span>
               <InlineEditor
                 id={`workspace:${ws.id}`}
                 value={() => ws.name}
@@ -2072,21 +2074,26 @@ export default function Layout(props: ParentProps) {
         </div>
 
         <div class="flex-1 min-h-0 flex flex-col">
-          <div class="shrink-0 py-4 px-3">
-            <Button
-              size="large"
-              icon="plus-small"
-              class="w-full"
-              onClick={() => addProject(ws.id)}
-            >
-              {language.t("command.project.add")}
-            </Button>
+          <div class="shrink-0 py-4 px-3 border-t border-border-weaker-base">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-[14px] font-medium text-white capitalize tracking-wide">
+                {language.t("sidebar.context.projects")}
+              </span>
+              <Button
+                size="small"
+                variant="secondary"
+                icon="plus-small"
+                onClick={() => addProject(ws.id)}
+              >
+                {language.t("command.project.add")}
+              </Button>
+            </div>
           </div>
           <div
             ref={(el) => {
               if (!panelProps.mobile) scrollContainerRef = el
             }}
-            class="size-full flex flex-col py-2 gap-1 overflow-y-auto no-scrollbar [overflow-anchor:none]"
+            class="size-full flex flex-col py-2 px-3 gap-1 overflow-y-auto no-scrollbar [overflow-anchor:none]"
           >
             <For each={projects()}>
               {(proj) => (
@@ -2099,6 +2106,7 @@ export default function Layout(props: ParentProps) {
                   }}
                   onClick={() => {
                     setStore("activeProjectId", proj.id)
+                    setStore("lastProjectByWorkspace", ws.id, { projectId: proj.id, at: Date.now() })
                     const path = sessionHref(projectDir(proj), proj.sessionId)
                     navigateWithSidebarReset(path)
                   }}
@@ -2165,8 +2173,6 @@ export default function Layout(props: ParentProps) {
               }}
               onMouseLeave={() => {
                 aim.reset()
-                if (!sidebarHovering()) return
-
                 arm()
               }}
             >
@@ -2180,12 +2186,7 @@ export default function Layout(props: ParentProps) {
                       workspace={w}
                       selected={() => store.activeWorkspaceId === w.id}
                       overlay={() => !layout.sidebar.opened()}
-                      onSelect={() => {
-                        setStore("activeWorkspaceId", w.id)
-                        layout.sidebar.open()
-                      }}
-                      onMouseEnter={() => setState("hoverProject", w.id)}
-                      onMouseLeave={() => setState("hoverProject", undefined)}
+                      onSelect={() => setStore("activeWorkspaceId", w.id)}
                     />
                   )}
                   handleDragStart={handleWorkspaceRailDragStart}
@@ -2252,13 +2253,15 @@ export default function Layout(props: ParentProps) {
                 aria-label={language.t("sidebar.nav.projectsAndSessions")}
                 data-component="sidebar-nav-mobile"
                 classList={{
-                  "@container fixed top-10 bottom-0 left-0 z-50 w-full max-w-[400px] overflow-hidden border-r border-border-weaker-base bg-background-base transition-transform duration-200 ease-out": true,
+                  "fixed top-10 bottom-0 left-0 z-50 overflow-hidden border-r border-border-weaker-base bg-background-base transition-transform duration-200 ease-out": true,
+                  "w-[min(100%,400px)]": true,
                   "translate-x-0": layout.mobileSidebar.opened(),
                   "-translate-x-full": !layout.mobileSidebar.opened(),
                 }}
                 onClick={(e) => e.stopPropagation()}
               >
-                <SidebarContent
+                <div class="@container w-full h-full contain-strict min-w-0">
+                  <SidebarContent
                   mobile
                   opened={() => layout.sidebar.opened()}
                   aimMove={aim.move}
@@ -2269,12 +2272,7 @@ export default function Layout(props: ParentProps) {
                       mobile
                       selected={() => store.activeWorkspaceId === w.id}
                       overlay={() => !layout.sidebar.opened()}
-                      onSelect={() => {
-                        setStore("activeWorkspaceId", w.id)
-                        layout.sidebar.open()
-                      }}
-                      onMouseEnter={() => setState("hoverProject", w.id)}
-                      onMouseLeave={() => setState("hoverProject", undefined)}
+                      onSelect={() => setStore("activeWorkspaceId", w.id)}
                     />
                   )}
                   handleDragStart={handleWorkspaceRailDragStart}
@@ -2300,12 +2298,13 @@ export default function Layout(props: ParentProps) {
                     </Show>
                   )}
                 />
+                </div>
               </nav>
             </div>
 
             <div
               classList={{
-                "absolute inset-0": true,
+                "absolute inset-0 flex flex-col": true,
                 "xl:inset-y-0 xl:right-0 xl:left-[var(--main-left)]": true,
                 "z-20": true,
                 "transition-[left] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-[left] motion-reduce:transition-none":
@@ -2315,9 +2314,52 @@ export default function Layout(props: ParentProps) {
                 "--main-left": layout.sidebar.opened() ? `${Math.max(layout.sidebar.width(), 244)}px` : "4rem",
               }}
             >
+              <div
+                classList={{
+                  "hidden xl:block shrink-0 overflow-hidden transition-[height,max-height] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none xl:rounded-tl-[12px]":
+                    true,
+                  "h-9 max-h-9": !layout.sidebar.opened() && !contextBarExpanded(),
+                  "h-[56px] max-h-[56px]": !layout.sidebar.opened() && contextBarExpanded(),
+                  "h-0 max-h-0": layout.sidebar.opened(),
+                }}
+              >
+                <div
+                  classList={{
+                    "flex min-h-9 h-9 min-w-0 w-fit flex-col items-start justify-center gap-0.5 overflow-hidden px-4 py-1.5 transition-[height] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none border-t border-border-weak-base bg-background-base xl:border-l xl:rounded-tl-[12px]":
+                      true,
+                    "h-[56px] justify-start": contextBarExpanded(),
+                  }}
+                  onMouseEnter={() => setContextBarExpanded(true)}
+                  onMouseLeave={() => setContextBarExpanded(false)}
+                >
+                  <div
+                    classList={{
+                      "flex min-h-0 shrink-0 items-center overflow-hidden transition-[max-height] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none":
+                        true,
+                      "max-h-0": !contextBarExpanded(),
+                      "max-h-4": contextBarExpanded(),
+                    }}
+                  >
+                    <span class="text-[10px] font-medium uppercase tracking-wide text-text-weak">
+                      {language.t("sidebar.context.workspace")} &gt; {language.t("sidebar.context.project")}
+                    </span>
+                  </div>
+                  <div class="flex min-w-0 w-fit items-center gap-1.5 overflow-hidden">
+                    <span class="truncate text-14-medium text-text-weak">{selectedWorkspace()?.name ?? "—"}</span>
+                    <Show when={contextBarProjectName()}>
+                      {(name) => (
+                        <>
+                          <span class="shrink-0 text-14-medium text-text-weak">&gt;</span>
+                          <span class="truncate text-14-medium text-text-strong">{name()}</span>
+                        </>
+                      )}
+                    </Show>
+                  </div>
+                </div>
+              </div>
               <main
                 classList={{
-                  "size-full overflow-x-hidden flex flex-col items-start contain-strict border-t border-border-weak-base bg-background-base xl:border-l xl:rounded-tl-[12px]": true,
+                  "flex-1 min-h-0 overflow-x-hidden flex flex-col items-start contain-strict border-t border-border-weak-base bg-background-base xl:border-l xl:rounded-tl-[12px]": true,
                 }}
               >
                 <Show when={!autoselecting()} fallback={<div class="size-full" />}>
@@ -2354,44 +2396,6 @@ export default function Layout(props: ParentProps) {
                   </Show>
                 </Show>
               </main>
-            </div>
-
-            <div
-              classList={{
-                "hidden xl:flex absolute inset-y-0 left-16 z-30": true,
-                "opacity-100 translate-x-0 pointer-events-auto": peeked() && !layout.sidebar.opened(),
-                "opacity-0 -translate-x-2 pointer-events-none": !peeked() || layout.sidebar.opened(),
-                "transition-[opacity,transform] motion-reduce:transition-none": true,
-                "duration-180 ease-out": peeked() && !layout.sidebar.opened(),
-                "duration-120 ease-in": !peeked() || layout.sidebar.opened(),
-              }}
-              onMouseMove={disarm}
-              onMouseEnter={() => {
-                disarm()
-                aim.reset()
-              }}
-              onPointerDown={disarm}
-              onMouseLeave={() => {
-                arm()
-              }}
-            >
-              <Show when={peek()} keyed>
-                {(w) => <SidebarPanel workspace={w} merged={false} />}
-              </Show>
-            </div>
-
-            <div
-              classList={{
-                "hidden xl:block pointer-events-none absolute inset-y-0 right-0 z-25 overflow-hidden": true,
-                "opacity-100 translate-x-0": peeked() && !layout.sidebar.opened(),
-                "opacity-0 -translate-x-2": !peeked() || layout.sidebar.opened(),
-                "transition-[opacity,transform] motion-reduce:transition-none": true,
-                "duration-180 ease-out": peeked() && !layout.sidebar.opened(),
-                "duration-120 ease-in": !peeked() || layout.sidebar.opened(),
-              }}
-              style={{ left: `calc(4rem + ${Math.max(Math.max(layout.sidebar.width(), 244) - 64, 0)}px)` }}
-            >
-              <div class="h-full w-px" style={{ "box-shadow": "var(--shadow-sidebar-overlay)" }} />
             </div>
           </div>
         </div>

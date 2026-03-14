@@ -581,7 +581,7 @@ export const SessionRoutes = lazy(() =>
           return c.json(messages)
         } catch (e) {
           if (e instanceof z.ZodError) {
-            return c.json({ success: false, data: null, errors: e.errors }, 400)
+            return c.json({ success: false, data: null, errors: e.issues }, 400)
           }
           throw e
         }
@@ -627,7 +627,7 @@ export const SessionRoutes = lazy(() =>
           return c.json(message)
         } catch (e) {
           if (e instanceof z.ZodError) {
-            return c.json({ success: false, data: null, errors: e.errors }, 400)
+            return c.json({ success: false, data: null, errors: e.issues }, 400)
           }
           throw e
         }
