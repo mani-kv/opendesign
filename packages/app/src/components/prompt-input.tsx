@@ -391,6 +391,8 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
   }
 
   const isFocused = createFocusSignal(() => editorRef)
+  const [trayExpanded, setTrayExpanded] = createSignal(false)
+  let promptContainerRef: HTMLDivElement | undefined
   const escBlur = () => platform.platform === "desktop" && platform.os === "macos"
 
   const pick = () => fileInputRef?.click()
@@ -1127,7 +1129,15 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
   }
 
   return (
-    <div class="relative size-full _max-h-[320px] flex flex-col gap-0">
+    <div
+      ref={(el) => (promptContainerRef = el)}
+      class="relative size-full _max-h-[320px] flex flex-col gap-0"
+      onFocusIn={() => setTrayExpanded(true)}
+      onFocusOut={(e) => {
+        const next = e.relatedTarget as Node | null
+        if (!next || !promptContainerRef?.contains(next)) setTrayExpanded(false)
+      }}
+    >
       <PromptPopover
         popover={store.popover}
         setSlashPopoverRef={(el) => (slashPopoverRef = el)}
@@ -1296,12 +1306,17 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
               >
                 <IconButton
                   data-action="prompt-submit"
+                  data-active={prompt.dirty() || working() || commentCount() > 0 ? "" : undefined}
                   type="submit"
                   disabled={store.mode !== "normal" || (!prompt.dirty() && !working() && commentCount() === 0)}
                   tabIndex={store.mode === "normal" ? undefined : -1}
                   icon={working() ? "stop" : "arrow-up"}
-                  variant="primary"
-                  class="size-8"
+                  variant={prompt.dirty() || working() || commentCount() > 0 ? "primary" : "secondary"}
+                  class="size-8 rounded-full"
+                  classList={{
+                    "!bg-[#575cff] text-white":
+                      prompt.dirty() || working() || commentCount() > 0,
+                  }}
                   style={{
                     opacity: buttonsSpring(),
                     transform: `scale(${0.95 + buttonsSpring() * 0.05})`,
@@ -1357,8 +1372,12 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
         </div>
       </DockShellForm>
       <Show when={store.mode === "normal" || store.mode === "shell"}>
-        <DockTray attach="top">
-          <div class="px-1.75 pt-5.5 pb-2 flex items-center gap-2 min-w-0">
+        <div
+          class="-mt-3.5 overflow-hidden transition-[max-height] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]"
+          style={{ "max-height": trayExpanded() ? "calc(80px + 0.875rem)" : "0px" }}
+        >
+          <DockTray attach="top">
+          <div class="pt-10 pb-3 px-3 flex items-center gap-2 min-w-0">
             <div class="flex items-center gap-1.5 min-w-0 flex-1 relative">
               <div
                 class="h-7 flex items-center gap-1.5 max-w-[160px] min-w-0 absolute inset-y-0 left-0"
@@ -1528,6 +1547,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
             </div>
           </div>
         </DockTray>
+        </div>
       </Show>
     </div>
   )

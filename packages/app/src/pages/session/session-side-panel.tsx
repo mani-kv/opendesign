@@ -6,6 +6,7 @@ import { useProjectParams } from "@/context/project-scope"
 import { Tabs } from "@opencode-ai/ui/tabs"
 import { IconButton } from "@opencode-ai/ui/icon-button"
 import { TooltipKeybind } from "@opencode-ai/ui/tooltip"
+import { Icon } from "@opencode-ai/ui/icon"
 import { ResizeHandle } from "@opencode-ai/ui/resize-handle"
 import { Mark } from "@opencode-ai/ui/logo"
 import { DragDropProvider, DragDropSensors, DragOverlay, SortableProvider, closestCenter } from "@thisbeyond/solid-dnd"
@@ -57,7 +58,119 @@ function FigmaWebviewHost(props: { active: boolean }) {
   )
 }
 
+function FloatingPromptDock(props: {
+  boundaryRef?: () => HTMLElement | undefined
+  children: JSX.Element
+}) {
+  const language = useLanguage()
+  const [pos, setPos] = createSignal<{ x: number; y: number } | null>(null)
+  const [dragging, setDragging] = createSignal(false)
+  const [container, setContainer] = createSignal<HTMLDivElement | undefined>(undefined)
+  const [prompt, setPrompt] = createSignal<HTMLDivElement | undefined>(undefined)
+  const [start, setStart] = createSignal<{ clientX: number; clientY: number; elLeft: number; elTop: number } | undefined>(
+    undefined
+  )
+
+  const clamp = (val: number, min: number, max: number) => Math.max(min, Math.min(max, val))
+
+  const getBoundary = () => props.boundaryRef?.() ?? container()
+
+  const onHandleDown = (e: MouseEvent) => {
+    e.preventDefault()
+    const el = prompt()
+    const cont = getBoundary()
+    if (!el || !cont) return
+    const rect = el.getBoundingClientRect()
+    const contRect = cont.getBoundingClientRect()
+    setStart({
+      clientX: e.clientX,
+      clientY: e.clientY,
+      elLeft: rect.left - contRect.left,
+      elTop: rect.top - contRect.top,
+    })
+    setDragging(true)
+  }
+
+  createEffect(() => {
+    if (!dragging()) return
+    const move = (e: MouseEvent) => {
+      e.preventDefault()
+      const s = start()
+      const cont = getBoundary()
+      const el = prompt()
+      if (!s || !cont || !el) return
+      const contRect = cont.getBoundingClientRect()
+      const elRect = el.getBoundingClientRect()
+      const dx = e.clientX - s.clientX
+      const dy = e.clientY - s.clientY
+      let x = s.elLeft + dx
+      let y = s.elTop + dy
+      x = clamp(x, 16, contRect.width - elRect.width - 16)
+      y = clamp(y, 16, contRect.height - elRect.height - 16)
+      setPos({ x, y })
+    }
+    const up = () => {
+      setDragging(false)
+      setStart(undefined)
+    }
+    document.addEventListener("mousemove", move)
+    document.addEventListener("mouseup", up, { once: true })
+    onCleanup(() => {
+      document.removeEventListener("mousemove", move)
+    })
+  })
+
+  const content = (
+    <div
+      ref={setContainer}
+      class="pointer-events-none absolute inset-0 z-20"
+      classList={{ "cursor-grabbing": dragging() }}
+    >
+      <div
+        ref={setPrompt}
+        class="pointer-events-auto w-full max-w-[600px] h-fit px-2 pb-5 shadow-[0px_4px_12px_0px_rgba(0,0,0,0.15)] rounded-lg overflow-hidden flex flex-col group"
+        style={
+          pos()
+            ? { position: "absolute" as const, left: `${pos()!.x}px`, top: `${pos()!.y}px` }
+            : {
+                position: "absolute" as const,
+                left: "50%",
+                bottom: "1rem",
+                transform: "translateX(-50%)",
+              }
+        }
+      >
+        <div
+          role="button"
+          tabIndex={0}
+          aria-label={language.t("prompt.dock.dragLabel")}
+          class="flex items-center justify-center px-0 py-1.5 cursor-grab active:cursor-grabbing touch-none select-none text-text-weak hover:text-text-base transition-opacity duration-150"
+          classList={{
+            "opacity-0 group-hover:opacity-100": !dragging(),
+            "opacity-100 cursor-grabbing": dragging(),
+          }}
+          onMouseDown={onHandleDown}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") e.preventDefault()
+          }}
+        >
+          <Icon name="grip-vertical" size="small" class="size-4" />
+          
+        </div>
+        <div class="flex-1">{props.children}</div>
+      </div>
+    </div>
+  )
+
+  const boundary = props.boundaryRef?.()
+  if (boundary) {
+    return <Portal mount={boundary}>{content}</Portal>
+  }
+  return content
+}
+
 export function SessionSidePanel(props: {
+  floatingDockBoundary?: () => HTMLElement | undefined
   reviewPanel: () => JSX.Element
   floatingPrompt?: () => JSX.Element
   activeDiff?: string
@@ -365,13 +478,6 @@ export function SessionSidePanel(props: {
                       <div class="relative flex-1 min-h-0 overflow-hidden pb-24">
                         <Show when={activeTab() === "canvas"}>{props.reviewPanel()}</Show>
                       </div>
-                      <Show when={props.floatingPrompt && reviewOpen()}>
-                        <div class="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex justify-center px-4 pb-4">
-                          <div class="pointer-events-auto w-full max-w-[600px]">
-                            {props.floatingPrompt?.()}
-                          </div>
-                        </div>
-                      </Show>
                     </Tabs.Content>
                   </Show>
 
@@ -426,6 +532,11 @@ export function SessionSidePanel(props: {
               {/* Persistent webview host outside Tabs — avoids display:none which GCs Electron webviews */}
               <Show when={figmaTab()}>
                 <FigmaWebviewHost active={activeTab() === "figma"} />
+              </Show>
+              <Show when={props.floatingPrompt && reviewOpen()}>
+                <FloatingPromptDock boundaryRef={props.floatingDockBoundary}>
+                  {props.floatingPrompt?.()}
+                </FloatingPromptDock>
               </Show>
             </div>
           </div>

@@ -21,6 +21,7 @@ export function ProjectShell(props: Props) {
   return (
     <ActiveContext.Provider value={active}>
     <div
+      class="bg-background-base"
       aria-hidden={!props.active}
       inert={props.active ? undefined : true}
       style={{

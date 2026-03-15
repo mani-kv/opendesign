@@ -11,6 +11,7 @@ import {
   on,
   onMount,
   untrack,
+  createSignal,
 } from "solid-js"
 import { createMediaQuery } from "@solid-primitives/media"
 import { useLocal } from "@/context/local"
@@ -855,10 +856,15 @@ export default function Page() {
     if (reviewFrame !== undefined) cancelAnimationFrame(reviewFrame)
   })
 
+  const [workspaceRef, setWorkspaceRef] = createSignal<HTMLDivElement | undefined>(undefined)
+
   return (
     <div class="relative bg-background-base size-full overflow-hidden flex flex-col">
       <SessionHeader />
-      <div class="flex-1 min-h-0 flex flex-col md:flex-row">
+      <div
+        ref={setWorkspaceRef}
+        class="relative flex-1 min-h-0 flex flex-col md:flex-row"
+      >
         <SessionMobileTabs
           open={!isDesktop() && !!scope.sessionId()}
           mobileTab={store.mobileTab}
@@ -917,6 +923,9 @@ export default function Page() {
         </div>
 
         <SessionSidePanel
+          floatingDockBoundary={() =>
+            (workspaceRef()?.closest("main") ?? workspaceRef()) as HTMLElement | undefined
+          }
           reviewPanel={reviewPanel}
           floatingPrompt={() => (
             <SessionComposerRegion
