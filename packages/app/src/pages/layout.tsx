@@ -263,6 +263,7 @@ export default function Layout(props: ParentProps) {
   }
   const isBusy = (directory: string) => !!state.busyWorkspaces[workspaceKey(directory)]
   const navLeave = { current: undefined as number | undefined }
+  const contextBarExpandTimeout = { current: undefined as number | undefined }
   const [sortNow, setSortNow] = createSignal(Date.now())
   const [sizing, setSizing] = createSignal(false)
   const [contextBarExpanded, setContextBarExpanded] = createSignal(false)
@@ -290,6 +291,7 @@ export default function Layout(props: ParentProps) {
 
   onCleanup(() => {
     if (navLeave.current !== undefined) clearTimeout(navLeave.current)
+    if (contextBarExpandTimeout.current !== undefined) clearTimeout(contextBarExpandTimeout.current)
     clearTimeout(sortNowTimeout)
     if (sortNowInterval) clearInterval(sortNowInterval)
     if (sizet !== undefined) clearTimeout(sizet)
@@ -2443,8 +2445,20 @@ export default function Layout(props: ParentProps) {
                   onClick={() =>
                     (window.matchMedia("(min-width: 1280px)").matches ? layout.sidebar : layout.mobileSidebar).toggle()
                   }
-                  onMouseEnter={() => setContextBarExpanded(true)}
-                  onMouseLeave={() => setContextBarExpanded(false)}
+                  onMouseEnter={() => {
+                    if (contextBarExpandTimeout.current !== undefined) clearTimeout(contextBarExpandTimeout.current)
+                    contextBarExpandTimeout.current = window.setTimeout(() => {
+                      contextBarExpandTimeout.current = undefined
+                      setContextBarExpanded(true)
+                    }, 800)
+                  }}
+                  onMouseLeave={() => {
+                    if (contextBarExpandTimeout.current !== undefined) {
+                      clearTimeout(contextBarExpandTimeout.current)
+                      contextBarExpandTimeout.current = undefined
+                    }
+                    setContextBarExpanded(false)
+                  }}
                 >
                   <div
                     classList={{
@@ -2455,7 +2469,7 @@ export default function Layout(props: ParentProps) {
                     }}
                   >
                     <span class="text-[10px] font-medium uppercase tracking-wide text-text-weak">
-                      {language.t("sidebar.context.workspace")} &gt; {language.t("sidebar.context.project")}
+                      {language.t("sidebar.context.workspace")} / {language.t("sidebar.context.project")}
                     </span>
                   </div>
                   <div class="flex min-w-0 w-fit items-center gap-1.5 overflow-hidden">
@@ -2463,7 +2477,7 @@ export default function Layout(props: ParentProps) {
                     <Show when={contextBarProjectName()}>
                       {(name) => (
                         <>
-                          <span class="shrink-0 text-14-medium text-text-weak">&gt;</span>
+                          <span class="shrink-0 text-14-medium text-text-weak">/</span>
                           <span class="truncate text-14-medium text-text-strong">{name()}</span>
                         </>
                       )}

@@ -133,4 +133,5 @@ const table = sqliteTable("session", {
 
 ## Learned Workspace Facts
 
+- Use forward slash (/) not greater-than (>) for workspace/project hierarchy separators in breadcrumbs.
 

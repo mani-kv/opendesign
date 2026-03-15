@@ -9,7 +9,6 @@ import { Spinner } from "@opencode-ai/ui/spinner"
 import { TextField } from "@opencode-ai/ui/text-field"
 import { showToast } from "@opencode-ai/ui/toast"
 import { Tooltip, TooltipKeybind } from "@opencode-ai/ui/tooltip"
-import { getFilename } from "@opencode-ai/util/path"
 import { useProjectParams } from "@/context/project-scope"
 import { useProjectActive } from "@/components/project-shell"
 import { createEffect, createMemo, For, onCleanup, Show } from "solid-js"
@@ -237,18 +236,6 @@ export function SessionHeader() {
 
   const sdk = useSDK()
   const projectDirectory = createMemo(() => sdk.directory)
-  const project = createMemo(() => {
-    const directory = projectDirectory()
-    if (!directory) return
-    return layout.projects.list().find((p) => p.worktree === directory || p.sandboxes?.includes(directory))
-  })
-  const name = createMemo(() => {
-    const current = project()
-    const raw = current ? current.name || getFilename(current.worktree) : getFilename(projectDirectory())
-    return !raw || raw.includes("\uFFFD") ? "files" : raw
-  })
-  const hotkey = createMemo(() => command.keybind("file.open"))
-
   const currentSession = createMemo(() => (params.id ? sync.session.get(params.id) : undefined))
   const shareEnabled = createMemo(() => sync.data.config.share !== "disabled")
   const showShare = createMemo(() => shareEnabled() && !!params.id)
@@ -380,29 +367,9 @@ export function SessionHeader() {
       <Show when={active() && centerMount()}>
         {(mount) => (
           <Portal mount={mount()}>
-            <Button
-              type="button"
-              variant="ghost"
-              size="small"
-              class="hidden md:flex w-[240px] max-w-full min-w-0 pl-0.5 pr-2 items-center gap-2 justify-between rounded-md border border-border-weak-base bg-surface-panel shadow-none cursor-default"
-              onClick={() => command.trigger("file.open")}
-              aria-label={language.t("session.header.searchFiles")}
-            >
-              <div class="flex min-w-0 flex-1 items-center gap-1.5 overflow-visible">
-                <Icon name="magnifying-glass" size="small" class="icon-base shrink-0 size-4" />
-                <span class="flex-1 min-w-0 text-12-regular text-text-weak truncate text-left">
-                  {language.t("session.header.search.placeholder", {
-                    project: name(),
-                  })}
-                </span>
-              </div>
-
-              <Show when={hotkey()}>
-                {(keybind) => (
-                  <Keybind class="shrink-0 !border-0 !bg-transparent !shadow-none px-0">{keybind()}</Keybind>
-                )}
-              </Show>
-            </Button>
+            <div class="hidden md:flex items-center justify-center min-w-0">
+              <span class="text-14-medium text-text-weak">OpenDesign</span>
+            </div>
           </Portal>
         )}
       </Show>
