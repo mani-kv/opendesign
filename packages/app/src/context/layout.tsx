@@ -197,8 +197,10 @@ export const { use: useLayout, provider: LayoutProvider } = createSimpleContext(
 
       const agents = value.agents
       const migratedAgents = (() => {
-        if (isRecord(agents) && typeof agents.width === "number") return agents
-        return { width: AGENTS_PANEL_WIDTH }
+        if (!isRecord(agents)) return { width: AGENTS_PANEL_WIDTH, opened: true }
+        const width = typeof agents.width === "number" ? agents.width : AGENTS_PANEL_WIDTH
+        const opened = typeof agents.opened === "boolean" ? agents.opened : true
+        return { width, opened }
       })()
 
       const sessionTabs = value.sessionTabs
@@ -234,12 +236,25 @@ export const { use: useLayout, provider: LayoutProvider } = createSimpleContext(
         return next
       })()
 
+      const canvasPanel = value.canvasPanel
+      const migratedCanvasPanel = (() => {
+        if (isRecord(canvasPanel) && typeof canvasPanel.layout === "string" && isRecord(canvasPanel.panes)) {
+          return canvasPanel
+        }
+        return {
+          layout: "tabs" as const,
+          panes: { canvas: true, figma: true },
+          splitRatio: 0.5,
+        }
+      })()
+
       if (
         migratedSidebar === sidebar &&
         migratedReview === review &&
         migratedFileTree === fileTree &&
         migratedSessionTabs === sessionTabs &&
-        migratedAgents === agents
+        migratedAgents === agents &&
+        migratedCanvasPanel === canvasPanel
       ) {
         return value
       }
@@ -251,10 +266,11 @@ export const { use: useLayout, provider: LayoutProvider } = createSimpleContext(
         fileTree: migratedFileTree,
         sessionTabs: migratedSessionTabs,
         agents: migratedAgents,
+        canvasPanel: migratedCanvasPanel,
       }
     }
 
-    const target = Persist.global("layout", ["layout.v7"])
+    const target = Persist.global("layout", ["layout.v8"])
     const [store, setStore, _, ready] = persisted(
       { ...target, migrate },
       createStore({
@@ -282,6 +298,7 @@ export const { use: useLayout, provider: LayoutProvider } = createSimpleContext(
         },
         agents: {
           width: AGENTS_PANEL_WIDTH,
+          opened: true,
         },
         mobileSidebar: {
           opened: false,
@@ -290,6 +307,11 @@ export const { use: useLayout, provider: LayoutProvider } = createSimpleContext(
         sessionView: {} as Record<string, SessionView>,
         handoff: {
           tabs: undefined as TabHandoff | undefined,
+        },
+        canvasPanel: {
+          layout: "tabs" as "tabs" | "split",
+          panes: { canvas: true, figma: true },
+          splitRatio: 0.5,
         },
       }),
     )
@@ -739,7 +761,30 @@ export const { use: useLayout, provider: LayoutProvider } = createSimpleContext(
         },
       },
       agents: {
+        opened: createMemo(() => store.agents?.opened ?? true),
         width: createMemo(() => store.agents?.width ?? AGENTS_PANEL_WIDTH),
+        open() {
+          if (!store.agents) {
+            setStore("agents", { width: AGENTS_PANEL_WIDTH, opened: true })
+            return
+          }
+          setStore("agents", "opened", true)
+        },
+        close() {
+          if (!store.agents) {
+            setStore("agents", { width: AGENTS_PANEL_WIDTH, opened: false })
+            return
+          }
+          setStore("agents", "opened", false)
+        },
+        toggle() {
+          const next = !(store.agents?.opened ?? true)
+          if (!store.agents) {
+            setStore("agents", { width: AGENTS_PANEL_WIDTH, opened: next })
+            return
+          }
+          setStore("agents", "opened", next)
+        },
         resize(width: number) {
           if (!store.agents) {
             setStore("agents", { width })
@@ -756,6 +801,38 @@ export const { use: useLayout, provider: LayoutProvider } = createSimpleContext(
             return
           }
           setStore("session", "width", width)
+        },
+      },
+      canvasPanel: {
+        layout: createMemo(() => (store.canvasPanel?.layout ?? "tabs") as "tabs" | "split"),
+        panes: createMemo(() => store.canvasPanel?.panes ?? { canvas: true, figma: true }),
+        splitRatio: createMemo(() => store.canvasPanel?.splitRatio ?? 0.5),
+        toggleLayout() {
+          const next = (store.canvasPanel?.layout ?? "tabs") === "tabs" ? "split" : "tabs"
+          if (!store.canvasPanel) {
+            setStore("canvasPanel", {
+              layout: next,
+              panes: { canvas: true, figma: true },
+              splitRatio: 0.5,
+            })
+            return
+          }
+          setStore("canvasPanel", "layout", next)
+        },
+        setPane(pane: "canvas" | "figma", open: boolean) {
+          if (!store.canvasPanel) {
+            setStore("canvasPanel", {
+              layout: "tabs",
+              panes: { canvas: true, figma: true, [pane]: open },
+              splitRatio: 0.5,
+            })
+            return
+          }
+          setStore("canvasPanel", "panes", pane, open)
+        },
+        setSplitRatio(ratio: number) {
+          if (!store.canvasPanel) return
+          setStore("canvasPanel", "splitRatio", Math.max(0.2, Math.min(0.8, ratio)))
         },
       },
       mobileSidebar: {

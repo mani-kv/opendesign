@@ -17,7 +17,7 @@
   &[data-direction="horizontal"] {
     inset-block: 0;
     inset-inline-end: 0;
-    width: 8px;
+    width: 1px;
     transform: translateX(50%);
     cursor: col-resize;
 

@@ -17,9 +17,10 @@ test("review panel can be toggled via keybind", async ({ page, gotoSession }) =>
   if (await expanded(treeToggle)) await treeToggle.click()
   await expect(treeToggle).toHaveAttribute("aria-expanded", "false")
 
-  const reviewToggle = page.getByRole("button", { name: "Toggle review" }).first()
+  const reviewToggle = page.getByRole("button", { name: "Toggle split view" }).first()
   await expect(reviewToggle).toBeVisible()
-  if (await expanded(reviewToggle)) await reviewToggle.click()
+  // Button toggles split/tabs when open; keybind toggles panel open/close
+  if (await expanded(reviewToggle)) await page.keyboard.press(`${modKey}+Shift+R`)
   await expect(reviewToggle).toHaveAttribute("aria-expanded", "false")
   await expect(reviewPanel).toHaveAttribute("aria-hidden", "true")
 

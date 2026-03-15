@@ -12,11 +12,8 @@ import { Mark } from "@opencode-ai/ui/logo"
 import { DragDropProvider, DragDropSensors, DragOverlay, SortableProvider, closestCenter } from "@thisbeyond/solid-dnd"
 import type { DragEvent } from "@thisbeyond/solid-dnd"
 import { ConstrainDragYAxis, getDraggableId } from "@/utils/solid-dnd"
-import { useDialog } from "@opencode-ai/ui/context/dialog"
-
 import FileTree from "@/components/file-tree"
 import { SessionContextUsage } from "@/components/session-context-usage"
-import { DialogSelectFile } from "@/components/dialog-select-file"
 import { SessionContextTab, SortableTab, FileVisual } from "@/components/session"
 import { useCommand } from "@/context/command"
 import { useFile, type SelectedLineRange } from "@/context/file"
@@ -28,16 +25,130 @@ import { createFileTabListSync } from "@/pages/session/file-tab-scroll"
 import { FileTabContent } from "@/pages/session/file-tabs"
 import { FigmaTabContent } from "@/pages/session/figma-tab-content"
 import { createOpenSessionFileTab, getTabReorderIndex, type Sizing } from "@/pages/session/helpers"
-import { StickyAddButton } from "@/pages/session/review-tab"
 import { setSessionHandoff } from "@/pages/session/handoff"
 
-function FigmaWebviewHost(props: { active: boolean }) {
-  const [host, setHost] = createSignal<HTMLDivElement | undefined>(undefined)
+function CanvasFigmaEmpty() {
+  const language = useLanguage()
+  return (
+    <div class="h-full px-6 pb-24 flex flex-col items-center justify-center gap-6">
+      <Mark class="w-14 opacity-10" />
+      <div class="text-14-regular text-text-weak max-w-56 text-center">
+        {language.t("session.files.selectToOpen")}
+      </div>
+    </div>
+  )
+}
+
+function CanvasFigmaSplit(props: {
+  reviewPanel: () => JSX.Element
+  reviewCount: () => number
+  hasReview: () => boolean
+  size: { start: () => void; touch: () => void }
+}) {
+  const language = useLanguage()
+  const command = useCommand()
+  const layout = useLayout()
+  const platform = usePlatform()
+  const panes = () => layout.canvasPanel.panes()
+  const splitRatio = () => layout.canvasPanel.splitRatio()
+  const setSplitRatio = (r: number) => layout.canvasPanel.setSplitRatio(r)
+  const [containerRef, setContainerRef] = createSignal<HTMLDivElement | undefined>(undefined)
+  const [width, setWidth] = createSignal(400)
+
+  createEffect(() => {
+    const el = containerRef()
+    if (!el) return
+    const observer = new ResizeObserver(() => setWidth(el.getBoundingClientRect().width))
+    observer.observe(el)
+    setWidth(el.getBoundingClientRect().width)
+    return () => observer.disconnect()
+  })
+
+  const leftSize = () => Math.round(width() * splitRatio())
+  const minPane = 120
+  const maxLeft = () => Math.max(minPane, width() - minPane)
+
+  return (
+    <div ref={setContainerRef} class="relative flex-1 flex min-h-0 min-w-0">
+      <Show when={panes().canvas}>
+        <div
+          class="relative flex flex-col min-h-0 shrink-0 overflow-hidden"
+          style={{ width: panes().figma ? `${leftSize()}px` : "100%" }}
+        >
+          <Tabs value="canvas">
+            <div class="sticky top-0 z-10 shrink-0 flex items-center border-b border-border-weaker-base">
+              <Tabs.List class="min-w-0 w-fit">
+                <Tabs.Trigger value="canvas">
+                  <div class="flex items-center gap-1.5">
+                    <div>{language.t("session.tab.canvas")}</div>
+                    <Show when={props.hasReview()}>
+                      <div>{props.reviewCount()}</div>
+                    </Show>
+                  </div>
+                </Tabs.Trigger>
+              </Tabs.List>
+            </div>
+            <Tabs.Content value="canvas" class="relative flex flex-col flex-1 min-h-0 overflow-hidden contain-strict">
+              <div class="relative flex-1 min-h-0 overflow-hidden pb-24">{props.reviewPanel()}</div>
+            </Tabs.Content>
+          </Tabs>
+        </div>
+      </Show>
+      <Show when={panes().canvas && panes().figma}>
+        <div class="relative w-px shrink-0 flex items-stretch" onPointerDown={() => props.size.start()}>
+          <div class="pointer-events-none absolute inset-y-0 left-0 w-px bg-border-weaker-base" aria-hidden />
+          <ResizeHandle
+            direction="horizontal"
+            edge="end"
+            size={leftSize()}
+            min={minPane}
+            max={maxLeft()}
+            onResize={(px) => {
+              props.size.touch()
+              setSplitRatio(px / width())
+            }}
+          />
+        </div>
+      </Show>
+      <Show when={panes().figma}>
+        <div class="relative flex-1 flex flex-col min-h-0 min-w-0">
+          <Tabs value="figma">
+            <div class="sticky top-0 z-10 shrink-0 flex items-center border-b border-border-weaker-base">
+              <Tabs.List class="min-w-0 w-fit">
+                <Tabs.Trigger value="figma">
+                  {language.t("session.tab.figma")}
+                </Tabs.Trigger>
+              </Tabs.List>
+            </div>
+            <Tabs.Content value="figma" class="relative flex flex-col flex-1 min-h-0 overflow-hidden contain-strict">
+              <div class="relative flex-1 min-h-0 overflow-hidden">
+                {platform.platform === "web" ? (
+                  <div class="absolute inset-0">
+                    <FigmaTabContent />
+                  </div>
+                ) : (
+                  /* Desktop: persistent FigmaWebviewHost shows through this transparent placeholder */
+                  <div class="absolute inset-0" aria-hidden />
+                )}
+              </div>
+            </Tabs.Content>
+          </Tabs>
+        </div>
+      </Show>
+    </div>
+  )
+}
+
+function FigmaWebviewHost(props: { active: boolean; splitOffset?: number }) {
+  const offset = () => props.splitOffset ?? 0
   return (
     <div
-      ref={setHost}
-      class="absolute inset-x-0 bottom-0 top-12 overflow-hidden"
+      class="absolute overflow-hidden"
       style={{
+        top: "var(--tabs-bar-height, 48px)",
+        left: offset() > 0 ? `calc(${offset() * 100}% + 1px)` : "0",
+        right: "0",
+        bottom: "0",
         // No opacity/visibility changes — Electron webviews detach their renderer
         // when ancestors have opacity:0 or visibility:hidden. Instead use z-index:
         // z:-1 puts the webview behind the parent's opaque background (invisible to
@@ -47,13 +158,9 @@ function FigmaWebviewHost(props: { active: boolean }) {
         "pointer-events": props.active ? "auto" : "none",
       }}
     >
-      <Show when={host()}>
-        <Portal mount={host()!}>
-          <div class="absolute inset-0">
-            <FigmaTabContent />
-          </div>
-        </Portal>
-      </Show>
+      <div class="absolute inset-0">
+        <FigmaTabContent />
+      </div>
     </div>
   )
 }
@@ -65,6 +172,7 @@ function FloatingPromptDock(props: {
   const language = useLanguage()
   const [pos, setPos] = createSignal<{ x: number; y: number } | null>(null)
   const [dragging, setDragging] = createSignal(false)
+  const [hovered, setHovered] = createSignal(false)
   const [container, setContainer] = createSignal<HTMLDivElement | undefined>(undefined)
   const [prompt, setPrompt] = createSignal<HTMLDivElement | undefined>(undefined)
   const [start, setStart] = createSignal<{ clientX: number; clientY: number; elLeft: number; elTop: number } | undefined>(
@@ -74,6 +182,18 @@ function FloatingPromptDock(props: {
   const clamp = (val: number, min: number, max: number) => Math.max(min, Math.min(max, val))
 
   const getBoundary = () => props.boundaryRef?.() ?? container()
+
+  const visible = () => hovered() || dragging()
+
+  let leaveTimeout: ReturnType<typeof setTimeout> | undefined
+  const onHoverEnter = () => {
+    if (leaveTimeout) clearTimeout(leaveTimeout)
+    leaveTimeout = undefined
+    setHovered(true)
+  }
+  const onHoverLeave = () => {
+    leaveTimeout = setTimeout(() => setHovered(false), 100)
+  }
 
   const onHandleDown = (e: MouseEvent) => {
     e.preventDefault()
@@ -127,8 +247,17 @@ function FloatingPromptDock(props: {
       classList={{ "cursor-grabbing": dragging() }}
     >
       <div
+        class="pointer-events-auto absolute bottom-0 left-0 right-0 h-28"
+        onMouseEnter={onHoverEnter}
+        onMouseLeave={onHoverLeave}
+        aria-hidden
+      />
+      <div
         ref={setPrompt}
-        class="pointer-events-auto w-full max-w-[600px] h-fit px-2 pb-5 shadow-[0px_4px_12px_0px_rgba(0,0,0,0.15)] rounded-lg overflow-hidden flex flex-col group"
+        class="pointer-events-auto w-full max-w-[600px] h-fit px-2 pb-5 shadow-[0px_4px_12px_0px_rgba(0,0,0,0.15)] rounded-lg overflow-hidden flex flex-col group transition-opacity duration-200"
+        classList={{ "opacity-0 pointer-events-none": !visible(), "opacity-100": visible() }}
+        onMouseEnter={onHoverEnter}
+        onMouseLeave={onHoverLeave}
         style={
           pos()
             ? { position: "absolute" as const, left: `${pos()!.x}px`, top: `${pos()!.y}px` }
@@ -184,22 +313,24 @@ export function SessionSidePanel(props: {
   const file = useFile()
   const language = useLanguage()
   const command = useCommand()
-  const dialog = useDialog()
   const platform = usePlatform()
 
   const isDesktop = createMediaQuery("(min-width: 768px)")
   const sessionKey = createMemo(() => `${params.projectId}${params.id ? "/" + params.id : ""}`)
   const tabs = createMemo(() => layout.tabs(sessionKey))
   const view = createMemo(() => layout.view(sessionKey))
+  const panes = () => layout.canvasPanel.panes()
+  const splitMode = () => layout.canvasPanel.layout() === "split"
 
   const reviewOpen = createMemo(() => isDesktop() && view().reviewPanel.opened())
   const fileOpen = createMemo(() => isDesktop() && layout.fileTree.opened())
   const open = createMemo(() => reviewOpen() || fileOpen())
-  const canvasTab = createMemo(() => isDesktop())
-  const figmaTab = createMemo(() => isDesktop())
+  const canvasTab = createMemo(() => isDesktop() && panes().canvas)
+  const figmaTab = createMemo(() => isDesktop() && panes().figma)
+  const bothClosed = createMemo(() => isDesktop() && !panes().canvas && !panes().figma)
   const panelWidth = createMemo(() => {
     if (!open()) return "0px"
-    if (reviewOpen()) return `calc(100% - ${layout.agents.width()}px)`
+    if (reviewOpen()) return layout.agents.opened() ? `calc(100% - ${layout.agents.width()}px)` : "100%"
     return `${layout.fileTree.width()}px`
   })
   const treeWidth = createMemo(() => (fileOpen() ? `${layout.fileTree.width()}px` : "0px"))
@@ -316,11 +447,6 @@ export function SessionSidePanel(props: {
     layout.fileTree.setTab(value)
   }
 
-  const showAllFiles = () => {
-    if (fileTreeTab() !== "changes") return
-    layout.fileTree.setTab("all")
-  }
-
   const [store, setStore] = createStore({
     activeDraggable: undefined as string | undefined,
   })
@@ -391,7 +517,7 @@ export function SessionSidePanel(props: {
             }}
           >
             <div class="relative size-full min-w-0 min-h-0 flex flex-col overflow-hidden bg-background-base">
-              <div class="relative min-h-0 flex-1 overflow-hidden">
+              <div class="relative min-h-0 flex-1 overflow-hidden flex flex-col">
               <DragDropProvider
                 onDragStart={handleDragStart}
                 onDragEnd={handleDragEnd}
@@ -400,13 +526,25 @@ export function SessionSidePanel(props: {
               >
                 <DragDropSensors />
                 <ConstrainDragYAxis />
+                <div class="relative flex-1 flex min-h-0 min-w-0 flex-col">
+                <Switch>
+                  <Match when={splitMode() && panes().canvas && panes().figma}>
+                    <CanvasFigmaSplit
+                      reviewPanel={props.reviewPanel}
+                      reviewCount={reviewCount}
+                      hasReview={hasReview}
+                      size={props.size}
+                    />
+                  </Match>
+                  <Match when={true}>
                 <Tabs value={activeTab()} onChange={openTab}>
-                  <div class="sticky top-0 z-10 shrink-0 flex">
+                  <div class="sticky top-0 z-10 shrink-0 flex items-center border-b border-border-weaker-base">
                     <Tabs.List
                       ref={(el: HTMLDivElement) => {
                         const stop = createFileTabListSync({ el, contextOpen })
                         onCleanup(stop)
                       }}
+                      class="min-w-0 w-fit"
                     >
                       <Show when={canvasTab()}>
                         <Tabs.Trigger value="canvas">
@@ -419,7 +557,9 @@ export function SessionSidePanel(props: {
                         </Tabs.Trigger>
                       </Show>
                       <Show when={figmaTab()}>
-                        <Tabs.Trigger value="figma">{language.t("session.tab.figma")}</Tabs.Trigger>
+                        <Tabs.Trigger value="figma">
+                          {language.t("session.tab.figma")}
+                        </Tabs.Trigger>
                       </Show>
                       <Show when={contextOpen()}>
                         <Tabs.Trigger
@@ -452,69 +592,65 @@ export function SessionSidePanel(props: {
                       <SortableProvider ids={openedTabs()}>
                         <For each={openedTabs()}>{(tab) => <SortableTab tab={tab} onTabClose={tabs().close} />}</For>
                       </SortableProvider>
-                      <StickyAddButton>
-                        <TooltipKeybind
-                          title={language.t("command.file.open")}
-                          keybind={command.keybind("file.open")}
-                          class="flex items-center"
-                        >
-                          <IconButton
-                            icon="plus-small"
-                            variant="ghost"
-                            iconSize="large"
-                            class="!rounded-md"
-                            onClick={() =>
-                              dialog.show(() => <DialogSelectFile mode="files" onOpenFile={showAllFiles} />)
-                            }
-                            aria-label={language.t("command.file.open")}
-                          />
-                        </TooltipKeybind>
-                      </StickyAddButton>
                     </Tabs.List>
                   </div>
 
-                  <Show when={canvasTab()}>
-                    <Tabs.Content value="canvas" class="relative flex flex-col h-full overflow-hidden contain-strict">
-                      <div class="relative flex-1 min-h-0 overflow-hidden pb-24">
-                        <Show when={activeTab() === "canvas"}>{props.reviewPanel()}</Show>
-                      </div>
-                    </Tabs.Content>
-                  </Show>
-
-                  <Show when={figmaTab()}>
-                    <Tabs.Content value="figma" class="relative flex flex-col h-full overflow-hidden contain-strict">
-                      {/* Rendered in FigmaWebviewHost (Portal) to avoid display:none GC of webview */}
-                      <div class="size-full" aria-hidden />
-                    </Tabs.Content>
-                  </Show>
-
-                  <Tabs.Content value="empty" class="flex flex-col h-full overflow-hidden contain-strict">
-                    <Show when={activeTab() === "empty"}>
-                      <div class="relative pt-2 flex-1 min-h-0 overflow-hidden">
-                        <div class="h-full px-6 pb-42 -mt-4 flex flex-col items-center justify-center text-center gap-6">
-                          <Mark class="w-14 opacity-10" />
-                          <div class="text-14-regular text-text-weak max-w-56">
-                            {language.t("session.files.selectToOpen")}
+                      <Show when={canvasTab()}>
+                        <Tabs.Content value="canvas" class="relative flex flex-col h-full overflow-hidden contain-strict">
+                          <div class="relative flex-1 min-h-0 overflow-hidden pb-24">
+                            <Show when={activeTab() === "canvas"}>{props.reviewPanel()}</Show>
                           </div>
-                        </div>
-                      </div>
-                    </Show>
-                  </Tabs.Content>
-
-                  <Show when={contextOpen()}>
-                    <Tabs.Content value="context" class="flex flex-col h-full overflow-hidden contain-strict">
-                      <Show when={activeTab() === "context"}>
-                        <div class="relative pt-2 flex-1 min-h-0 overflow-hidden">
-                          <SessionContextTab />
-                        </div>
+                        </Tabs.Content>
                       </Show>
-                    </Tabs.Content>
-                  </Show>
 
-                  <Show when={activeFileTab()} keyed>
-                    {(tab) => <FileTabContent tab={tab} />}
-                  </Show>
+                      <Show when={figmaTab()}>
+                        <Tabs.Content value="figma" class="relative flex flex-col h-full overflow-hidden contain-strict">
+                          {platform.platform === "web" ? (
+                            <FigmaTabContent />
+                          ) : (
+                            /* Desktop: persistent FigmaWebviewHost shows through this transparent placeholder */
+                            <div class="size-full" aria-hidden />
+                          )}
+                        </Tabs.Content>
+                      </Show>
+
+                      <Tabs.Content value="empty" class="flex flex-col h-full overflow-hidden contain-strict">
+                        <Show when={activeTab() === "empty"}>
+                          <Switch>
+                            <Match when={bothClosed()}>
+                              <CanvasFigmaEmpty />
+                            </Match>
+                            <Match when={true}>
+                              <div class="relative pt-2 flex-1 min-h-0 overflow-hidden">
+                                <div class="h-full px-6 pb-42 -mt-4 flex flex-col items-center justify-center text-center gap-6">
+                                  <Mark class="w-14 opacity-10" />
+                                  <div class="text-14-regular text-text-weak max-w-56">
+                                    {language.t("session.files.selectToOpen")}
+                                  </div>
+                                </div>
+                              </div>
+                            </Match>
+                          </Switch>
+                        </Show>
+                      </Tabs.Content>
+
+                      <Show when={contextOpen()}>
+                        <Tabs.Content value="context" class="flex flex-col h-full overflow-hidden contain-strict">
+                          <Show when={activeTab() === "context"}>
+                            <div class="relative pt-2 flex-1 min-h-0 overflow-hidden">
+                              <SessionContextTab />
+                            </div>
+                          </Show>
+                        </Tabs.Content>
+                      </Show>
+
+                      <Show when={activeFileTab()} keyed>
+                        {(tab) => <FileTabContent tab={tab} />}
+                      </Show>
                 </Tabs>
+                  </Match>
+                </Switch>
+                </div>
                 <DragOverlay>
                   <Show when={store.activeDraggable} keyed>
                     {(tab) => {
@@ -529,9 +665,22 @@ export function SessionSidePanel(props: {
                 </DragOverlay>
               </DragDropProvider>
               </div>
-              {/* Persistent webview host outside Tabs — avoids display:none which GCs Electron webviews */}
-              <Show when={figmaTab()}>
-                <FigmaWebviewHost active={activeTab() === "figma"} />
+              {/* Single persistent webview host — survives split↔tabbed switches.
+                  CSS left offset shifts it over the figma pane in split mode;
+                  in tabbed mode it covers full width. Never moves in the DOM. */}
+              <Show when={figmaTab() && platform.platform !== "web"}>
+                <FigmaWebviewHost
+                  active={
+                    splitMode() && panes().figma
+                      ? true
+                      : activeTab() === "figma"
+                  }
+                  splitOffset={
+                    splitMode() && panes().canvas && panes().figma
+                      ? layout.canvasPanel.splitRatio()
+                      : 0
+                  }
+                />
               </Show>
               <Show when={props.floatingPrompt && reviewOpen()}>
                 <FloatingPromptDock boundaryRef={props.floatingDockBoundary}>

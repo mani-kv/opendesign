@@ -22,8 +22,6 @@ import { useSDK } from "@/context/sdk"
 import { usePlatform } from "@/context/platform"
 import { useServer } from "@/context/server"
 import { useSync } from "@/context/sync"
-import { useTerminal } from "@/context/terminal"
-import { focusTerminalById } from "@/pages/session/helpers"
 import { Persist, persisted } from "@/utils/persist"
 import { StatusPopover } from "../status-popover"
 
@@ -232,7 +230,6 @@ export function SessionHeader() {
   const sync = useSync()
   const platform = usePlatform()
   const language = useLanguage()
-  const terminal = useTerminal()
 
   const sdk = useSDK()
   const projectDirectory = createMemo(() => sdk.directory)
@@ -288,16 +285,6 @@ export function SessionHeader() {
       ...apps().filter((app) => exists[app.id]),
     ] as const
   })
-
-  const toggleTerminal = () => {
-    const next = !view().terminal.opened()
-    view().terminal.toggle()
-    if (!next) return
-
-    const id = terminal.active()
-    if (!id) return
-    focusTerminalById(id)
-  }
 
   const [prefs, setPrefs] = persisted(Persist.global("open.app"), createStore({ app: "finder" as OpenApp }))
   const [menu, setMenu] = createStore({ open: false })
@@ -601,32 +588,32 @@ export function SessionHeader() {
               </Show>
               <div class="flex items-center gap-1">
                 <TooltipKeybind
-                  title={language.t("command.terminal.toggle")}
-                  keybind={command.keybind("terminal.toggle")}
+                  title={language.t("command.agents.toggle")}
+                  keybind={command.keybind("agents.toggle")}
                 >
                   <Button
                     variant="ghost"
-                    class="group/terminal-toggle titlebar-icon w-8 h-6 p-0 box-border shrink-0"
-                    onClick={toggleTerminal}
-                    aria-label={language.t("command.terminal.toggle")}
-                    aria-expanded={view().terminal.opened()}
-                    aria-controls="terminal-panel"
+                    class="group/agents-toggle titlebar-icon w-8 h-6 p-0 box-border shrink-0"
+                    onClick={() => layout.agents.toggle()}
+                    aria-label={language.t("command.agents.toggle")}
+                    aria-expanded={layout.agents.opened()}
+                    aria-controls="agents-panel"
                   >
                     <div class="relative flex items-center justify-center size-4 [&>*]:absolute [&>*]:inset-0">
                       <Icon
                         size="small"
-                        name={view().terminal.opened() ? "layout-bottom-partial" : "layout-bottom"}
-                        class="group-hover/terminal-toggle:hidden"
+                        name={layout.agents.opened() ? "layout-left-partial" : "layout-left"}
+                        class="group-hover/agents-toggle:hidden"
                       />
                       <Icon
                         size="small"
-                        name="layout-bottom-partial"
-                        class="hidden group-hover/terminal-toggle:inline-block"
+                        name="layout-left-partial"
+                        class="hidden group-hover/agents-toggle:inline-block"
                       />
                       <Icon
                         size="small"
-                        name={view().terminal.opened() ? "layout-bottom" : "layout-bottom-partial"}
-                        class="hidden group-active/terminal-toggle:inline-block"
+                        name={layout.agents.opened() ? "layout-left" : "layout-left-partial"}
+                        class="hidden group-active/agents-toggle:inline-block"
                       />
                     </div>
                   </Button>
@@ -640,27 +627,19 @@ export function SessionHeader() {
                     <Button
                       variant="ghost"
                       class="group/review-toggle titlebar-icon w-8 h-6 p-0 box-border"
-                      onClick={() => view().reviewPanel.toggle()}
+                      onClick={() => {
+                        if (!view().reviewPanel.opened()) view().reviewPanel.open()
+                        else layout.canvasPanel.toggleLayout()
+                      }}
                       aria-label={language.t("command.review.toggle")}
-                      aria-expanded={view().reviewPanel.opened()}
+                      aria-expanded={
+                        view().reviewPanel.opened() &&
+                        layout.canvasPanel.layout() === "split"
+                      }
                       aria-controls="canvas-panel"
                     >
-                      <div class="relative flex items-center justify-center size-4 [&>*]:absolute [&>*]:inset-0">
-                        <Icon
-                          size="small"
-                          name={view().reviewPanel.opened() ? "layout-right-partial" : "layout-right"}
-                          class="group-hover/review-toggle:hidden"
-                        />
-                        <Icon
-                          size="small"
-                          name="layout-right-partial"
-                          class="hidden group-hover/review-toggle:inline-block"
-                        />
-                        <Icon
-                          size="small"
-                          name={view().reviewPanel.opened() ? "layout-right" : "layout-right-partial"}
-                          class="hidden group-active/review-toggle:inline-block"
-                        />
+                      <div class="relative flex items-center justify-center size-4">
+                        <Icon size="small" name="task" />
                       </div>
                     </Button>
                   </TooltipKeybind>

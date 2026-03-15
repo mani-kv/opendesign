@@ -147,7 +147,9 @@ export default function Page() {
   const desktopReviewOpen = createMemo(() => isDesktop() && view().reviewPanel.opened())
   const desktopFileTreeOpen = createMemo(() => isDesktop() && layout.fileTree.opened())
   const desktopSidePanelOpen = createMemo(() => desktopReviewOpen() || desktopFileTreeOpen())
+  const agentsPanelOpen = createMemo(() => !isDesktop() || layout.agents.opened())
   const agentsPanelWidth = createMemo(() => {
+    if (!layout.agents.opened()) return "0px"
     if (!desktopSidePanelOpen()) return "100%"
     if (desktopReviewOpen()) return `${layout.agents.width()}px`
     return `calc(100% - ${layout.fileTree.width()}px)`
@@ -875,16 +877,18 @@ export default function Page() {
         />
 
         {/* Agents panel */}
-        <div
-          classList={{
-            "relative shrink-0 flex flex-col min-h-0 h-full bg-background-stronger flex-1 md:flex-none": true,
-            "transition-[width] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-[width] motion-reduce:transition-none":
-              !size.active() && !ui.reviewSnap,
-          }}
-          style={{
-            width: agentsPanelWidth(),
-          }}
-        >
+        <Show when={agentsPanelOpen()}>
+          <div
+            id="agents-panel"
+            classList={{
+              "relative shrink-0 flex flex-col min-h-0 h-full bg-background-stronger flex-1 md:flex-none": true,
+              "transition-[width] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-[width] motion-reduce:transition-none":
+                !size.active() && !ui.reviewSnap,
+            }}
+            style={{
+              width: agentsPanelWidth(),
+            }}
+          >
           <AgentsPanel />
           <Show when={desktopReviewOpen()}>
             <div onPointerDown={() => size.start()}>
@@ -920,7 +924,8 @@ export default function Page() {
               }}
             />
           </Show>
-        </div>
+          </div>
+        </Show>
 
         <SessionSidePanel
           floatingDockBoundary={() =>

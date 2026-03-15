@@ -50,7 +50,7 @@ export function FigmaTabContent() {
   if (platform.platform === "web") {
     return (
       <div class="absolute inset-0 flex flex-col overflow-hidden">
-        <div class="shrink-0 flex flex-col gap-2 p-3 border-b border-border-default">
+        <div class="shrink-0 flex flex-col gap-2 px-3 pt-2 pb-3 border-b border-border-default">
           <label for="figma-url" class="text-12-regular text-text-weak">
             {lang.t("session.figma.pasteUrl")}
           </label>
