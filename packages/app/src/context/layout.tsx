@@ -42,6 +42,7 @@ type SessionView = {
   reviewOpen?: string[]
   pendingMessage?: string
   pendingMessageAt?: number
+  figmaUrl?: string
 }
 
 type TabHandoff = {
@@ -94,6 +95,7 @@ export function pruneSessionKeys(input: {
 function nextSessionTabsForOpen(current: SessionTabs | undefined, tab: string): SessionTabs {
   const all = current?.all ?? []
   if (tab === "canvas") return { all: all.filter((x) => x !== "canvas"), active: tab }
+  if (tab === "figma") return { all: all.filter((x) => x !== "figma"), active: tab }
   if (tab === "context") return { all: [tab, ...all.filter((x) => x !== tab)], active: tab }
   if (!all.includes(tab)) return { all: [...all, tab], active: tab }
   return { all, active: tab }
@@ -850,6 +852,20 @@ export const { use: useLayout, provider: LayoutProvider } = createSimpleContext(
               setStore("sessionView", session, "reviewOpen", open)
             },
           },
+          figma: {
+            url: createMemo(() => s().figmaUrl ?? ""),
+            setUrl(url: string) {
+              const session = key()
+              touch(session)
+              const current = store.sessionView[session]
+              const next = url.trim() || undefined
+              if (!current) {
+                setStore("sessionView", session, { scroll: {}, figmaUrl: next })
+                return
+              }
+              setStore("sessionView", session, "figmaUrl", next)
+            },
+          },
         }
       },
       tabs(sessionKey: string | Accessor<string>) {
@@ -861,7 +877,7 @@ export const { use: useLayout, provider: LayoutProvider } = createSimpleContext(
         return {
           tabs,
           active: createMemo(() => tabs().active),
-          all: createMemo(() => tabs().all.filter((tab) => tab !== "canvas")),
+          all: createMemo(() => tabs().all.filter((tab) => tab !== "canvas" && tab !== "figma")),
           setActive(tab: string | undefined) {
             const session = key()
             const next = tab ? normalize(tab) : tab
@@ -873,7 +889,7 @@ export const { use: useLayout, provider: LayoutProvider } = createSimpleContext(
           },
           setAll(all: string[]) {
             const session = key()
-            const next = normalizeAll(all).filter((tab) => tab !== "canvas")
+            const next = normalizeAll(all).filter((tab) => tab !== "canvas" && tab !== "figma")
             if (!store.sessionTabs[session]) {
               setStore("sessionTabs", session, { all: next, active: undefined })
             } else {
@@ -890,7 +906,7 @@ export const { use: useLayout, provider: LayoutProvider } = createSimpleContext(
             const current = store.sessionTabs[session]
             if (!current) return
 
-            if (tab === "canvas") {
+            if (tab === "canvas" || tab === "figma") {
               if (current.active !== tab) return
               setStore("sessionTabs", session, "active", current.all[0])
               return

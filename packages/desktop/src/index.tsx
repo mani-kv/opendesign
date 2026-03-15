@@ -114,6 +114,10 @@ const createPlatform = (): Platform => {
     openLink(url: string) {
       void shellOpen(url).catch(() => undefined)
     },
+
+    async openFigmaWindow() {
+      await commands.openFigmaWindow()
+    },
     async openPath(path: string, app?: string) {
       await commands.openPath(path, app ?? null)
     },

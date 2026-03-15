@@ -522,6 +522,8 @@ export const dict = {
   "session.tab.session": "Session",
   "session.tab.review": "Review",
   "session.tab.canvas": "Canvas",
+  "session.tab.figma": "Figma",
+  "session.figma.pasteUrl": "Paste a Figma file URL to embed",
   "agents.panel.title": "Agents",
   "agents.panel.empty": "Agents will appear here when you ask something",
   "session.tab.context": "Context",
@@ -634,6 +636,12 @@ export const dict = {
   "sidebar.context.workspace": "WORKSPACE",
   "sidebar.context.projects": "Projects",
   "sidebar.context.project": "Project",
+  "sidebar.workspace.delete.title": "Delete workspace",
+  "sidebar.workspace.delete.confirm": 'Delete workspace "{{name}}" and its projects? This cannot be undone.',
+  "sidebar.workspace.delete.button": "Delete workspace",
+  "sidebar.project.delete.title": "Delete project",
+  "sidebar.project.delete.confirm": 'Delete project "{{name}}"? This cannot be undone.',
+  "sidebar.project.delete.button": "Delete project",
 
   "app.name.desktop": "OpenCode Desktop",
 

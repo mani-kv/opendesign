@@ -39,6 +39,11 @@ export function createMainWindow(globals: Globals) {
     show: true,
     title: "OpenCode",
     icon: iconPath(),
+    webPreferences: {
+      preload: join(root, "../preload/index.mjs"),
+      sandbox: false,
+      webviewTag: true,
+    },
     ...(process.platform === "darwin"
       ? {
           titleBarStyle: "hidden" as const,
@@ -56,10 +61,6 @@ export function createMainWindow(globals: Globals) {
           },
         }
       : {}),
-    webPreferences: {
-      preload: join(root, "../preload/index.mjs"),
-      sandbox: false,
-    },
   })
 
   state.manage(win)

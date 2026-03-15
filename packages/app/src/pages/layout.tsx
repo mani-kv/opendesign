@@ -217,16 +217,28 @@ export default function Layout(props: ParentProps) {
   })
 
   const MS_24H = 24 * 60 * 60 * 1000
+  const selectWorkspace = (w: Workspace) => {
+    setStore("activeWorkspaceId", w.id)
+    const projects = workspace.projects.list(w.id)()
+    if (projects.length === 0) {
+      navigateWithSidebarReset("/")
+      return
+    }
+    const last = store.lastProjectByWorkspace[w.id]
+    const within24h = last && Date.now() - last.at < MS_24H
+    const proj = (within24h ? projects.find((p) => p.id === last!.projectId) : undefined) ?? projects[0]
+    setStore("activeProjectId", proj.id)
+    setStore("lastProjectByWorkspace", w.id, { projectId: proj.id, at: Date.now() })
+    navigateWithSidebarReset(sessionHref(projectDir(proj), proj.sessionId))
+  }
   createEffect(() => {
     if (!pageReady() || !workspace.ready()) return
+    if (params.projectId) return
     const wsId = store.activeWorkspaceId ?? workspaceList()[0]?.id
     if (!wsId) return
     const list = workspace.projects.list(wsId)
     const projects = list()
     if (projects.length === 0) return
-    const currentPid = params.projectId ?? store.activeProjectId
-    const valid = currentPid && projects.some((p) => p.id === currentPid)
-    if (valid) return
     const last = store.lastProjectByWorkspace[wsId]
     const within24h = last && Date.now() - last.at < MS_24H
     const proj = (within24h && projects.find((p) => p.id === last.projectId)) ?? projects[0]
@@ -254,6 +266,7 @@ export default function Layout(props: ParentProps) {
   const [sortNow, setSortNow] = createSignal(Date.now())
   const [sizing, setSizing] = createSignal(false)
   const [contextBarExpanded, setContextBarExpanded] = createSignal(false)
+  const [isXl, setIsXl] = createSignal(typeof window !== "undefined" && window.matchMedia("(min-width: 1280px)").matches)
   let sizet: number | undefined
   let sortNowInterval: ReturnType<typeof setInterval> | undefined
   const sortNowTimeout = setTimeout(
@@ -288,10 +301,14 @@ export default function Layout(props: ParentProps) {
     window.addEventListener("pointerup", stop)
     window.addEventListener("pointercancel", stop)
     window.addEventListener("blur", stop)
+    const mq = window.matchMedia("(min-width: 1280px)")
+    const onResize = () => setIsXl(mq.matches)
+    mq.addEventListener("change", onResize)
     onCleanup(() => {
       window.removeEventListener("pointerup", stop)
       window.removeEventListener("pointercancel", stop)
       window.removeEventListener("blur", stop)
+      mq.removeEventListener("change", onResize)
     })
   })
 
@@ -1998,6 +2015,83 @@ export default function Layout(props: ParentProps) {
     ))
   }
 
+  const showDeleteSidebarWorkspaceDialog = (w: Workspace) => {
+    dialog.show(() => (
+      <Dialog
+        title={language.t("sidebar.workspace.delete.title")}
+        fit
+      >
+        <div class="flex flex-col gap-4 pl-6 pr-2.5 pb-3">
+          <span class="text-14-regular text-text-strong">
+            {language.t("sidebar.workspace.delete.confirm", { name: w.name })}
+          </span>
+          <div class="flex justify-end gap-2">
+            <Button variant="ghost" size="large" onClick={() => dialog.close()}>
+              {language.t("common.cancel")}
+            </Button>
+            <Button
+              variant="primary"
+              size="large"
+              onClick={() => {
+                workspace.workspaces.remove(w.id)
+                const list = workspaceList().filter((x) => x.id !== w.id)
+                const next = list[0]
+                if (next) selectWorkspace(next)
+                else navigateWithSidebarReset("/")
+                dialog.close()
+              }}
+            >
+              {language.t("sidebar.workspace.delete.button")}
+            </Button>
+          </div>
+        </div>
+      </Dialog>
+    ))
+  }
+
+  const showDeleteSidebarProjectDialog = (proj: { id: string; name: string; workspaceId: string }) => {
+    dialog.show(() => (
+      <Dialog
+        title={language.t("sidebar.project.delete.title")}
+        fit
+      >
+        <div class="flex flex-col gap-4 pl-6 pr-2.5 pb-3">
+          <span class="text-14-regular text-text-strong">
+            {language.t("sidebar.project.delete.confirm", { name: proj.name })}
+          </span>
+          <div class="flex justify-end gap-2">
+            <Button variant="ghost" size="large" onClick={() => dialog.close()}>
+              {language.t("common.cancel")}
+            </Button>
+            <Button
+              variant="primary"
+              size="large"
+              onClick={() => {
+                const wasActive = store.activeProjectId === proj.id
+                workspace.projects.remove(proj.id)
+                if (wasActive) {
+                  const list = workspace.projects.list(proj.workspaceId)()
+                  const next = list[0]
+                  if (next) {
+                    setStore("activeProjectId", next.id)
+                    setStore("lastProjectByWorkspace", proj.workspaceId, { projectId: next.id, at: Date.now() })
+                    navigateWithSidebarReset(sessionHref(projectDir(next), next.sessionId))
+                  } else {
+                    setStore("activeProjectId", undefined)
+                    navigateWithSidebarReset("/")
+                  }
+                }
+                dialog.close()
+              }}
+            >
+              {language.t("sidebar.project.delete.button")}
+            </Button>
+          </div>
+        </div>
+      </Dialog>
+    ))
+  }
+
   const SidebarPanel = (panelProps: { workspace: Workspace; mobile?: boolean; merged?: boolean }) => {
     const merged = createMemo(() => panelProps.mobile || (panelProps.merged ?? layout.sidebar.opened()))
     const hover = createMemo(() => !panelProps.mobile && panelProps.merged === false && !layout.sidebar.opened())
@@ -2011,7 +2105,7 @@ export default function Layout(props: ParentProps) {
     return (
       <div
         classList={{
-          "flex flex-col min-h-0 min-w-0 box-border rounded-tl-[12px] px-2": true,
+          "flex flex-col min-h-0 min-w-0 box-border rounded-tl-[12px]": true,
           "border border-b-0 border-border-weak-base": !merged(),
           "border-l border-t border-border-weaker-base": merged(),
           "bg-background-base": merged() || hover(),
@@ -2057,15 +2151,8 @@ export default function Layout(props: ParentProps) {
                     <DropdownMenu.ItemLabel>{language.t("common.edit")}</DropdownMenu.ItemLabel>
                   </DropdownMenu.Item>
                   <DropdownMenu.Separator />
-                  <DropdownMenu.Item
-                    onSelect={() => {
-                      workspace.workspaces.remove(ws.id)
-                      const list = workspaceList()
-                      const next = list.filter((w) => w.id !== ws.id)[0]
-                      if (next) setStore("activeWorkspaceId", next.id)
-                    }}
-                  >
-                    <DropdownMenu.ItemLabel>{language.t("common.close")}</DropdownMenu.ItemLabel>
+                  <DropdownMenu.Item onSelect={() => showDeleteSidebarWorkspaceDialog(ws)}>
+                    <DropdownMenu.ItemLabel>{language.t("common.delete")}</DropdownMenu.ItemLabel>
                   </DropdownMenu.Item>
                 </DropdownMenu.Content>
               </DropdownMenu.Portal>
@@ -2074,7 +2161,7 @@ export default function Layout(props: ParentProps) {
         </div>
 
         <div class="flex-1 min-h-0 flex flex-col">
-          <div class="shrink-0 py-4 px-3 border-t border-border-weaker-base">
+          <div class="shrink-0 py-4 px-4 border-t border-border-weaker-base">
             <div class="flex items-center justify-between gap-2">
               <span class="text-[14px] font-medium text-white capitalize tracking-wide">
                 {language.t("sidebar.context.projects")}
@@ -2093,26 +2180,49 @@ export default function Layout(props: ParentProps) {
             ref={(el) => {
               if (!panelProps.mobile) scrollContainerRef = el
             }}
-            class="size-full flex flex-col py-2 px-3 gap-1 overflow-y-auto no-scrollbar [overflow-anchor:none]"
+            class="size-full flex flex-col py-2 px-2 gap-1 overflow-y-auto no-scrollbar [overflow-anchor:none]"
           >
             <For each={projects()}>
               {(proj) => (
-                <button
-                  type="button"
+                <div
+                  class="group/project flex w-full items-center rounded-md px-0.5 hover:bg-surface-base-hover"
                   classList={{
-                    "flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-14-regular text-text-strong hover:bg-surface-base-hover":
-                      true,
-                    "bg-surface-base-active text-text-strong": store.activeProjectId === proj.id,
-                  }}
-                  onClick={() => {
-                    setStore("activeProjectId", proj.id)
-                    setStore("lastProjectByWorkspace", ws.id, { projectId: proj.id, at: Date.now() })
-                    const path = sessionHref(projectDir(proj), proj.sessionId)
-                    navigateWithSidebarReset(path)
+                    "bg-surface-base-active": store.activeProjectId === proj.id,
                   }}
                 >
-                  {proj.name}
-                </button>
+                  <button
+                    type="button"
+                    class="flex-1 min-w-0 px-2 py-2 text-left text-14-regular text-text-strong"
+                    classList={{
+                      "text-text-strong": store.activeProjectId === proj.id,
+                    }}
+                    onClick={() => {
+                      setStore("activeProjectId", proj.id)
+                      setStore("lastProjectByWorkspace", ws.id, { projectId: proj.id, at: Date.now() })
+                      const path = sessionHref(projectDir(proj), proj.sessionId)
+                      navigateWithSidebarReset(path)
+                    }}
+                  >
+                    <span class="block truncate">{proj.name}</span>
+                  </button>
+                  <DropdownMenu modal={!sidebarHovering()}>
+                    <DropdownMenu.Trigger
+                      as={IconButton}
+                      icon="dot-grid"
+                      variant="ghost"
+                      class="shrink-0 size-6 rounded-md opacity-0 group-hover/project:opacity-100 data-[expanded]:opacity-100"
+                      onClick={(e: MouseEvent) => e.stopPropagation()}
+                      aria-label={language.t("common.moreOptions")}
+                    />
+                    <DropdownMenu.Portal>
+                      <DropdownMenu.Content>
+                        <DropdownMenu.Item onSelect={() => showDeleteSidebarProjectDialog(proj)}>
+                          <DropdownMenu.ItemLabel>{language.t("common.delete")}</DropdownMenu.ItemLabel>
+                        </DropdownMenu.Item>
+                      </DropdownMenu.Content>
+                    </DropdownMenu.Portal>
+                  </DropdownMenu>
+                </div>
               )}
             </For>
           </div>
@@ -2186,7 +2296,8 @@ export default function Layout(props: ParentProps) {
                       workspace={w}
                       selected={() => store.activeWorkspaceId === w.id}
                       overlay={() => !layout.sidebar.opened()}
-                      onSelect={() => setStore("activeWorkspaceId", w.id)}
+                      onSelect={() => selectWorkspace(w)}
+                      onDelete={() => showDeleteSidebarWorkspaceDialog(w)}
                     />
                   )}
                   handleDragStart={handleWorkspaceRailDragStart}
@@ -2272,7 +2383,7 @@ export default function Layout(props: ParentProps) {
                       mobile
                       selected={() => store.activeWorkspaceId === w.id}
                       overlay={() => !layout.sidebar.opened()}
-                      onSelect={() => setStore("activeWorkspaceId", w.id)}
+                      onSelect={() => selectWorkspace(w)}
                     />
                   )}
                   handleDragStart={handleWorkspaceRailDragStart}
@@ -2316,19 +2427,22 @@ export default function Layout(props: ParentProps) {
             >
               <div
                 classList={{
-                  "hidden xl:block shrink-0 overflow-hidden transition-[height,max-height] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none xl:rounded-tl-[12px]":
+                  "block shrink-0 overflow-hidden transition-[height,max-height] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none xl:rounded-tl-[12px] border-t xl:border-l border-border-weak-base":
                     true,
-                  "h-9 max-h-9": !layout.sidebar.opened() && !contextBarExpanded(),
-                  "h-[56px] max-h-[56px]": !layout.sidebar.opened() && contextBarExpanded(),
-                  "h-0 max-h-0": layout.sidebar.opened(),
+                  "h-9 max-h-9": (!isXl() || !layout.sidebar.opened()) && !contextBarExpanded(),
+                  "h-[56px] max-h-[56px]": (!isXl() || !layout.sidebar.opened()) && contextBarExpanded(),
+                  "h-0 max-h-0": isXl() && layout.sidebar.opened(),
                 }}
               >
                 <div
                   classList={{
-                    "flex min-h-9 h-9 min-w-0 w-fit flex-col items-start justify-center gap-0.5 overflow-hidden px-4 py-1.5 transition-[height] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none border-t border-border-weak-base bg-background-base xl:border-l xl:rounded-tl-[12px]":
+                    "flex min-h-9 h-9 min-w-0 w-fit flex-col items-start justify-center gap-0.5 overflow-hidden px-4 py-1.5 transition-[height] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none bg-background-base border-0 xl:rounded-tl-[12px] cursor-pointer":
                       true,
                     "h-[56px] justify-start": contextBarExpanded(),
                   }}
+                  onClick={() =>
+                    (window.matchMedia("(min-width: 1280px)").matches ? layout.sidebar : layout.mobileSidebar).toggle()
+                  }
                   onMouseEnter={() => setContextBarExpanded(true)}
                   onMouseLeave={() => setContextBarExpanded(false)}
                 >

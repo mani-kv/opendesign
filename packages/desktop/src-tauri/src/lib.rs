@@ -24,7 +24,7 @@ use std::{
     sync::{Arc, Mutex},
     time::Duration,
 };
-use tauri::{AppHandle, Listener, Manager, RunEvent, State, ipc::Channel};
+use tauri::{AppHandle, Listener, Manager, RunEvent, State, WebviewUrl, WebviewWindowBuilder, ipc::Channel};
 #[cfg(any(target_os = "linux", all(debug_assertions, windows)))]
 use tauri_plugin_deep_link::DeepLinkExt;
 use tauri_specta::Event;
@@ -260,6 +260,28 @@ fn get_display_backend() -> Option<LinuxDisplayBackend> {
 
 #[tauri::command]
 #[specta::specta]
+fn open_figma_window(app: AppHandle) -> Result<(), String> {
+    const LABEL: &str = "figma";
+    if app.get_webview_window(LABEL).is_some() {
+        if let Some(win) = app.get_webview_window(LABEL) {
+            let _ = win.set_focus();
+            let _ = win.unminimize();
+        }
+        return Ok(());
+    }
+    let url: url::Url = "https://www.figma.com"
+        .parse()
+        .map_err(|e: url::ParseError| e.to_string())?;
+    WebviewWindowBuilder::new(app, LABEL, WebviewUrl::External(url))
+        .title("Figma")
+        .inner_size(1200.0, 800.0)
+        .build()
+        .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
 fn set_display_backend(_app: AppHandle, _backend: LinuxDisplayBackend) -> Result<(), String> {
     #[cfg(target_os = "linux")]
     {
@@ -339,7 +361,7 @@ pub fn run() {
         .plugin(
             tauri_plugin_window_state::Builder::new()
                 .with_state_flags(window_state_flags())
-                .with_denylist(&[LoadingWindow::LABEL])
+                .with_denylist(&[LoadingWindow::LABEL, "figma"])
                 .build(),
         )
         .plugin(tauri_plugin_store::Builder::new().build())
@@ -403,7 +425,8 @@ fn make_specta_builder() -> tauri_specta::Builder<tauri::Wry> {
             check_app_exists,
             wsl_path,
             resolve_app_path,
-            open_path
+            open_path,
+            open_figma_window
         ])
         .events(tauri_specta::collect_events![
             LoadingWindowComplete,

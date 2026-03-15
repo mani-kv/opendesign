@@ -4,6 +4,7 @@ import { SDKProvider } from "@/context/sdk"
 import { SyncProvider, useSync } from "@/context/sync"
 import { LocalProvider } from "@/context/local"
 import { DataProvider } from "@opencode-ai/ui/context"
+import { Splash } from "@opencode-ai/ui/logo"
 import { showToast } from "@opencode-ai/ui/toast"
 import { useLanguage } from "@/context/language"
 import { useWorkspace } from "@/context/workspace"
@@ -47,6 +48,7 @@ export default function Layout(props: ParentProps) {
   createEffect(() => {
     const pid = projectId()
     if (!pid) return
+    if (!workspace.ready()) return
     const p = proj()
     if (!p) {
       showToast({
@@ -58,20 +60,31 @@ export default function Layout(props: ParentProps) {
     }
   })
 
+  if (!workspace.ready()) {
+    return (
+      <div class="size-full flex flex-col items-center justify-center bg-background-base">
+        <Splash class="size-16 opacity-50 animate-pulse" />
+      </div>
+    )
+  }
+
+  const p = proj()
+  if (!p) {
+    return (
+      <div class="size-full flex flex-col items-center justify-center bg-background-base">
+        <Splash class="size-16 opacity-50 animate-pulse" />
+      </div>
+    )
+  }
+
+  const dir = directory()
   return (
-    <Show when={proj()}>
-      {(p) => {
-        const dir = directory()
-        return (
-          <SDKProvider directory={() => dir}>
-            <SyncProvider>
-              <ProjectDataProvider projectId={p().id} directory={dir}>
-                {props.children}
-              </ProjectDataProvider>
-            </SyncProvider>
-          </SDKProvider>
-        )
-      }}
-    </Show>
+    <SDKProvider directory={() => dir}>
+      <SyncProvider>
+        <ProjectDataProvider projectId={p.id} directory={dir}>
+          {props.children}
+        </ProjectDataProvider>
+      </SyncProvider>
+    </SDKProvider>
   )
 }

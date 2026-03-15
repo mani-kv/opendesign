@@ -86,6 +86,9 @@ export type Platform = {
 
   /** Read image from clipboard (desktop only) */
   readClipboardImage?(): Promise<File | null>
+
+  /** Open Figma in a separate window (Tauri only; Electron uses inline webview) */
+  openFigmaWindow?(): Promise<void>
 }
 
 export type DisplayBackend = "auto" | "wayland"

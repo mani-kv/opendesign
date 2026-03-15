@@ -19,10 +19,12 @@ import { SessionContextTab, SortableTab, FileVisual } from "@/components/session
 import { useCommand } from "@/context/command"
 import { useFile, type SelectedLineRange } from "@/context/file"
 import { useLanguage } from "@/context/language"
+import { usePlatform } from "@/context/platform"
 import { useLayout } from "@/context/layout"
 import { useSync } from "@/context/sync"
 import { createFileTabListSync } from "@/pages/session/file-tab-scroll"
 import { FileTabContent } from "@/pages/session/file-tabs"
+import { FigmaTabContent } from "@/pages/session/figma-tab-content"
 import { createOpenSessionFileTab, getTabReorderIndex, type Sizing } from "@/pages/session/helpers"
 import { StickyAddButton } from "@/pages/session/review-tab"
 import { setSessionHandoff } from "@/pages/session/handoff"
@@ -42,6 +44,7 @@ export function SessionSidePanel(props: {
   const language = useLanguage()
   const command = useCommand()
   const dialog = useDialog()
+  const platform = usePlatform()
 
   const isDesktop = createMediaQuery("(min-width: 768px)")
   const sessionKey = createMemo(() => `${params.projectId}${params.id ? "/" + params.id : ""}`)
@@ -52,6 +55,7 @@ export function SessionSidePanel(props: {
   const fileOpen = createMemo(() => isDesktop() && layout.fileTree.opened())
   const open = createMemo(() => reviewOpen() || fileOpen())
   const canvasTab = createMemo(() => isDesktop())
+  const figmaTab = createMemo(() => isDesktop())
   const panelWidth = createMemo(() => {
     if (!open()) return "0px"
     if (reviewOpen()) return `calc(100% - ${layout.agents.width()}px)`
@@ -140,19 +144,21 @@ export function SessionSidePanel(props: {
   const openedTabs = createMemo(() =>
     tabs()
       .all()
-      .filter((tab) => tab !== "context" && tab !== "canvas"),
+      .filter((tab) => tab !== "context" && tab !== "canvas" && tab !== "figma"),
   )
 
   const activeTab = createMemo(() => {
     const active = tabs().active()
     if (active === "context") return "context"
     if (active === "canvas" && canvasTab()) return "canvas"
+    if (active === "figma" && figmaTab()) return "figma"
     if (active && file.pathFromTab(active)) return normalizeTab(active)
 
     const first = openedTabs()[0]
     if (first) return first
     if (contextOpen()) return "context"
     if (canvasTab() && hasReview()) return "canvas"
+    if (figmaTab()) return "figma"
     return "empty"
   })
 
@@ -270,6 +276,9 @@ export function SessionSidePanel(props: {
                           </div>
                         </Tabs.Trigger>
                       </Show>
+                      <Show when={figmaTab()}>
+                        <Tabs.Trigger value="figma">{language.t("session.tab.figma")}</Tabs.Trigger>
+                      </Show>
                       <Show when={contextOpen()}>
                         <Tabs.Trigger
                           value="context"
@@ -333,6 +342,14 @@ export function SessionSidePanel(props: {
                             {props.floatingPrompt?.()}
                           </div>
                         </div>
+                      </Show>
+                    </Tabs.Content>
+                  </Show>
+
+                  <Show when={figmaTab()}>
+                    <Tabs.Content value="figma" class="relative flex flex-col h-full overflow-hidden contain-strict">
+                      <Show when={activeTab() === "figma"}>
+                        <FigmaTabContent />
                       </Show>
                     </Tabs.Content>
                   </Show>

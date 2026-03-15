@@ -4,7 +4,7 @@ import { Tooltip } from "@opencode-ai/ui/tooltip"
 import { createSortable } from "@thisbeyond/solid-dnd"
 import { Show, type Accessor, type JSX } from "solid-js"
 import { createStore } from "solid-js/store"
-import { useWorkspace, type Workspace } from "@/context/workspace"
+import { type Workspace } from "@/context/workspace"
 import { useLanguage } from "@/context/language"
 import { getAvatarColors } from "@/context/layout"
 
@@ -37,13 +37,13 @@ const WorkspaceTile = (props: {
   overlay: Accessor<boolean>
   suppressHover: Accessor<boolean>
   onSelect: () => void
+  onDelete?: () => void
   onMouseEnter?: (event: MouseEvent) => void
   onMouseLeave?: () => void
   setMenu: (value: boolean) => void
   setSuppressHover: (value: boolean) => void
   language: ReturnType<typeof useLanguage>
 }): JSX.Element => {
-  const workspace = useWorkspace()
   const initial = () => props.workspace.name.slice(0, 1).toUpperCase() || "W"
   const placement = () => (props.mobile ? "bottom" : "right")
   const nameTitle = () =>
@@ -104,10 +104,8 @@ const WorkspaceTile = (props: {
             <ContextMenu.ItemLabel>{props.language.t("common.edit")}</ContextMenu.ItemLabel>
           </ContextMenu.Item>
           <ContextMenu.Separator />
-          <ContextMenu.Item
-            onSelect={() => workspace.workspaces.remove(props.workspace.id)}
-          >
-            <ContextMenu.ItemLabel>{props.language.t("common.close")}</ContextMenu.ItemLabel>
+          <ContextMenu.Item onSelect={() => props.onDelete?.()}>
+            <ContextMenu.ItemLabel>{props.language.t("common.delete")}</ContextMenu.ItemLabel>
           </ContextMenu.Item>
         </ContextMenu.Content>
       </ContextMenu.Portal>
@@ -121,6 +119,7 @@ export const SortableWorkspaceTile = (props: {
   selected: Accessor<boolean>
   overlay: Accessor<boolean>
   onSelect: () => void
+  onDelete?: () => void
   onMouseEnter?: (event: MouseEvent) => void
   onMouseLeave?: () => void
 }): JSX.Element => {
@@ -138,6 +137,7 @@ export const SortableWorkspaceTile = (props: {
         overlay={props.overlay}
         suppressHover={() => state.suppressHover}
         onSelect={props.onSelect}
+        onDelete={props.onDelete}
         onMouseEnter={props.onMouseEnter}
         onMouseLeave={props.onMouseLeave}
         setMenu={(v) => setState("menu", v)}

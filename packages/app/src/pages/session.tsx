@@ -28,6 +28,7 @@ import { useComments } from "@/context/comments"
 import { useGlobalSync } from "@/context/global-sync"
 import { useLanguage } from "@/context/language"
 import { useLayout } from "@/context/layout"
+import { usePlatform } from "@/context/platform"
 import { usePrompt } from "@/context/prompt"
 import { useSDK } from "@/context/sdk"
 import { useSync } from "@/context/sync"
@@ -46,6 +47,7 @@ import { formatServerError } from "@/utils/server-errors"
 export default function Page() {
   const globalSync = useGlobalSync()
   const layout = useLayout()
+  const platform = usePlatform()
   const local = useLocal()
   const file = useFile()
   const sync = useSync()
@@ -460,10 +462,11 @@ export default function Page() {
   const openedTabs = createMemo(() =>
     tabs()
       .all()
-      .filter((tab) => tab !== "context" && tab !== "canvas"),
+      .filter((tab) => tab !== "context" && tab !== "canvas" && tab !== "figma"),
   )
 
   const canvasTab = createMemo(() => isDesktop())
+  const figmaTab = createMemo(() => isDesktop())
 
   const fileTreeTab = () => layout.fileTree.tab()
   const setFileTreeTab = (value: "changes" | "all") => layout.fileTree.setTab(value)
@@ -753,19 +756,21 @@ export default function Page() {
     const active = tabs().active()
     if (active === "context") return "context"
     if (active === "canvas" && canvasTab()) return "canvas"
+    if (active === "figma" && figmaTab()) return "figma"
     if (active && file.pathFromTab(active)) return normalizeTab(active)
 
     const first = openedTabs()[0]
     if (first) return first
     if (contextOpen()) return "context"
     if (canvasTab() && hasReview()) return "canvas"
+    if (figmaTab()) return "figma"
     return "empty"
   })
 
   createEffect(() => {
     if (!layout.ready()) return
     if (tabs().active()) return
-    if (openedTabs().length === 0 && !contextOpen() && !(canvasTab() && hasReview())) return
+    if (openedTabs().length === 0 && !contextOpen() && !(canvasTab() && hasReview()) && !figmaTab()) return
 
     const next = activeTab()
     if (next === "empty") return
