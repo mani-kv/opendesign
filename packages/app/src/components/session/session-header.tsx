@@ -10,7 +10,8 @@ import { TextField } from "@opencode-ai/ui/text-field"
 import { showToast } from "@opencode-ai/ui/toast"
 import { Tooltip, TooltipKeybind } from "@opencode-ai/ui/tooltip"
 import { getFilename } from "@opencode-ai/util/path"
-import { useParams } from "@solidjs/router"
+import { useProjectParams } from "@/context/project-scope"
+import { useProjectActive } from "@/components/project-shell"
 import { createEffect, createMemo, For, onCleanup, Show } from "solid-js"
 import { createStore } from "solid-js/store"
 import { Portal } from "solid-js/web"
@@ -225,7 +226,8 @@ function useSessionShare(args: {
 export function SessionHeader() {
   const globalSDK = useGlobalSDK()
   const layout = useLayout()
-  const params = useParams()
+  const params = useProjectParams()
+  const active = useProjectActive()
   const command = useCommand()
   const server = useServer()
   const sync = useSync()
@@ -375,7 +377,7 @@ export function SessionHeader() {
 
   return (
     <>
-      <Show when={centerMount()}>
+      <Show when={active() && centerMount()}>
         {(mount) => (
           <Portal mount={mount()}>
             <Button
@@ -404,7 +406,7 @@ export function SessionHeader() {
           </Portal>
         )}
       </Show>
-      <Show when={rightMount()}>
+      <Show when={active() && rightMount()}>
         {(mount) => (
           <Portal mount={mount()}>
             <div class="flex items-center gap-2">

@@ -1,5 +1,5 @@
-import { createEffect, createMemo, createSignal, onCleanup, onMount, Show, untrack } from "solid-js"
-import { useParams } from "@solidjs/router"
+import { createMemo, createSignal, onCleanup, onMount, Show, untrack } from "solid-js"
+import { useProjectParams } from "@/context/project-scope"
 import { useLanguage } from "@/context/language"
 import { useLayout } from "@/context/layout"
 import { usePlatform } from "@/context/platform"
@@ -17,7 +17,7 @@ function isFigmaUrl(url: string) {
 }
 
 export function FigmaTabContent() {
-  const params = useParams()
+  const params = useProjectParams()
   const platform = usePlatform()
   const lang = useLanguage()
   const layout = useLayout()
@@ -49,7 +49,7 @@ export function FigmaTabContent() {
   // Web: embed placeholder + input, iframe when URL valid (persisted per session)
   if (platform.platform === "web") {
     return (
-      <div class="flex h-full flex-col">
+      <div class="absolute inset-0 flex flex-col overflow-hidden">
         <div class="shrink-0 flex flex-col gap-2 p-3 border-b border-border-default">
           <label for="figma-url" class="text-12-regular text-text-weak">
             {lang.t("session.figma.pasteUrl")}
@@ -94,11 +94,10 @@ export function FigmaTabContent() {
     })
   })
 
-  const [loading, setLoading] = createSignal(true)
-  createEffect(() => {
-    sessionKey()
-    setLoading(true)
-  })
+  // Show skeleton only for the initial load. Once the webview has loaded once,
+  // never show the skeleton again — in-page navigation and visibility toggles
+  // should not flash a loading state.
+  const [loaded, setLoaded] = createSignal(false)
 
   const saveUrl = (u: string) => {
     if (u && isFigmaUrl(u)) figma().setUrl(u)
@@ -115,7 +114,7 @@ export function FigmaTabContent() {
   }
 
   return (
-    <div class="relative size-full overflow-hidden">
+    <div class="absolute inset-0 overflow-hidden">
       <webview
         ref={(el) => {
           if (!el) return
@@ -124,15 +123,12 @@ export function FigmaTabContent() {
             else saveFromEl(el)
           }
           const save = () => saveFromEl(el)
-          const onStart = () => setLoading(true)
-          const onStop = () => setLoading(false)
-          el.addEventListener("did-start-loading", onStart)
+          const onStop = () => setLoaded(true)
           el.addEventListener("did-stop-loading", onStop)
           el.addEventListener("did-navigate", handleNav)
           el.addEventListener("did-navigate-in-page", handleNav)
           onCleanup(() => {
             save()
-            el.removeEventListener("did-start-loading", onStart)
             el.removeEventListener("did-stop-loading", onStop)
             el.removeEventListener("did-navigate", handleNav)
             el.removeEventListener("did-navigate-in-page", handleNav)
@@ -144,7 +140,7 @@ export function FigmaTabContent() {
         allowpopups
         data-figma-webview
       />
-      <Show when={loading()}>
+      <Show when={!loaded()}>
         <div
           class="absolute inset-0 z-10 flex flex-col gap-4 bg-background-base p-6"
           aria-hidden

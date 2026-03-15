@@ -1,6 +1,6 @@
 import { createMemo, createEffect, on, onCleanup, For, Show } from "solid-js"
 import type { JSX } from "solid-js"
-import { useParams } from "@solidjs/router"
+import { useProjectParams } from "@/context/project-scope"
 import { useSync } from "@/context/sync"
 import { useLayout } from "@/context/layout"
 import { checksum } from "@opencode-ai/util/encode"
@@ -91,7 +91,7 @@ const emptyMessages: Message[] = []
 const emptyUserMessages: UserMessage[] = []
 
 export function SessionContextTab() {
-  const params = useParams()
+  const params = useProjectParams()
   const sync = useSync()
   const layout = useLayout()
   const language = useLanguage()

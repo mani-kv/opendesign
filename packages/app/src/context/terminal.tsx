@@ -1,7 +1,7 @@
 import { createStore, produce } from "solid-js/store"
 import { createSimpleContext } from "@opencode-ai/ui/context"
 import { batch, createEffect, createMemo, createRoot, on, onCleanup } from "solid-js"
-import { useParams } from "@solidjs/router"
+import { useProjectParams } from "./project-scope"
 import { useSDK } from "./sdk"
 import type { Platform } from "./platform"
 import { Persist, persisted, removePersisted } from "@/utils/persist"
@@ -337,7 +337,7 @@ export const { use: useTerminal, provider: TerminalProvider } = createSimpleCont
   gate: false,
   init: () => {
     const sdk = useSDK()
-    const params = useParams()
+    const params = useProjectParams()
     const cache = new Map<string, TerminalCacheEntry>()
 
     caches.add(cache)

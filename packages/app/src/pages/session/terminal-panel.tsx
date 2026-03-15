@@ -1,6 +1,6 @@
 import { For, Show, createEffect, createMemo, on, onCleanup } from "solid-js"
 import { createStore } from "solid-js/store"
-import { useParams } from "@solidjs/router"
+import { useProjectParams } from "@/context/project-scope"
 import { Tabs } from "@opencode-ai/ui/tabs"
 import { ResizeHandle } from "@opencode-ai/ui/resize-handle"
 import { IconButton } from "@opencode-ai/ui/icon-button"
@@ -20,7 +20,7 @@ import { createSizing, focusTerminalById } from "@/pages/session/helpers"
 import { getTerminalHandoff, setTerminalHandoff } from "@/pages/session/handoff"
 
 export function TerminalPanel() {
-  const params = useParams()
+  const params = useProjectParams()
   const layout = useLayout()
   const terminal = useTerminal()
   const language = useLanguage()

@@ -1,7 +1,7 @@
 import { createEffect, createMemo, Match, on, onCleanup, Switch } from "solid-js"
 import { createStore } from "solid-js/store"
 import { Dynamic } from "solid-js/web"
-import { useParams } from "@solidjs/router"
+import { useProjectParams } from "@/context/project-scope"
 import type { FileSearchHandle } from "@opencode-ai/ui/file"
 import { useFileComponent } from "@opencode-ai/ui/context/file"
 import { cloneSelectedLineRange, previewSelectedLines } from "@opencode-ai/ui/pierre/selection-bridge"
@@ -53,7 +53,7 @@ function FileCommentMenu(props: {
 }
 
 export function FileTabContent(props: { tab: string }) {
-  const params = useParams()
+  const params = useProjectParams()
   const layout = useLayout()
   const file = useFile()
   const comments = useComments()

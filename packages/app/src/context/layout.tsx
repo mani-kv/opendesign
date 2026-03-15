@@ -296,10 +296,43 @@ export const { use: useLayout, provider: LayoutProvider } = createSimpleContext(
 
     const MAX_SESSION_KEYS = 50
     const PENDING_MESSAGE_TTL_MS = 2 * 60 * 1000
+    const PROJECT_CACHE_LIMIT = 4
     const usage = {
       active: undefined as string | undefined,
       pruned: false,
       used: new Map<string, number>(),
+    }
+    const projectCacheKeys: string[] = []
+
+    function projectCacheTouch(sessionKey: string) {
+      const idx = projectCacheKeys.indexOf(sessionKey)
+      if (idx >= 0) projectCacheKeys.splice(idx, 1)
+      projectCacheKeys.unshift(sessionKey)
+      while (projectCacheKeys.length > PROJECT_CACHE_LIMIT) projectCacheKeys.pop()
+    }
+
+    function projectCacheHas(sessionKey: string) {
+      return projectCacheKeys.includes(sessionKey)
+    }
+
+    function projectCacheDrop(keysToDrop: string[]) {
+      for (const k of keysToDrop) {
+        const idx = projectCacheKeys.indexOf(k)
+        if (idx >= 0) projectCacheKeys.splice(idx, 1)
+      }
+      if (keysToDrop.length === 0) return
+
+      setStore(
+        produce((draft) => {
+          for (const key of keysToDrop) {
+            delete draft.sessionView[key]
+            delete draft.sessionTabs[key]
+          }
+        }),
+      )
+
+      scroll.drop(keysToDrop)
+      dropSessionState(keysToDrop)
     }
 
     const SESSION_STATE_KEYS = [
@@ -586,6 +619,12 @@ export const { use: useLayout, provider: LayoutProvider } = createSimpleContext(
 
     return {
       ready,
+      projectCache: {
+        touch: projectCacheTouch,
+        has: projectCacheHas,
+        drop: projectCacheDrop,
+        keys: () => [...projectCacheKeys],
+      },
       handoff: {
         tabs: createMemo(() => store.handoff?.tabs),
         setTabs(dir: string, id: string) {

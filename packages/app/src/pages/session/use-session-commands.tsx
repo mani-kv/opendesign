@@ -1,5 +1,6 @@
 import { createMemo } from "solid-js"
-import { useNavigate, useParams } from "@solidjs/router"
+import { useNavigate } from "@solidjs/router"
+import { useProjectParams } from "@/context/project-scope"
 import { useCommand, type CommandOption } from "@/context/command"
 import { useDialog } from "@opencode-ai/ui/context/dialog"
 import { useFile, selectionFromLines, type FileSelection, type SelectedLineRange } from "@/context/file"
@@ -46,7 +47,7 @@ export const useSessionCommands = (actions: SessionCommandContext) => {
   const sync = useSync()
   const terminal = useTerminal()
   const layout = useLayout()
-  const params = useParams()
+  const params = useProjectParams()
   const navigate = useNavigate()
 
   const sessionKey = createMemo(() => `${params.projectId}${params.id ? "/" + params.id : ""}`)

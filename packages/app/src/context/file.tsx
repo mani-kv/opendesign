@@ -2,7 +2,8 @@ import { batch, createEffect, createMemo, onCleanup } from "solid-js"
 import { createStore, produce, reconcile } from "solid-js/store"
 import { createSimpleContext } from "@opencode-ai/ui/context"
 import { showToast } from "@opencode-ai/ui/toast"
-import { useParams } from "@solidjs/router"
+import { useProjectScope } from "./project-scope"
+import { useProjectActive } from "@/components/project-shell"
 import { getFilename } from "@opencode-ai/util/path"
 import { useSDK } from "./sdk"
 import { useSync } from "./sync"
@@ -55,13 +56,14 @@ export const { use: useFile, provider: FileProvider } = createSimpleContext({
   init: () => {
     const sdk = useSDK()
     useSync()
-    const params = useParams()
+    const scopeInfo = useProjectScope()
+    const active = useProjectActive()
     const language = useLanguage()
     const layout = useLayout()
 
     const scope = createMemo(() => sdk.directory)
     const path = createPathHelpers(scope)
-    const tabs = layout.tabs(() => `${params.projectId}${params.id ? "/" + params.id : ""}`)
+    const tabs = layout.tabs(scopeInfo.sessionKey)
 
     const inflight = new Map<string, Promise<void>>()
     const [store, setStore] = createStore<{
@@ -108,7 +110,7 @@ export const { use: useFile, provider: FileProvider } = createSimpleContext({
     })
 
     const viewCache = createFileViewCache()
-    const view = createMemo(() => viewCache.load(scope(), params.id))
+    const view = createMemo(() => viewCache.load(scope(), scopeInfo.sessionId()))
 
     const ensure = (file: string) => {
       if (!file) return
@@ -200,7 +202,12 @@ export const { use: useFile, provider: FileProvider } = createSimpleContext({
         () => [],
       )
 
+    const paused = { current: false }
+    createEffect(() => {
+      paused.current = !active()
+    })
     const stop = sdk.event.listen((e) => {
+      if (paused.current) return
       invalidateFromWatcher(e.details, {
         normalize: path.normalize,
         hasFile: (file) => Boolean(store.file[file]),

@@ -1,7 +1,8 @@
-import { For, Match, Show, Switch, createEffect, createMemo, onCleanup, type JSX } from "solid-js"
+import { For, Match, Show, Switch, createEffect, createMemo, onCleanup, createSignal, type JSX } from "solid-js"
+import { Portal } from "solid-js/web"
 import { createStore } from "solid-js/store"
 import { createMediaQuery } from "@solid-primitives/media"
-import { useParams } from "@solidjs/router"
+import { useProjectParams } from "@/context/project-scope"
 import { Tabs } from "@opencode-ai/ui/tabs"
 import { IconButton } from "@opencode-ai/ui/icon-button"
 import { TooltipKeybind } from "@opencode-ai/ui/tooltip"
@@ -29,6 +30,33 @@ import { createOpenSessionFileTab, getTabReorderIndex, type Sizing } from "@/pag
 import { StickyAddButton } from "@/pages/session/review-tab"
 import { setSessionHandoff } from "@/pages/session/handoff"
 
+function FigmaWebviewHost(props: { active: boolean }) {
+  const [host, setHost] = createSignal<HTMLDivElement | undefined>(undefined)
+  return (
+    <div
+      ref={setHost}
+      class="absolute inset-x-0 bottom-0 top-12 overflow-hidden"
+      style={{
+        // No opacity/visibility changes — Electron webviews detach their renderer
+        // when ancestors have opacity:0 or visibility:hidden. Instead use z-index:
+        // z:-1 puts the webview behind the parent's opaque background (invisible to
+        // user but Electron still considers it "visible" → renderer stays alive).
+        // z:0 when Figma tab is active to show through the transparent placeholder.
+        "z-index": props.active ? 0 : -1,
+        "pointer-events": props.active ? "auto" : "none",
+      }}
+    >
+      <Show when={host()}>
+        <Portal mount={host()!}>
+          <div class="absolute inset-0">
+            <FigmaTabContent />
+          </div>
+        </Portal>
+      </Show>
+    </div>
+  )
+}
+
 export function SessionSidePanel(props: {
   reviewPanel: () => JSX.Element
   floatingPrompt?: () => JSX.Element
@@ -37,7 +65,7 @@ export function SessionSidePanel(props: {
   reviewSnap: boolean
   size: Sizing
 }) {
-  const params = useParams()
+  const params = useProjectParams()
   const layout = useLayout()
   const sync = useSync()
   const file = useFile()
@@ -249,7 +277,8 @@ export function SessionSidePanel(props: {
               "pointer-events-none": !reviewOpen(),
             }}
           >
-            <div class="size-full min-w-0 h-full bg-background-base">
+            <div class="relative size-full min-w-0 min-h-0 flex flex-col overflow-hidden bg-background-base">
+              <div class="relative min-h-0 flex-1 overflow-hidden">
               <DragDropProvider
                 onDragStart={handleDragStart}
                 onDragEnd={handleDragEnd}
@@ -259,7 +288,7 @@ export function SessionSidePanel(props: {
                 <DragDropSensors />
                 <ConstrainDragYAxis />
                 <Tabs value={activeTab()} onChange={openTab}>
-                  <div class="sticky top-0 shrink-0 flex">
+                  <div class="sticky top-0 z-10 shrink-0 flex">
                     <Tabs.List
                       ref={(el: HTMLDivElement) => {
                         const stop = createFileTabListSync({ el, contextOpen })
@@ -348,9 +377,8 @@ export function SessionSidePanel(props: {
 
                   <Show when={figmaTab()}>
                     <Tabs.Content value="figma" class="relative flex flex-col h-full overflow-hidden contain-strict">
-                      <Show when={activeTab() === "figma"}>
-                        <FigmaTabContent />
-                      </Show>
+                      {/* Rendered in FigmaWebviewHost (Portal) to avoid display:none GC of webview */}
+                      <div class="size-full" aria-hidden />
                     </Tabs.Content>
                   </Show>
 
@@ -394,6 +422,11 @@ export function SessionSidePanel(props: {
                   </Show>
                 </DragOverlay>
               </DragDropProvider>
+              </div>
+              {/* Persistent webview host outside Tabs — avoids display:none which GCs Electron webviews */}
+              <Show when={figmaTab()}>
+                <FigmaWebviewHost active={activeTab() === "figma"} />
+              </Show>
             </div>
           </div>
 

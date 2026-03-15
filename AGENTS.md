@@ -126,3 +126,11 @@ const table = sqliteTable("session", {
 ## Type Checking
 
 - Always run `bun typecheck` from package directories (e.g., `packages/opencode`), never `tsc` directly.
+
+## Learned User Preferences
+
+- For create, bug fix, or refactor requests, follow the create-something-workflow rule: confirm understanding first, analyze risks, catalogue decisions and assumptions, iterate until aligned, implement, then add tests; skip for explanations or documentation.
+
+## Learned Workspace Facts
+
+

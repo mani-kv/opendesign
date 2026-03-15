@@ -85,7 +85,7 @@ flowchart TB
 - **1 repo required**: Multiple repos per agent would make "unified prototype" impossible; one repo is necessary.
 - **Sequential approval**: Merge one agent at a time. Each merge is against current `main`. Conflicts are resolved before the next approval.
 - **Orchestrator reduces conflicts**: Scope concepts and route agents so they tend to touch different files (e.g. validation vs layout). Reduces overlap; conflicts still possible.
-- **No worktrees**: Single checkout per agent is sufficient.
+- **No Git worktrees**: Single checkout per agent is sufficient. (Note: the app uses "worktree" in session state to refer to the agent's working directory, not the Git worktree feature.)
 
 ### Visual Conflict Resolution (Designer-Focused)
 
@@ -266,6 +266,56 @@ flowchart TB
     P -->|"projectDir = join(home, .opendesign, projects, projectId)"| ProjectDir
     P -->|"sessionId"| SessionDB
 ```
+
+## Project Pool (Instant Switching)
+
+Project switching uses **component pooling** so up to 4 projects stay mounted; switching only changes visibility, not the DOM tree. This keeps Figma webviews, session state, and SSE connections alive for instant feedback.
+
+### Architecture
+
+```
+ProjectPoolProvider → ProjectPool (accepts content: Component)
+  → Key each={keys()} by={k=>k}
+    → ProjectShell (position:absolute, visibility/opacity when inactive)
+      → ProjectScopeProvider + ActiveContext
+        → SDKProvider (active gate for SSE; client depends only on directory)
+        → SyncProvider → PoolProjectData
+          → Dynamic component={content}   ← each slot gets its own instance
+            → TerminalProvider → FileProvider → PromptProvider → CommentsProvider → Session
+```
+
+**Important:** `ProjectPool` accepts a component reference (`content: Component`), not JSX children. `Dynamic` instantiates a separate component tree per pool slot. This ensures each slot has its own independent provider chain and DOM tree — switching projects only toggles `ProjectShell` visibility without unmounting/remounting any content.
+
+### Key Design Decisions
+
+| Decision | Rationale |
+|----------|-----------|
+| **LRU pool, max 4** | Keeps memory bounded while allowing fast switching between recent projects. Active project is never evicted. |
+| **Z-index stacking (no opacity/visibility)** | Avoids `display: none`, `visibility: hidden`, AND `opacity: 0`. Electron webviews inside parents with any of these get GC'd or detach their renderer ([electron/electron#764](https://github.com/electron/electron/issues/764)). Active shell gets `z-index: 1`, inactive shells get `z-index: 0`. Session content has an opaque background that naturally covers inactive shells. |
+| **`inert` + `aria-hidden` on inactive** | Keeps inactive shells non-focusable and hidden from assistive tech. |
+| **SDKProvider `active` gate** | SSE subscriptions only run for the active project. Client memo depends only on `directory()`, not `sessionId`. |
+| **FileProvider `useProjectScope`** | File watchers pause when inactive to avoid wasted work. |
+| **FigmaWebviewHost outside Tabs** | Kobalte Tabs use `display:none` for inactive content, which would GC the webview. Portal the webview into a host div that uses `z-index: -1` when the Figma tab is inactive (behind parent background, invisible to the user but "visible" to Electron's renderer — keeps it alive without reloads). |
+| **`useProjectParams()` in pool children** | Components inside pool slots must use `useProjectParams()` (from `ProjectScopeProvider`) instead of `useParams()` (from router). Router params only reflect the active project; inactive slots reading router params would get wrong data. |
+| **Figma host `top-12`** | Positions the Figma area below the tab bar to avoid overlap/stacking. |
+
+### Files
+
+| Path | Purpose |
+|------|---------|
+| `packages/app/src/pool/project-pool.ts` | LRU pool: `activate`, `evict`, `getCached`, `getActive` |
+| `packages/app/src/pool/project-pool-context.tsx` | `ProjectPoolProvider`, `useProjectPool` |
+| `packages/app/src/context/project-scope.tsx` | `ProjectScopeProvider`, `useProjectScope`, `useProjectParams` |
+| `packages/app/src/components/project-shell.tsx` | Shell wrapper: inert, visibility, `ActiveContext` |
+| `packages/app/src/components/project-pool.tsx` | Route-based pool; renders shells for cached keys |
+| `packages/app/src/pages/session/figma-tab-content.tsx` | Figma embed (webview/iframe) |
+| `packages/app/src/pages/session/session-side-panel.tsx` | Defines `FigmaWebviewHost`; portaled webview for instant tab switching |
+
+### Eviction & Cleanup
+
+On eviction, `layout.projectCache.drop(keys)`, `dropSessionCaches`, and `sync.session.evict()` are called so stale data is released. Evicted projects unmount; switching back re-mounts and may need to reload (Figma, etc.).
+
+---
 
 ## Request Flow: Directory Scoping
 

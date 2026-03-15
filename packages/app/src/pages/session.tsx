@@ -22,10 +22,13 @@ import { createAutoScroll } from "@opencode-ai/ui/hooks"
 import { Button } from "@opencode-ai/ui/button"
 import { showToast } from "@opencode-ai/ui/toast"
 import { base64Encode, checksum } from "@opencode-ai/util/encode"
-import { useLocation, useNavigate, useParams, useSearchParams } from "@solidjs/router"
+import { useLocation, useNavigate, useSearchParams } from "@solidjs/router"
+import { useProjectScope } from "@/context/project-scope"
+import { useProjectActive } from "@/components/project-shell"
 import { SessionHeader } from "@/components/session"
 import { useComments } from "@/context/comments"
 import { useGlobalSync } from "@/context/global-sync"
+import { decode64 } from "@/utils/base64"
 import { useLanguage } from "@/context/language"
 import { useLayout } from "@/context/layout"
 import { usePlatform } from "@/context/platform"
@@ -44,6 +47,15 @@ import { TerminalPanel } from "@/pages/session/terminal-panel"
 import { useSessionCommands } from "@/pages/session/use-session-commands"
 import { formatServerError } from "@/utils/server-errors"
 
+function projectDir(home: string, projectId: string) {
+  const base = home.replace(/[/\\]+$/, "")
+  return `${base}/.opendesign/projects/${projectId}`
+}
+
+function resolveProjectDirectory(projectId: string, home: string) {
+  return decode64(projectId) ?? projectDir(home, projectId)
+}
+
 export default function Page() {
   const globalSync = useGlobalSync()
   const layout = useLayout()
@@ -53,19 +65,20 @@ export default function Page() {
   const sync = useSync()
   const dialog = useDialog()
   const language = useLanguage()
-  const params = useParams()
+  const scope = useProjectScope()
   const navigate = useNavigate()
   const sdk = useSDK()
   const prompt = usePrompt()
   const comments = useComments()
   const terminal = useTerminal()
+  const isActive = useProjectActive()
   const [searchParams, setSearchParams] = useSearchParams<{ prompt?: string }>()
 
   createEffect(() => {
     if (!untrack(() => prompt.ready())) return
     prompt.ready()
     untrack(() => {
-      if (params.id || !prompt.ready()) return
+      if (scope.sessionId() || !prompt.ready()) return
       const text = searchParams.prompt
       if (!text) return
       prompt.set([{ type: "text", content: text, start: 0, end: text.length }], text.length)
@@ -86,15 +99,15 @@ export default function Page() {
 
   const composer = createSessionComposerState()
 
-  const sessionKey = createMemo(() => `${params.projectId}${params.id ? "/" + params.id : ""}`)
-  const workspaceKey = createMemo(() => params.projectId ?? "")
+  const sessionKey = scope.sessionKey
+  const workspaceKey = createMemo(() => scope.projectId() ?? "")
   const workspaceTabs = createMemo(() => layout.tabs(workspaceKey))
   const tabs = createMemo(() => layout.tabs(sessionKey))
   const view = createMemo(() => layout.view(sessionKey))
 
   createEffect(
     on(
-      () => params.id,
+      () => scope.sessionId(),
       (id, prev) => {
         if (!id) return
         if (prev) return
@@ -108,7 +121,7 @@ export default function Page() {
 
         if (pending.id !== id) return
         layout.handoff.clearTabs()
-        if (pending.dir !== (params.projectId ?? "")) return
+        if (pending.dir !== (scope.projectId() ?? "")) return
 
         const from = workspaceTabs().tabs()
         if (from.all.length === 0 && !from.active) return
@@ -172,12 +185,12 @@ export default function Page() {
     if (path) file.load(path)
   })
 
-  const info = createMemo(() => (params.id ? sync.session.get(params.id) : undefined))
-  const diffs = createMemo(() => (params.id ? (sync.data.session_diff[params.id] ?? []) : []))
+  const info = createMemo(() => (scope.sessionId() ? sync.session.get(scope.sessionId()!) : undefined))
+  const diffs = createMemo(() => (scope.sessionId() ? (sync.data.session_diff[scope.sessionId()!] ?? []) : []))
   const reviewCount = createMemo(() => Math.max(info()?.summary?.files ?? 0, diffs().length))
   const hasReview = createMemo(() => reviewCount() > 0)
   const revertMessageID = createMemo(() => info()?.revert?.messageID)
-  const messages = createMemo(() => (params.id ? (sync.data.message[params.id] ?? []) : []))
+  const messages = createMemo(() => (scope.sessionId() ? (sync.data.message[scope.sessionId()!] ?? []) : []))
   const lastUserMessage = createMemo(() => {
     const msgs = messages().filter((m) => m.role === "user")
     const revert = revertMessageID()
@@ -185,18 +198,28 @@ export default function Page() {
     return filtered.at(-1)
   })
   const messagesReady = createMemo(() => {
-    const id = params.id
+    const id = scope.sessionId()
     if (!id) return true
     return sync.data.message[id] !== undefined
   })
 
   createEffect(
     on(
-      () => ({ dir: params.projectId, id: params.id }),
+      () => ({ dir: scope.projectId(), id: scope.sessionId() }),
       (next, prev) => {
         if (!prev) return
         if (next.dir === prev.dir && next.id === prev.id) return
-        if (prev.id) sync.session.evict(prev.id, prev.dir)
+
+        const prevKey = `${prev.dir ?? ""}${prev.id ? "/" + prev.id : ""}`
+        const nextKey = `${next.dir ?? ""}${next.id ? "/" + next.id : ""}`
+
+        layout.projectCache.touch(nextKey)
+
+        if (prev.id && prev.dir && !layout.projectCache.has(prevKey)) {
+          const home = globalSync.data.path.home ?? "/"
+          const dir = resolveProjectDirectory(prev.dir, home)
+          sync.session.evict(prev.id, dir)
+        }
         if (!next.id) resetSessionModel(local)
       },
       { defer: true },
@@ -250,7 +273,7 @@ export default function Page() {
   })
 
   const diffsReady = createMemo(() => {
-    const id = params.id
+    const id = scope.sessionId()
     if (!id) return true
     if (!hasReview()) return true
     return sync.data.session_diff[id] !== undefined
@@ -313,7 +336,7 @@ export default function Page() {
   const resumeScroll = () => clearMessageHash()
 
   createEffect(
-    on([() => sdk.directory, () => params.id] as const, ([, id]) => {
+    on([() => sdk.directory, scope.sessionId] as const, ([, id]) => {
       if (!id) return
       untrack(() => {
         void sync.session.sync(id)
@@ -326,7 +349,8 @@ export default function Page() {
   createEffect(
     on(
       sessionKey,
-      () => {
+      (key) => {
+        if (key) layout.projectCache.touch(key)
         setStore("changes", "session")
         setUi("pendingMessage", undefined)
       },
@@ -336,7 +360,7 @@ export default function Page() {
 
   createEffect(
     on(
-      () => params.projectId,
+      () => scope.projectId(),
       (pid) => {
         if (!pid) return
         setStore("newSessionWorktree", "main")
@@ -420,6 +444,7 @@ export default function Page() {
   }
 
   const handleKeyDown = (event: KeyboardEvent) => {
+    if (!isActive()) return
     const path = event.composedPath()
     const target = path.find((item): item is HTMLElement => item instanceof HTMLElement)
     const activeElement = deepActiveElement()
@@ -550,7 +575,7 @@ export default function Page() {
   }) => (
     <Show when={!store.deferRender}>
       <Switch>
-        <Match when={store.changes === "turn" && !!params.id}>
+        <Match when={store.changes === "turn" && !!scope.sessionId()}>
           <SessionReviewTab
             title={changesTitle()}
             empty={emptyTurn()}
@@ -778,7 +803,7 @@ export default function Page() {
   })
 
   createEffect(() => {
-    const id = params.id
+    const id = scope.sessionId()
     if (!id) return
 
     const wants = isDesktop()
@@ -835,7 +860,7 @@ export default function Page() {
       <SessionHeader />
       <div class="flex-1 min-h-0 flex flex-col md:flex-row">
         <SessionMobileTabs
-          open={!isDesktop() && !!params.id}
+          open={!isDesktop() && !!scope.sessionId()}
           mobileTab={store.mobileTab}
           hasReview={hasReview()}
           reviewCount={reviewCount()}

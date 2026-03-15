@@ -1,38 +1,43 @@
 import { createEffect, createMemo, Show, type ParentProps } from "solid-js"
-import { useNavigate, useParams } from "@solidjs/router"
-import { SDKProvider } from "@/context/sdk"
-import { SyncProvider, useSync } from "@/context/sync"
-import { LocalProvider } from "@/context/local"
-import { DataProvider } from "@opencode-ai/ui/context"
+import { useLocation, useNavigate, useParams } from "@solidjs/router"
 import { Splash } from "@opencode-ai/ui/logo"
 import { showToast } from "@opencode-ai/ui/toast"
 import { useLanguage } from "@/context/language"
 import { useWorkspace } from "@/context/workspace"
 import { useGlobalSync } from "@/context/global-sync"
+import { ProjectPoolProvider } from "@/pool/project-pool-context"
+import { ProjectPool } from "@/components/project-pool"
+import { CommentsProvider } from "@/context/comments"
+import { FileProvider } from "@/context/file"
+import { PromptProvider } from "@/context/prompt"
+import { TerminalProvider } from "@/context/terminal"
+import { Suspense } from "solid-js"
+import Session from "@/pages/session"
 
 function projectDir(home: string, projectId: string) {
   const base = home.replace(/[/\\]+$/, "")
   return `${base}/.opendesign/projects/${projectId}`
 }
 
-function ProjectDataProvider(props: ParentProps<{ projectId: string; directory: string }>) {
-  const navigate = useNavigate()
-  const sync = useSync()
-
+function PoolSessionContent() {
   return (
-    <DataProvider
-      data={sync.data}
-      directory={props.directory}
-      onNavigateToSession={(sessionID: string) => navigate(`/project/${props.projectId}/session/${sessionID}`)}
-      onSessionHref={(sessionID: string) => `/project/${props.projectId}/session/${sessionID}`}
-    >
-      <LocalProvider>{props.children}</LocalProvider>
-    </DataProvider>
+    <TerminalProvider>
+      <FileProvider>
+        <PromptProvider>
+          <CommentsProvider>
+            <Suspense fallback={<div class="size-full" />}>
+              <Session />
+            </Suspense>
+          </CommentsProvider>
+        </PromptProvider>
+      </FileProvider>
+    </TerminalProvider>
   )
 }
 
 export default function Layout(props: ParentProps) {
   const params = useParams()
+  const location = useLocation()
   const navigate = useNavigate()
   const language = useLanguage()
   const workspace = useWorkspace()
@@ -44,6 +49,8 @@ export default function Layout(props: ParentProps) {
     const home = globalSync.data.path.home ?? "/"
     return projectDir(home, projectId())
   })
+
+  const isSessionRoute = createMemo(() => location.pathname.includes("/session"))
 
   createEffect(() => {
     const pid = projectId()
@@ -77,14 +84,13 @@ export default function Layout(props: ParentProps) {
     )
   }
 
-  const dir = directory()
+  if (!isSessionRoute()) {
+    return <>{props.children}</>
+  }
+
   return (
-    <SDKProvider directory={() => dir}>
-      <SyncProvider>
-        <ProjectDataProvider projectId={p.id} directory={dir}>
-          {props.children}
-        </ProjectDataProvider>
-      </SyncProvider>
-    </SDKProvider>
+    <ProjectPoolProvider>
+      <ProjectPool content={PoolSessionContent} />
+    </ProjectPoolProvider>
   )
 }

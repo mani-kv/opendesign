@@ -17,7 +17,7 @@ import {
 } from "@/context/prompt"
 import { useLayout } from "@/context/layout"
 import { useSDK } from "@/context/sdk"
-import { useParams } from "@solidjs/router"
+import { useProjectParams } from "@/context/project-scope"
 import { useSync } from "@/context/sync"
 import { useComments } from "@/context/comments"
 import { Button } from "@opencode-ai/ui/button"
@@ -102,7 +102,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
   const prompt = usePrompt()
   const layout = useLayout()
   const comments = useComments()
-  const params = useParams()
+  const params = useProjectParams()
   const dialog = useDialog()
   const providers = useProviders()
   const command = useCommand()

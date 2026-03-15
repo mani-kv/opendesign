@@ -1,6 +1,7 @@
 import { For, createEffect, createMemo, on, onCleanup, Show, Index, type JSX } from "solid-js"
 import { createStore, produce } from "solid-js/store"
-import { useNavigate, useParams } from "@solidjs/router"
+import { useNavigate } from "@solidjs/router"
+import { useProjectParams } from "@/context/project-scope"
 import { Button } from "@opencode-ai/ui/button"
 import { FileIcon } from "@opencode-ai/ui/file-icon"
 import { Icon } from "@opencode-ai/ui/icon"
@@ -207,7 +208,7 @@ export function MessageTimeline(props: {
 }) {
   let touchGesture: number | undefined
 
-  const params = useParams()
+  const params = useProjectParams()
   const navigate = useNavigate()
   const sdk = useSDK()
   const sync = useSync()
