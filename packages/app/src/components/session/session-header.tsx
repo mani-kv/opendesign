@@ -244,8 +244,8 @@ export function SessionHeader() {
   })
   const name = createMemo(() => {
     const current = project()
-    if (current) return current.name || getFilename(current.worktree)
-    return getFilename(projectDirectory())
+    const raw = current ? current.name || getFilename(current.worktree) : getFilename(projectDirectory())
+    return !raw || raw.includes("\uFFFD") ? "files" : raw
   })
   const hotkey = createMemo(() => command.keybind("file.open"))
 
