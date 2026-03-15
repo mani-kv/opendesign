@@ -1,4 +1,4 @@
-import { createMemo, onCleanup, onMount } from "solid-js"
+import { createEffect, createMemo, createSignal, onCleanup, onMount, Show, untrack } from "solid-js"
 import { useParams } from "@solidjs/router"
 import { useLanguage } from "@/context/language"
 import { useLayout } from "@/context/layout"
@@ -84,47 +84,79 @@ export function FigmaTabContent() {
     )
   }
 
-  // Electron: inline webview with URL persistence
-  const initialSrc = () => {
-    const url = figma().url()
-    return (url && isFigmaUrl(url)) ? url : FIGMA_ORIGIN
-  }
+  // Electron: inline webview. Per-project URL, shared auth (partition).
+  // src only updates when sessionKey changes (project switch), not when we save from did-navigate.
+  const src = createMemo(() => {
+    sessionKey()
+    return untrack(() => {
+      const u = figma().url()
+      return (u && isFigmaUrl(u)) ? u : FIGMA_ORIGIN
+    })
+  })
 
-  const saveUrl = (url: string) => {
-    if (url && isFigmaUrl(url)) figma().setUrl(url)
+  const [loading, setLoading] = createSignal(true)
+  createEffect(() => {
+    sessionKey()
+    setLoading(true)
+  })
+
+  const saveUrl = (u: string) => {
+    if (u && isFigmaUrl(u)) figma().setUrl(u)
   }
 
   const saveFromEl = (el: HTMLWebViewElement) => {
     try {
       const w = el as unknown as { getURL?(): string }
-      const url = w.getURL?.()
-      if (url) saveUrl(url)
+      const u = w.getURL?.()
+      if (u) saveUrl(u)
     } catch {
       /* ignore */
     }
   }
 
   return (
-    <webview
-      ref={(el) => {
-        if (!el) return
-        const handleNav = (e: Event & { url?: string }) => {
-          if (e.url) saveUrl(e.url)
-          else saveFromEl(el)
-        }
-        const save = () => saveFromEl(el)
-        el.addEventListener("did-navigate", handleNav)
-        el.addEventListener("did-navigate-in-page", handleNav)
-        onCleanup(() => {
-          save()
-          el.removeEventListener("did-navigate", handleNav)
-          el.removeEventListener("did-navigate-in-page", handleNav)
-        })
-      }}
-      src={initialSrc()}
-      class="size-full border-0"
-      allowpopups
-      data-figma-webview
-    />
+    <div class="relative size-full overflow-hidden">
+      <webview
+        ref={(el) => {
+          if (!el) return
+          const handleNav = (e: Event & { url?: string }) => {
+            if (e.url) saveUrl(e.url)
+            else saveFromEl(el)
+          }
+          const save = () => saveFromEl(el)
+          const onStart = () => setLoading(true)
+          const onStop = () => setLoading(false)
+          el.addEventListener("did-start-loading", onStart)
+          el.addEventListener("did-stop-loading", onStop)
+          el.addEventListener("did-navigate", handleNav)
+          el.addEventListener("did-navigate-in-page", handleNav)
+          onCleanup(() => {
+            save()
+            el.removeEventListener("did-start-loading", onStart)
+            el.removeEventListener("did-stop-loading", onStop)
+            el.removeEventListener("did-navigate", handleNav)
+            el.removeEventListener("did-navigate-in-page", handleNav)
+          })
+        }}
+        src={src()}
+        partition="persist:figma"
+        class="size-full border-0"
+        allowpopups
+        data-figma-webview
+      />
+      <Show when={loading()}>
+        <div
+          class="absolute inset-0 z-10 flex flex-col gap-4 bg-background-base p-6"
+          aria-hidden
+        >
+          <div class="flex gap-2">
+            <div class="h-8 w-24 rounded-md bg-surface-raised-base opacity-60 animate-pulse" />
+            <div class="h-8 w-32 rounded-md bg-surface-raised-base opacity-60 animate-pulse" />
+            <div class="h-8 w-16 rounded-md bg-surface-raised-base opacity-60 animate-pulse" />
+          </div>
+          <div class="flex-1 min-h-0 rounded-lg bg-surface-raised-base opacity-40 animate-pulse" />
+        </div>
+      </Show>
+    </div>
   )
 }

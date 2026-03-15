@@ -1,0 +1,82 @@
+---
+description: Structured workflow for creation, bug fix, and refactor requests - confirm understanding, analyze risks, resolve decisions, then implement and test
+alwaysApply: true
+---
+
+# Creation / Bug Fix / Refactor Workflow
+
+When the user asks to **create** something, **fix a bug**, or **refactor** code, follow this workflow strictly. Do not skip steps.
+
+Do **not** apply this workflow for explanations, questions, or documentation requests.
+
+---
+
+## 1. Understand and Confirm
+
+- Parse the question and expected experience.
+- Summarize your understanding in 2–4 sentences.
+- Ask the user: "Is this accurate? Reply yes or proceed to continue."
+- **Do not move on until the user confirms.**
+
+---
+
+## 2. Evaluate and Analyze Risks
+
+- Inspect the relevant parts of the codebase.
+- List what might go wrong if the request is fulfilled:
+  - Breaking changes
+  - Performance impact
+  - Security implications
+  - Conflicts with existing patterns or conventions
+  - Edge cases and failure modes
+
+---
+
+## 3. Catalogue Decisions and Assumptions
+
+- Identify tradeoffs and decisions where you must assume something.
+- List each decision point and assumption clearly.
+- Present them to the user and ask for clarifications or approvals.
+- **Do not assume; get explicit direction.**
+
+---
+
+## 4. Iterate Until Aligned
+
+- After user input, run another pass of side-effect and risk analysis.
+- Surface any new issues or tradeoffs.
+- Repeat until a balanced tradeoff is agreed and direction is clear.
+- Only then proceed to implementation.
+
+---
+
+## 5. Implementation
+
+- Implement according to the agreed direction.
+- Follow project style (AGENTS.md, CLAUDE.md).
+- Change only what directly contributes to the goal.
+
+---
+
+## 6. Testing
+
+- Add unit tests or smoke tests for what was created.
+- Ensure it works as expected.
+- Check that no unintended side effects or regressions occur.
+
+---
+
+## 7. Quality Pillars
+
+Always optimize for (in order when in conflict):
+
+- **Accuracy** — Correct behavior and edge-case handling
+- **Performance** — Efficient, minimal overhead
+- **Security** — No sensitive data leaks, safe defaults
+- **User Experience** — Usable, predictable, accessible
+
+---
+
+## 8. When in Doubt
+
+- **Always ask.** Do not guess or infer user intent for non-obvious choices.
