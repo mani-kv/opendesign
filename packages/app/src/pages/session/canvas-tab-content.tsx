@@ -40,13 +40,10 @@ export function CanvasTabContent() {
     }
 
     try {
-      const res = await fetch(`${sdk.url}/session/${sid}/canvas`)
-      if (res.ok) {
-        const data = await res.json()
-        if (data.state) {
-          loadCanvas(data.state, sid)
-          return
-        }
+      const res = await sdk.client.session.canvas.get({ sessionID: sid })
+      if (res.data?.state) {
+        loadCanvas(res.data.state, sid)
+        return
       }
     } catch {
       // No saved state — start empty
@@ -58,11 +55,7 @@ export function CanvasTabContent() {
   const saveSessionCanvas = (sid: string) => {
     saveCanvas(sid, async (json) => {
       try {
-        await fetch(`${sdk.url}/session/${sid}/canvas`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ state: json }),
-        })
+        await sdk.client.session.canvas.put({ sessionID: sid, state: json })
       } catch {
         // Save failed — cached locally, will retry
       }
