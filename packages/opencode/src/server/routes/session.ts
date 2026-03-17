@@ -17,6 +17,7 @@ import { PermissionNext } from "@/permission/next"
 import { Identifier } from "@/id/id"
 import { errors } from "../error"
 import { lazy } from "../../util/lazy"
+import { SessionCanvas } from "../../session/session-canvas"
 
 const log = Log.create({ service: "server" })
 
@@ -946,6 +947,81 @@ export const SessionRoutes = lazy(() =>
         const sessionID = c.req.valid("param").sessionID
         const session = await SessionRevert.unrevert({ sessionID })
         return c.json(session)
+      },
+    )
+    .get(
+      "/:sessionID/canvas",
+      describeRoute({
+        summary: "Get canvas state",
+        description: "Retrieve the canvas state for a specific session.",
+        operationId: "session.canvas.get",
+        responses: {
+          200: {
+            description: "Canvas state",
+            content: {
+              "application/json": {
+                schema: resolver(
+                  z.object({
+                    state: z.string().nullable(),
+                  }),
+                ),
+              },
+            },
+          },
+          ...errors(400, 404),
+        },
+      }),
+      validator(
+        "param",
+        z.object({
+          sessionID: Identifier.schema("session").meta({ description: "Session ID" }),
+        }),
+      ),
+      async (c) => {
+        const sessionID = c.req.valid("param").sessionID
+        const state = SessionCanvas.get(sessionID)
+        return c.json({ state: state ?? null })
+      },
+    )
+    .put(
+      "/:sessionID/canvas",
+      describeRoute({
+        summary: "Put canvas state",
+        description: "Save the canvas state for a specific session.",
+        operationId: "session.canvas.put",
+        responses: {
+          200: {
+            description: "Canvas state saved",
+            content: {
+              "application/json": {
+                schema: resolver(
+                  z.object({
+                    ok: z.boolean(),
+                  }),
+                ),
+              },
+            },
+          },
+          ...errors(400),
+        },
+      }),
+      validator(
+        "param",
+        z.object({
+          sessionID: Identifier.schema("session").meta({ description: "Session ID" }),
+        }),
+      ),
+      validator(
+        "json",
+        z.object({
+          state: z.string().meta({ description: "Canvas state JSON" }),
+        }),
+      ),
+      async (c) => {
+        const sessionID = c.req.valid("param").sessionID
+        const body = c.req.valid("json")
+        SessionCanvas.put(sessionID, body.state)
+        return c.json({ ok: true })
       },
     )
     .post(

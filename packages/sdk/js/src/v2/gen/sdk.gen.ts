@@ -106,6 +106,10 @@ import type {
   QuestionReplyResponses,
   SessionAbortErrors,
   SessionAbortResponses,
+  SessionCanvasGetErrors,
+  SessionCanvasGetResponses,
+  SessionCanvasPutErrors,
+  SessionCanvasPutResponses,
   SessionChildrenErrors,
   SessionChildrenResponses,
   SessionCommandErrors,
@@ -1244,6 +1248,79 @@ export class Worktree extends HeyApiClient {
   }
 }
 
+export class Canvas extends HeyApiClient {
+  /**
+   * Get canvas state
+   *
+   * Retrieve the canvas state for a specific session.
+   */
+  public get<ThrowOnError extends boolean = false>(
+    parameters: {
+      sessionID: string
+      directory?: string
+      workspace?: string
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "sessionID" },
+            { in: "query", key: "directory" },
+            { in: "query", key: "workspace" },
+          ],
+        },
+      ],
+    )
+    return (options?.client ?? this.client).get<SessionCanvasGetResponses, SessionCanvasGetErrors, ThrowOnError>({
+      url: "/session/{sessionID}/canvas",
+      ...options,
+      ...params,
+    })
+  }
+
+  /**
+   * Put canvas state
+   *
+   * Save the canvas state for a specific session.
+   */
+  public put<ThrowOnError extends boolean = false>(
+    parameters: {
+      sessionID: string
+      directory?: string
+      workspace?: string
+      state?: string
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "sessionID" },
+            { in: "query", key: "directory" },
+            { in: "query", key: "workspace" },
+            { in: "body", key: "state" },
+          ],
+        },
+      ],
+    )
+    return (options?.client ?? this.client).put<SessionCanvasPutResponses, SessionCanvasPutErrors, ThrowOnError>({
+      url: "/session/{sessionID}/canvas",
+      ...options,
+      ...params,
+      headers: {
+        "Content-Type": "application/json",
+        ...options?.headers,
+        ...params.headers,
+      },
+    })
+  }
+}
+
 export class Session2 extends HeyApiClient {
   /**
    * List sessions
@@ -2183,6 +2260,11 @@ export class Session2 extends HeyApiClient {
       ...options,
       ...params,
     })
+  }
+
+  private _canvas?: Canvas
+  get canvas(): Canvas {
+    return (this._canvas ??= new Canvas({ client: this.client }))
   }
 }
 

@@ -3732,6 +3732,85 @@ export type SessionUnrevertResponses = {
 
 export type SessionUnrevertResponse = SessionUnrevertResponses[keyof SessionUnrevertResponses]
 
+export type SessionCanvasGetData = {
+  body?: never
+  path: {
+    /**
+     * Session ID
+     */
+    sessionID: string
+  }
+  query?: {
+    directory?: string
+    workspace?: string
+  }
+  url: "/session/{sessionID}/canvas"
+}
+
+export type SessionCanvasGetErrors = {
+  /**
+   * Bad request
+   */
+  400: BadRequestError
+  /**
+   * Not found
+   */
+  404: NotFoundError
+}
+
+export type SessionCanvasGetError = SessionCanvasGetErrors[keyof SessionCanvasGetErrors]
+
+export type SessionCanvasGetResponses = {
+  /**
+   * Canvas state
+   */
+  200: {
+    state: string | null
+  }
+}
+
+export type SessionCanvasGetResponse = SessionCanvasGetResponses[keyof SessionCanvasGetResponses]
+
+export type SessionCanvasPutData = {
+  body?: {
+    /**
+     * Canvas state JSON
+     */
+    state: string
+  }
+  path: {
+    /**
+     * Session ID
+     */
+    sessionID: string
+  }
+  query?: {
+    directory?: string
+    workspace?: string
+  }
+  url: "/session/{sessionID}/canvas"
+}
+
+export type SessionCanvasPutErrors = {
+  /**
+   * Bad request
+   */
+  400: BadRequestError
+}
+
+export type SessionCanvasPutError = SessionCanvasPutErrors[keyof SessionCanvasPutErrors]
+
+export type SessionCanvasPutResponses = {
+  /**
+   * Canvas state saved
+   */
+  200: {
+    ok: boolean
+  }
+}
+
+export type SessionCanvasPutResponse = SessionCanvasPutResponses[keyof SessionCanvasPutResponses]
+
 export type PermissionRespondData = {
   body?: {
     response: "once" | "always" | "reject"
