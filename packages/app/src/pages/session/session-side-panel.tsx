@@ -333,6 +333,7 @@ export function SessionSidePanel(props: {
   const reviewOpen = createMemo(() => isDesktop() && view().reviewPanel.opened())
   const fileOpen = createMemo(() => isDesktop() && layout.fileTree.opened())
   const open = createMemo(() => reviewOpen() || fileOpen())
+  const shouldFill = createMemo(() => open() && reviewOpen() && !layout.agents.opened())
   const canvasTab = createMemo(() => isDesktop() && panes().canvas)
   const figmaTab = createMemo(() => isDesktop() && panes().figma)
   const bothClosed = createMemo(() => isDesktop() && !panes().canvas && !panes().figma)
@@ -341,7 +342,8 @@ export function SessionSidePanel(props: {
   )
   const panelWidth = createMemo(() => {
     if (!open()) return "0px"
-    if (reviewOpen()) return layout.agents.opened() ? `calc(100% - ${layout.agents.width()}px)` : "100%"
+    if (shouldFill()) return undefined
+    if (reviewOpen()) return `calc(100% - ${layout.agents.width()}px)`
     return `${layout.fileTree.width()}px`
   })
   const treeWidth = createMemo(() => (fileOpen() ? `${layout.fileTree.width()}px` : "0px"))
@@ -522,11 +524,13 @@ export function SessionSidePanel(props: {
         aria-label={language.t("session.panel.reviewAndFiles")}
         aria-hidden={!open()}
         inert={!open()}
-        class="relative min-w-0 h-full flex shrink-0 overflow-hidden bg-background-base"
+        class="relative min-w-0 h-full flex overflow-hidden bg-background-base"
         classList={{
+          "flex-1": shouldFill(),
+          "shrink-0": !shouldFill(),
           "pointer-events-none": !open(),
           "transition-[width] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-[width] motion-reduce:transition-none":
-            !props.size.active() && !props.reviewSnap,
+            !props.size.active() && !props.reviewSnap && !shouldFill(),
         }}
         style={{ width: panelWidth() }}
       >

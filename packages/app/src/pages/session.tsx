@@ -148,9 +148,10 @@ export default function Page() {
   const desktopFileTreeOpen = createMemo(() => isDesktop() && layout.fileTree.opened())
   const desktopSidePanelOpen = createMemo(() => desktopReviewOpen() || desktopFileTreeOpen())
   const agentsPanelOpen = createMemo(() => !isDesktop() || layout.agents.opened())
+  const agentsShouldFill = createMemo(() => layout.agents.opened() && !desktopSidePanelOpen())
   const agentsPanelWidth = createMemo(() => {
     if (!layout.agents.opened()) return "0px"
-    if (!desktopSidePanelOpen()) return "100%"
+    if (agentsShouldFill()) return undefined
     if (desktopReviewOpen()) return `${layout.agents.width()}px`
     return `calc(100% - ${layout.fileTree.width()}px)`
   })
@@ -881,9 +882,10 @@ export default function Page() {
           <div
             id="agents-panel"
             classList={{
-              "relative shrink-0 flex flex-col min-h-0 h-full bg-background-stronger flex-1 md:flex-none": true,
+              "relative flex flex-col min-h-0 h-full bg-background-stronger flex-1": true,
+              "md:flex-none shrink-0": !agentsShouldFill(),
               "transition-[width] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-[width] motion-reduce:transition-none":
-                !size.active() && !ui.reviewSnap,
+                !size.active() && !ui.reviewSnap && !agentsShouldFill(),
             }}
             style={{
               width: agentsPanelWidth(),

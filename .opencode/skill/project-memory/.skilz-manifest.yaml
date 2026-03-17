@@ -1,0 +1,8 @@
+installed_at: '2026-03-17T17:36:04+00:00'
+skill_id: git/project-memory
+git_repo: https://github.com/SpillwaveSolutions/project-memory
+skill_path: /private/var/folders/x8/73gr91yj0933z4044yfv3b4h0000gn/T/skilz-git-i7fbpdzn
+git_sha: 7267697b6d7f960accfb4b9d6026a74a0b2fc5ff
+skilz_version: 1.10.0
+install_mode: copy
+canonical_path: null
