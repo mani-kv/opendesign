@@ -239,12 +239,16 @@ export const { use: useLayout, provider: LayoutProvider } = createSimpleContext(
       const canvasPanel = value.canvasPanel
       const migratedCanvasPanel = (() => {
         if (isRecord(canvasPanel) && typeof canvasPanel.layout === "string" && isRecord(canvasPanel.panes)) {
+          if (!Array.isArray(canvasPanel.paneOrder)) {
+            return { ...canvasPanel, paneOrder: ["canvas", "figma"] }
+          }
           return canvasPanel
         }
         return {
           layout: "tabs" as const,
           panes: { canvas: true, figma: true },
           splitRatio: 0.5,
+          paneOrder: ["canvas", "figma"],
         }
       })()
 
@@ -312,6 +316,7 @@ export const { use: useLayout, provider: LayoutProvider } = createSimpleContext(
           layout: "tabs" as "tabs" | "split",
           panes: { canvas: true, figma: true },
           splitRatio: 0.5,
+          paneOrder: ["canvas", "figma"] as ("canvas" | "figma")[],
         },
       }),
     )
@@ -807,6 +812,7 @@ export const { use: useLayout, provider: LayoutProvider } = createSimpleContext(
         layout: createMemo(() => (store.canvasPanel?.layout ?? "tabs") as "tabs" | "split"),
         panes: createMemo(() => store.canvasPanel?.panes ?? { canvas: true, figma: true }),
         splitRatio: createMemo(() => store.canvasPanel?.splitRatio ?? 0.5),
+        paneOrder: createMemo(() => (store.canvasPanel?.paneOrder ?? ["canvas", "figma"]) as ("canvas" | "figma")[]),
         toggleLayout() {
           const next = (store.canvasPanel?.layout ?? "tabs") === "tabs" ? "split" : "tabs"
           if (!store.canvasPanel) {
@@ -814,6 +820,7 @@ export const { use: useLayout, provider: LayoutProvider } = createSimpleContext(
               layout: next,
               panes: { canvas: true, figma: true },
               splitRatio: 0.5,
+              paneOrder: ["canvas", "figma"],
             })
             return
           }
@@ -825,6 +832,7 @@ export const { use: useLayout, provider: LayoutProvider } = createSimpleContext(
               layout: "tabs",
               panes: { canvas: true, figma: true, [pane]: open },
               splitRatio: 0.5,
+              paneOrder: ["canvas", "figma"],
             })
             return
           }
@@ -833,6 +841,20 @@ export const { use: useLayout, provider: LayoutProvider } = createSimpleContext(
         setSplitRatio(ratio: number) {
           if (!store.canvasPanel) return
           setStore("canvasPanel", "splitRatio", Math.max(0.2, Math.min(0.8, ratio)))
+        },
+        swapPaneOrder() {
+          const current = store.canvasPanel?.paneOrder ?? ["canvas", "figma"]
+          const next = [current[1], current[0]]
+          if (!store.canvasPanel) {
+            setStore("canvasPanel", {
+              layout: "tabs",
+              panes: { canvas: true, figma: true },
+              splitRatio: 0.5,
+              paneOrder: next as ("canvas" | "figma")[],
+            })
+            return
+          }
+          setStore("canvasPanel", "paneOrder", next as ("canvas" | "figma")[])
         },
       },
       mobileSidebar: {

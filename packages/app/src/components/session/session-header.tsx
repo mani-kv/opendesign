@@ -599,23 +599,7 @@ export function SessionHeader() {
                     aria-expanded={layout.agents.opened()}
                     aria-controls="agents-panel"
                   >
-                    <div class="relative flex items-center justify-center size-4 [&>*]:absolute [&>*]:inset-0">
-                      <Icon
-                        size="small"
-                        name={layout.agents.opened() ? "layout-left-partial" : "layout-left"}
-                        class="group-hover/agents-toggle:hidden"
-                      />
-                      <Icon
-                        size="small"
-                        name="layout-left-partial"
-                        class="hidden group-hover/agents-toggle:inline-block"
-                      />
-                      <Icon
-                        size="small"
-                        name={layout.agents.opened() ? "layout-left" : "layout-left-partial"}
-                        class="hidden group-active/agents-toggle:inline-block"
-                      />
-                    </div>
+                    <Icon size="small" name="bot" />
                   </Button>
                 </TooltipKeybind>
 

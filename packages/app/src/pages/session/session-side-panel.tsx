@@ -14,7 +14,7 @@ import type { DragEvent } from "@thisbeyond/solid-dnd"
 import { ConstrainDragYAxis, getDraggableId } from "@/utils/solid-dnd"
 import FileTree from "@/components/file-tree"
 import { SessionContextUsage } from "@/components/session-context-usage"
-import { SessionContextTab, SortableTab, FileVisual } from "@/components/session"
+import { SessionContextTab, SortableTab, SortablePaneTab, FileVisual } from "@/components/session"
 import { useCommand } from "@/context/command"
 import { useFile, type SelectedLineRange } from "@/context/file"
 import { useLanguage } from "@/context/language"
@@ -39,17 +39,69 @@ function CanvasFigmaEmpty() {
   )
 }
 
+function SplitPaneContent(props: {
+  pane: string
+  reviewPanel: () => JSX.Element
+  reviewCount: () => number
+  hasReview: () => boolean
+}) {
+  const language = useLanguage()
+  const platform = usePlatform()
+  return (
+    <Switch>
+      <Match when={props.pane === "canvas"}>
+        <Tabs value="canvas">
+          <div class="sticky top-0 z-10 shrink-0 flex items-center border-b border-border-weaker-base">
+            <Tabs.List class="min-w-0 w-fit">
+              <SortablePaneTab pane="canvas">
+                <div class="flex items-center gap-1.5">
+                  <div>{language.t("session.tab.canvas")}</div>
+                  <Show when={props.hasReview()}>
+                    <div>{props.reviewCount()}</div>
+                  </Show>
+                </div>
+              </SortablePaneTab>
+            </Tabs.List>
+          </div>
+          <Tabs.Content value="canvas" class="relative flex flex-col flex-1 min-h-0 overflow-hidden contain-strict">
+            <div class="relative flex-1 min-h-0 overflow-hidden pb-24">{props.reviewPanel()}</div>
+          </Tabs.Content>
+        </Tabs>
+      </Match>
+      <Match when={props.pane === "figma"}>
+        <Tabs value="figma">
+          <div class="sticky top-0 z-10 shrink-0 flex items-center border-b border-border-weaker-base">
+            <Tabs.List class="min-w-0 w-fit">
+              <SortablePaneTab pane="figma">
+                {language.t("session.tab.figma")}
+              </SortablePaneTab>
+            </Tabs.List>
+          </div>
+          <Tabs.Content value="figma" class="relative flex flex-col flex-1 min-h-0 overflow-hidden contain-strict">
+            <div class="relative flex-1 min-h-0 overflow-hidden">
+              {platform.platform === "web" ? (
+                <div class="absolute inset-0">
+                  <FigmaTabContent />
+                </div>
+              ) : (
+                <div class="absolute inset-0" aria-hidden />
+              )}
+            </div>
+          </Tabs.Content>
+        </Tabs>
+      </Match>
+    </Switch>
+  )
+}
+
 function CanvasFigmaSplit(props: {
   reviewPanel: () => JSX.Element
   reviewCount: () => number
   hasReview: () => boolean
   size: { start: () => void; touch: () => void }
 }) {
-  const language = useLanguage()
-  const command = useCommand()
   const layout = useLayout()
-  const platform = usePlatform()
-  const panes = () => layout.canvasPanel.panes()
+  const paneOrder = () => layout.canvasPanel.paneOrder()
   const splitRatio = () => layout.canvasPanel.splitRatio()
   const setSplitRatio = (r: number) => layout.canvasPanel.setSplitRatio(r)
   const [containerRef, setContainerRef] = createSignal<HTMLDivElement | undefined>(undefined)
@@ -69,32 +121,19 @@ function CanvasFigmaSplit(props: {
   const maxLeft = () => Math.max(minPane, width() - minPane)
 
   return (
-    <div ref={setContainerRef} class="relative flex-1 flex min-h-0 min-w-0">
-      <Show when={panes().canvas}>
+    <SortableProvider ids={paneOrder()}>
+      <div ref={setContainerRef} class="relative flex-1 flex min-h-0 min-w-0">
         <div
           class="relative flex flex-col min-h-0 shrink-0 overflow-hidden"
-          style={{ width: panes().figma ? `${leftSize()}px` : "100%" }}
+          style={{ width: `${leftSize()}px` }}
         >
-          <Tabs value="canvas">
-            <div class="sticky top-0 z-10 shrink-0 flex items-center border-b border-border-weaker-base">
-              <Tabs.List class="min-w-0 w-fit">
-                <Tabs.Trigger value="canvas">
-                  <div class="flex items-center gap-1.5">
-                    <div>{language.t("session.tab.canvas")}</div>
-                    <Show when={props.hasReview()}>
-                      <div>{props.reviewCount()}</div>
-                    </Show>
-                  </div>
-                </Tabs.Trigger>
-              </Tabs.List>
-            </div>
-            <Tabs.Content value="canvas" class="relative flex flex-col flex-1 min-h-0 overflow-hidden contain-strict">
-              <div class="relative flex-1 min-h-0 overflow-hidden pb-24">{props.reviewPanel()}</div>
-            </Tabs.Content>
-          </Tabs>
+          <SplitPaneContent
+            pane={paneOrder()[0]}
+            reviewPanel={props.reviewPanel}
+            reviewCount={props.reviewCount}
+            hasReview={props.hasReview}
+          />
         </div>
-      </Show>
-      <Show when={panes().canvas && panes().figma}>
         <div class="relative w-px shrink-0 flex items-stretch" onPointerDown={() => props.size.start()}>
           <div class="pointer-events-none absolute inset-y-0 left-0 w-px bg-border-weaker-base" aria-hidden />
           <ResizeHandle
@@ -109,51 +148,29 @@ function CanvasFigmaSplit(props: {
             }}
           />
         </div>
-      </Show>
-      <Show when={panes().figma}>
         <div class="relative flex-1 flex flex-col min-h-0 min-w-0">
-          <Tabs value="figma">
-            <div class="sticky top-0 z-10 shrink-0 flex items-center border-b border-border-weaker-base">
-              <Tabs.List class="min-w-0 w-fit">
-                <Tabs.Trigger value="figma">
-                  {language.t("session.tab.figma")}
-                </Tabs.Trigger>
-              </Tabs.List>
-            </div>
-            <Tabs.Content value="figma" class="relative flex flex-col flex-1 min-h-0 overflow-hidden contain-strict">
-              <div class="relative flex-1 min-h-0 overflow-hidden">
-                {platform.platform === "web" ? (
-                  <div class="absolute inset-0">
-                    <FigmaTabContent />
-                  </div>
-                ) : (
-                  /* Desktop: persistent FigmaWebviewHost shows through this transparent placeholder */
-                  <div class="absolute inset-0" aria-hidden />
-                )}
-              </div>
-            </Tabs.Content>
-          </Tabs>
+          <SplitPaneContent
+            pane={paneOrder()[1]}
+            reviewPanel={props.reviewPanel}
+            reviewCount={props.reviewCount}
+            hasReview={props.hasReview}
+          />
         </div>
-      </Show>
-    </div>
+      </div>
+    </SortableProvider>
   )
 }
 
-function FigmaWebviewHost(props: { active: boolean; splitOffset?: number }) {
+function FigmaWebviewHost(props: { active: boolean; splitOffset?: number; figmaFirst?: boolean }) {
   const offset = () => props.splitOffset ?? 0
   return (
     <div
       class="absolute overflow-hidden"
       style={{
         top: "var(--tabs-bar-height, 48px)",
-        left: offset() > 0 ? `calc(${offset() * 100}% + 1px)` : "0",
-        right: "0",
+        left: props.figmaFirst ? "0" : offset() > 0 ? `calc(${offset() * 100}% + 1px)` : "0",
+        right: props.figmaFirst && offset() > 0 ? `calc(${(1 - offset()) * 100}%)` : "0",
         bottom: "0",
-        // No opacity/visibility changes — Electron webviews detach their renderer
-        // when ancestors have opacity:0 or visibility:hidden. Instead use z-index:
-        // z:-1 puts the webview behind the parent's opaque background (invisible to
-        // user but Electron still considers it "visible" → renderer stays alive).
-        // z:0 when Figma tab is active to show through the transparent placeholder.
         "z-index": props.active ? 0 : -1,
         "pointer-events": props.active ? "auto" : "none",
       }}
@@ -173,6 +190,7 @@ function FloatingPromptDock(props: {
   const [pos, setPos] = createSignal<{ x: number; y: number } | null>(null)
   const [dragging, setDragging] = createSignal(false)
   const [hovered, setHovered] = createSignal(false)
+  const [focused, setFocused] = createSignal(false)
   const [container, setContainer] = createSignal<HTMLDivElement | undefined>(undefined)
   const [prompt, setPrompt] = createSignal<HTMLDivElement | undefined>(undefined)
   const [start, setStart] = createSignal<{ clientX: number; clientY: number; elLeft: number; elTop: number } | undefined>(
@@ -182,18 +200,6 @@ function FloatingPromptDock(props: {
   const clamp = (val: number, min: number, max: number) => Math.max(min, Math.min(max, val))
 
   const getBoundary = () => props.boundaryRef?.() ?? container()
-
-  const visible = () => hovered() || dragging()
-
-  let leaveTimeout: ReturnType<typeof setTimeout> | undefined
-  const onHoverEnter = () => {
-    if (leaveTimeout) clearTimeout(leaveTimeout)
-    leaveTimeout = undefined
-    setHovered(true)
-  }
-  const onHoverLeave = () => {
-    leaveTimeout = setTimeout(() => setHovered(false), 100)
-  }
 
   const onHandleDown = (e: MouseEvent) => {
     e.preventDefault()
@@ -247,17 +253,12 @@ function FloatingPromptDock(props: {
       classList={{ "cursor-grabbing": dragging() }}
     >
       <div
-        class="pointer-events-auto absolute bottom-0 left-0 right-0 h-28"
-        onMouseEnter={onHoverEnter}
-        onMouseLeave={onHoverLeave}
-        aria-hidden
-      />
-      <div
         ref={setPrompt}
-        class="pointer-events-auto w-full max-w-[600px] h-fit px-2 pb-5 shadow-[0px_4px_12px_0px_rgba(0,0,0,0.15)] rounded-lg overflow-hidden flex flex-col group transition-opacity duration-200"
-        classList={{ "opacity-0 pointer-events-none": !visible(), "opacity-100": visible() }}
-        onMouseEnter={onHoverEnter}
-        onMouseLeave={onHoverLeave}
+        class="pointer-events-auto w-full max-w-[600px] h-fit px-2 pb-5 rounded-lg overflow-hidden flex flex-col group"
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        onFocusIn={() => setFocused(true)}
+        onFocusOut={() => setFocused(false)}
         style={
           pos()
             ? { position: "absolute" as const, left: `${pos()!.x}px`, top: `${pos()!.y}px` }
@@ -273,9 +274,9 @@ function FloatingPromptDock(props: {
           role="button"
           tabIndex={0}
           aria-label={language.t("prompt.dock.dragLabel")}
-          class="flex items-center justify-center px-0 py-1.5 cursor-grab active:cursor-grabbing touch-none select-none text-text-weak hover:text-text-base transition-opacity duration-150"
+          class="flex items-center justify-center w-full px-0 pt-3 pb-[18px] rounded-t-[20px] mb-[-10px] cursor-grab active:cursor-grabbing touch-none select-none transition-opacity bg-[linear-gradient(25deg,rgba(123,234,203,0.1)_0%,rgba(66,185,209,0.2)_25%,rgba(213,209,93,0.1)_100%)] backdrop-blur-[12px]"
           classList={{
-            "opacity-0 group-hover:opacity-100": !dragging(),
+            "opacity-0": !dragging() && !hovered() && !focused(),
             "opacity-100 cursor-grabbing": dragging(),
           }}
           onMouseDown={onHandleDown}
@@ -283,8 +284,11 @@ function FloatingPromptDock(props: {
             if (e.key === "Enter" || e.key === " ") e.preventDefault()
           }}
         >
-          <Icon name="grip-vertical" size="small" class="size-4" />
-          
+          <div class="flex items-center justify-center gap-1 text-[#6b6b6b]">
+            <Icon name="grip-vertical" size="small" class="size-4" />
+            <span class="text-12-regular">{language.t("prompt.dock.dragMe")}</span>
+            <Icon name="grip-vertical" size="small" class="size-4" />
+          </div>
         </div>
         <div class="flex-1">{props.children}</div>
       </div>
@@ -328,6 +332,9 @@ export function SessionSidePanel(props: {
   const canvasTab = createMemo(() => isDesktop() && panes().canvas)
   const figmaTab = createMemo(() => isDesktop() && panes().figma)
   const bothClosed = createMemo(() => isDesktop() && !panes().canvas && !panes().figma)
+  const visiblePaneTabs = createMemo(() =>
+    layout.canvasPanel.paneOrder().filter((p) => panes()[p] && isDesktop()),
+  )
   const panelWidth = createMemo(() => {
     if (!open()) return "0px"
     if (reviewOpen()) return layout.agents.opened() ? `calc(100% - ${layout.agents.width()}px)` : "100%"
@@ -457,14 +464,26 @@ export function SessionSidePanel(props: {
     setStore("activeDraggable", id)
   }
 
+  const isPaneTab = (id: string) => id === "canvas" || id === "figma"
+
   const handleDragOver = (event: DragEvent) => {
     const { draggable, droppable } = event
     if (!draggable || !droppable) return
 
+    const dragId = draggable.id.toString()
+    const dropId = droppable.id.toString()
+
+    if (isPaneTab(dragId) && isPaneTab(dropId) && dragId !== dropId) {
+      layout.canvasPanel.swapPaneOrder()
+      return
+    }
+
+    if (isPaneTab(dragId) || isPaneTab(dropId)) return
+
     const currentTabs = tabs().all()
-    const toIndex = getTabReorderIndex(currentTabs, draggable.id.toString(), droppable.id.toString())
+    const toIndex = getTabReorderIndex(currentTabs, dragId, dropId)
     if (toIndex === undefined) return
-    tabs().move(draggable.id.toString(), toIndex)
+    tabs().move(dragId, toIndex)
   }
 
   const handleDragEnd = () => {
@@ -546,21 +565,27 @@ export function SessionSidePanel(props: {
                       }}
                       class="min-w-0 w-fit"
                     >
-                      <Show when={canvasTab()}>
-                        <Tabs.Trigger value="canvas">
-                          <div class="flex items-center gap-1.5">
-                            <div>{language.t("session.tab.canvas")}</div>
-                            <Show when={hasReview()}>
-                              <div>{reviewCount()}</div>
-                            </Show>
-                          </div>
-                        </Tabs.Trigger>
-                      </Show>
-                      <Show when={figmaTab()}>
-                        <Tabs.Trigger value="figma">
-                          {language.t("session.tab.figma")}
-                        </Tabs.Trigger>
-                      </Show>
+                      <SortableProvider ids={visiblePaneTabs()}>
+                        <For each={visiblePaneTabs()}>
+                          {(pane) => (
+                            <SortablePaneTab pane={pane}>
+                              <Switch>
+                                <Match when={pane === "canvas"}>
+                                  <div class="flex items-center gap-1.5">
+                                    <div>{language.t("session.tab.canvas")}</div>
+                                    <Show when={hasReview()}>
+                                      <div>{reviewCount()}</div>
+                                    </Show>
+                                  </div>
+                                </Match>
+                                <Match when={pane === "figma"}>
+                                  {language.t("session.tab.figma")}
+                                </Match>
+                              </Switch>
+                            </SortablePaneTab>
+                          )}
+                        </For>
+                      </SortableProvider>
                       <Show when={contextOpen()}>
                         <Tabs.Trigger
                           value="context"
@@ -654,6 +679,15 @@ export function SessionSidePanel(props: {
                 <DragOverlay>
                   <Show when={store.activeDraggable} keyed>
                     {(tab) => {
+                      if (tab === "canvas" || tab === "figma") {
+                        return (
+                          <div data-component="tabs-drag-preview">
+                            <span class="text-14-medium">
+                              {tab === "canvas" ? language.t("session.tab.canvas") : language.t("session.tab.figma")}
+                            </span>
+                          </div>
+                        )
+                      }
                       const path = createMemo(() => file.pathFromTab(tab))
                       return (
                         <div data-component="tabs-drag-preview">
@@ -679,6 +713,10 @@ export function SessionSidePanel(props: {
                     splitMode() && panes().canvas && panes().figma
                       ? layout.canvasPanel.splitRatio()
                       : 0
+                  }
+                  figmaFirst={
+                    splitMode() && panes().canvas && panes().figma
+                      && layout.canvasPanel.paneOrder()[0] === "figma"
                   }
                 />
               </Show>

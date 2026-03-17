@@ -27,6 +27,17 @@ export function FileVisual(props: { path: string; active?: boolean }): JSX.Eleme
   )
 }
 
+export function SortablePaneTab(props: { pane: string; children: JSX.Element }): JSX.Element {
+  const sortable = createSortable(props.pane)
+  return (
+    <div use:sortable class="h-full flex items-center" classList={{ "opacity-0": sortable.isActiveDraggable }}>
+      <Tabs.Trigger value={props.pane}>
+        {props.children}
+      </Tabs.Trigger>
+    </div>
+  )
+}
+
 export function SortableTab(props: { tab: string; onTabClose: (tab: string) => void }): JSX.Element {
   const file = useFile()
   const language = useLanguage()

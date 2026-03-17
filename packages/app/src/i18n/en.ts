@@ -290,6 +290,7 @@ export const dict = {
   "prompt.context.removeFile": "Remove file from context",
   "prompt.action.attachFile": "Add file",
   "prompt.dock.dragLabel": "Drag to reposition",
+  "prompt.dock.dragMe": "Drag Me",
   "prompt.attachment.remove": "Remove attachment",
   "prompt.action.send": "Send",
   "prompt.action.stop": "Stop",
