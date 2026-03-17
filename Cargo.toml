@@ -1,0 +1,11 @@
+[workspace]
+members = ["packages/canvas-core", "packages/canvas-wasm"]
+exclude = ["packages/desktop/src-tauri"]
+resolver = "2"
+
+[workspace.dependencies]
+vello   = "0.7.0"
+wgpu    = { version = "27.0.1", default-features = false, features = ["std", "wgsl"] }
+winit   = "0.30.12"
+anyhow  = "1.0"
+log     = "0.4"

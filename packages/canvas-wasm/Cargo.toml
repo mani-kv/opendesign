@@ -1,0 +1,38 @@
+[package]
+name    = "canvas-wasm"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+canvas-core = { path = "../canvas-core" }
+vello       = { workspace = true }
+wgpu        = { workspace = true, features = ["webgpu", "webgl"] }
+winit       = { workspace = true }
+anyhow      = { workspace = true }
+log         = { workspace = true }
+
+wasm-bindgen              = "=0.2.100"
+wasm-bindgen-futures      = "0.4"
+console_error_panic_hook  = "0.1"
+console_log               = "1.0"
+
+[dependencies.web-sys]
+version  = "0.3"
+features = [
+    "AddEventListenerOptions",
+    "Document",
+    "DomRect",
+    "Element",
+    "EventTarget",
+    "HtmlCanvasElement",
+    "HtmlElement",
+    "MouseEvent",
+    "WheelEvent",
+    "Window",
+]
+
+[target.wasm32-unknown-unknown.dependencies]
+getrandom = { version = "0.3", features = ["wasm_js"] }
