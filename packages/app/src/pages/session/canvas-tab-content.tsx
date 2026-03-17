@@ -1,4 +1,4 @@
-import { createEffect, createSignal, on, onCleanup, onMount } from "solid-js"
+import { createEffect, createSignal, on, onCleanup, onMount, Show } from "solid-js"
 import { useProjectParams } from "@/context/project-scope"
 import { useSDK } from "@/context/sdk"
 import { useProjectActive } from "@/components/project-shell"
@@ -9,6 +9,7 @@ import {
   loadCanvas,
   saveCanvas,
   getCachedCanvas,
+  triggerCanvasResize,
   EMPTY_CANVAS_JSON,
 } from "@/utils/canvas-bridge"
 
@@ -17,6 +18,7 @@ export function CanvasTabContent() {
   const sdk = useSDK()
   const isActive = useProjectActive()
   const [ready, setReady] = createSignal(false)
+  const [loading, setLoading] = createSignal(true)
   const [error, setError] = createSignal<string>()
   let containerRef: HTMLDivElement | undefined
   let saveTimer: number | undefined
@@ -29,6 +31,7 @@ export function CanvasTabContent() {
     const ok = await initCanvas(containerRef)
     if (!ok) {
       setError("WebGPU is not supported in this browser. Please use Chrome, Edge, or Safari.")
+      setLoading(false)
       return
     }
     setReady(true)
@@ -53,13 +56,16 @@ export function CanvasTabContent() {
     const cached = getCachedCanvas(sid)
     if (cached) {
       loadCanvas(cached, sid)
+      setLoading(false)
       return
     }
 
+    setLoading(true)
     try {
       const res = await sdk.client.session.canvas.get({ sessionID: sid })
       if (res.data?.state) {
         loadCanvas(res.data.state, sid)
+        setLoading(false)
         return
       }
     } catch {
@@ -67,6 +73,7 @@ export function CanvasTabContent() {
     }
 
     loadCanvas(EMPTY_CANVAS_JSON, sid)
+    setLoading(false)
   }
 
   const saveSessionCanvas = (sid: string) => {
@@ -92,10 +99,20 @@ export function CanvasTabContent() {
     const handler = () => scheduleSave()
     containerRef?.addEventListener("pointerup", handler)
     containerRef?.addEventListener("keyup", handler)
+
+    // Watch for container size changes (tab↔split toggle, split ratio drag)
+    // and nudge winit's ResizeObserver so the canvas re-evaluates its size.
+    let ro: ResizeObserver | undefined
+    if (containerRef) {
+      ro = new ResizeObserver(() => triggerCanvasResize())
+      ro.observe(containerRef)
+    }
+
     onCleanup(() => {
       containerRef?.removeEventListener("pointerup", handler)
       containerRef?.removeEventListener("keyup", handler)
       if (saveTimer) clearTimeout(saveTimer)
+      ro?.disconnect()
     })
   })
 
@@ -117,12 +134,29 @@ export function CanvasTabContent() {
           </div>
         </div>
       ) : (
-        <div
-          ref={containerRef}
-          id="canvas-container"
-          class="absolute inset-0"
-          style={{ "touch-action": "none" }}
-        />
+        <>
+          <div
+            ref={containerRef}
+            id="canvas-container"
+            class="absolute inset-0"
+            style={{ "touch-action": "none" }}
+          />
+          <Show when={loading()}>
+            <div
+              class="absolute inset-0 z-10 flex flex-col gap-3 bg-background-base p-4"
+              aria-hidden
+            >
+              <div class="flex items-center gap-2 px-2">
+                <div class="h-6 w-6 rounded bg-surface-raised-base opacity-50 animate-pulse" />
+                <div class="h-6 w-6 rounded bg-surface-raised-base opacity-50 animate-pulse" />
+                <div class="h-6 w-6 rounded bg-surface-raised-base opacity-50 animate-pulse" />
+                <div class="flex-1" />
+                <div class="h-6 w-20 rounded bg-surface-raised-base opacity-50 animate-pulse" />
+              </div>
+              <div class="flex-1 min-h-0 rounded-lg bg-surface-raised-base opacity-30 animate-pulse" />
+            </div>
+          </Show>
+        </>
       )}
     </div>
   )

@@ -57,6 +57,22 @@ export function adoptCanvas(container: HTMLElement, sessionId: string): void {
     container.appendChild(canvasEl)
   }
   activeSessionId = sessionId
+  // Nudge winit's ResizeObserver after the layout settles
+  requestAnimationFrame(() => triggerCanvasResize())
+}
+
+/**
+ * Force the canvas to re-evaluate its size.
+ * Winit watches the canvas element via ResizeObserver, but DOM moves
+ * and container layout changes (tab↔split) may not trigger it.
+ * Toggling a style forces a layout recalc that the observer picks up.
+ */
+export function triggerCanvasResize(): void {
+  if (!canvasEl) return
+  canvasEl.style.display = "none"
+  // Force reflow
+  void canvasEl.offsetHeight
+  canvasEl.style.display = "block"
 }
 
 /**
