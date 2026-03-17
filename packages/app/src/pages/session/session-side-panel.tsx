@@ -24,6 +24,7 @@ import { useSync } from "@/context/sync"
 import { createFileTabListSync } from "@/pages/session/file-tab-scroll"
 import { FileTabContent } from "@/pages/session/file-tabs"
 import { FigmaTabContent } from "@/pages/session/figma-tab-content"
+import { CanvasTabContent } from "@/pages/session/canvas-tab-content"
 import { createOpenSessionFileTab, getTabReorderIndex, type Sizing } from "@/pages/session/helpers"
 import { setSessionHandoff } from "@/pages/session/handoff"
 
@@ -41,9 +42,6 @@ function CanvasFigmaEmpty() {
 
 function SplitPaneContent(props: {
   pane: string
-  reviewPanel: () => JSX.Element
-  reviewCount: () => number
-  hasReview: () => boolean
 }) {
   const language = useLanguage()
   const platform = usePlatform()
@@ -54,17 +52,12 @@ function SplitPaneContent(props: {
           <div class="sticky top-0 z-10 shrink-0 flex items-center border-b border-border-weaker-base">
             <Tabs.List class="min-w-0 w-fit">
               <SortablePaneTab pane="canvas">
-                <div class="flex items-center gap-1.5">
-                  <div>{language.t("session.tab.canvas")}</div>
-                  <Show when={props.hasReview()}>
-                    <div>{props.reviewCount()}</div>
-                  </Show>
-                </div>
+                {language.t("session.tab.canvas")}
               </SortablePaneTab>
             </Tabs.List>
           </div>
           <Tabs.Content value="canvas" class="relative flex flex-col flex-1 min-h-0 overflow-hidden contain-strict">
-            <div class="relative flex-1 min-h-0 overflow-hidden pb-24">{props.reviewPanel()}</div>
+            <div class="absolute inset-0" aria-hidden />
           </Tabs.Content>
         </Tabs>
       </Match>
@@ -95,9 +88,6 @@ function SplitPaneContent(props: {
 }
 
 function CanvasFigmaSplit(props: {
-  reviewPanel: () => JSX.Element
-  reviewCount: () => number
-  hasReview: () => boolean
   size: { start: () => void; touch: () => void }
 }) {
   const layout = useLayout()
@@ -129,9 +119,6 @@ function CanvasFigmaSplit(props: {
         >
           <SplitPaneContent
             pane={paneOrder()[0]}
-            reviewPanel={props.reviewPanel}
-            reviewCount={props.reviewCount}
-            hasReview={props.hasReview}
           />
         </div>
         <div class="relative w-px shrink-0 flex items-stretch" onPointerDown={() => props.size.start()}>
@@ -151,13 +138,31 @@ function CanvasFigmaSplit(props: {
         <div class="relative flex-1 flex flex-col min-h-0 min-w-0">
           <SplitPaneContent
             pane={paneOrder()[1]}
-            reviewPanel={props.reviewPanel}
-            reviewCount={props.reviewCount}
-            hasReview={props.hasReview}
           />
         </div>
       </div>
     </SortableProvider>
+  )
+}
+
+function CanvasHost(props: { active: boolean; splitOffset?: number; canvasFirst?: boolean }) {
+  const offset = () => props.splitOffset ?? 0
+  return (
+    <div
+      class="absolute overflow-hidden"
+      style={{
+        top: "var(--tabs-bar-height, 48px)",
+        left: props.canvasFirst ? "0" : offset() > 0 ? `calc(${offset() * 100}% + 1px)` : "0",
+        right: props.canvasFirst && offset() > 0 ? `calc(${(1 - offset()) * 100}%)` : "0",
+        bottom: "0",
+        "z-index": props.active ? 0 : -1,
+        "pointer-events": props.active ? "auto" : "none",
+      }}
+    >
+      <div class="absolute inset-0">
+        <CanvasTabContent />
+      </div>
+    </div>
   )
 }
 
@@ -304,7 +309,6 @@ function FloatingPromptDock(props: {
 
 export function SessionSidePanel(props: {
   floatingDockBoundary?: () => HTMLElement | undefined
-  reviewPanel: () => JSX.Element
   floatingPrompt?: () => JSX.Element
   activeDiff?: string
   focusReviewDiff: (path: string) => void
@@ -436,7 +440,7 @@ export function SessionSidePanel(props: {
     const first = openedTabs()[0]
     if (first) return first
     if (contextOpen()) return "context"
-    if (canvasTab() && hasReview()) return "canvas"
+    if (canvasTab()) return "canvas"
     if (figmaTab()) return "figma"
     return "empty"
   })
@@ -549,9 +553,6 @@ export function SessionSidePanel(props: {
                 <Switch>
                   <Match when={splitMode() && panes().canvas && panes().figma}>
                     <CanvasFigmaSplit
-                      reviewPanel={props.reviewPanel}
-                      reviewCount={reviewCount}
-                      hasReview={hasReview}
                       size={props.size}
                     />
                   </Match>
@@ -571,12 +572,7 @@ export function SessionSidePanel(props: {
                             <SortablePaneTab pane={pane}>
                               <Switch>
                                 <Match when={pane === "canvas"}>
-                                  <div class="flex items-center gap-1.5">
-                                    <div>{language.t("session.tab.canvas")}</div>
-                                    <Show when={hasReview()}>
-                                      <div>{reviewCount()}</div>
-                                    </Show>
-                                  </div>
+                                  {language.t("session.tab.canvas")}
                                 </Match>
                                 <Match when={pane === "figma"}>
                                   {language.t("session.tab.figma")}
@@ -622,9 +618,7 @@ export function SessionSidePanel(props: {
 
                       <Show when={canvasTab()}>
                         <Tabs.Content value="canvas" class="relative flex flex-col h-full overflow-hidden contain-strict">
-                          <div class="relative flex-1 min-h-0 overflow-hidden pb-24">
-                            <Show when={activeTab() === "canvas"}>{props.reviewPanel()}</Show>
-                          </div>
+                          <div class="absolute inset-0" aria-hidden />
                         </Tabs.Content>
                       </Show>
 
@@ -699,9 +693,26 @@ export function SessionSidePanel(props: {
                 </DragOverlay>
               </DragDropProvider>
               </div>
-              {/* Single persistent webview host — survives split↔tabbed switches.
-                  CSS left offset shifts it over the figma pane in split mode;
-                  in tabbed mode it covers full width. Never moves in the DOM. */}
+              {/* Persistent canvas host — survives split↔tabbed switches. */}
+              <Show when={canvasTab()}>
+                <CanvasHost
+                  active={
+                    splitMode() && panes().canvas
+                      ? true
+                      : activeTab() === "canvas"
+                  }
+                  splitOffset={
+                    splitMode() && panes().canvas && panes().figma
+                      ? layout.canvasPanel.splitRatio()
+                      : 0
+                  }
+                  canvasFirst={
+                    splitMode() && panes().canvas && panes().figma
+                      && layout.canvasPanel.paneOrder()[0] === "canvas"
+                  }
+                />
+              </Show>
+              {/* Persistent figma webview host — same pattern as CanvasHost. */}
               <Show when={figmaTab() && platform.platform !== "web"}>
                 <FigmaWebviewHost
                   active={

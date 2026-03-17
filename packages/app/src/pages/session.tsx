@@ -931,7 +931,6 @@ export default function Page() {
           floatingDockBoundary={() =>
             (workspaceRef()?.closest("main") ?? workspaceRef()) as HTMLElement | undefined
           }
-          reviewPanel={reviewPanel}
           floatingPrompt={() => (
             <SessionComposerRegion
               state={composer}
