@@ -143,22 +143,22 @@ impl ApplicationHandler for WebApp {
             }
         }
 
-        // Process pending canvas load BEFORE save. If both are queued in the same tick
-        // (e.g. remote update → PENDING_LOAD, poll → PENDING_SAVE), we must load
-        // first so the save callback sees the correct state and does not re-emit stale.
+        // Process pending canvas save BEFORE load. When both are queued in the
+        // same tick (project switch: save old → load new), the save must capture
+        // the current state before the load replaces it.
+        if let Some(cb) = PENDING_SAVE.with(|r| r.borrow_mut().take()) {
+            if let Ok(json) = self.canvas.to_snapshot_json() {
+                let win = web_sys::window().unwrap();
+                let _ = cb.call1(&win, &JsValue::from_str(&json));
+            }
+        }
+
+        // Process pending canvas load (deserialize and replace state).
         if let Some(json) = PENDING_LOAD.with(|r| r.borrow_mut().take()) {
             if self.canvas.load_snapshot_json(&json).is_ok() {
                 if let Some(rs) = &self.state {
                     rs.window.request_redraw();
                 }
-            }
-        }
-
-        // Process pending canvas save (serialize and call JS callback).
-        if let Some(cb) = PENDING_SAVE.with(|r| r.borrow_mut().take()) {
-            if let Ok(json) = self.canvas.to_snapshot_json() {
-                let win = web_sys::window().unwrap();
-                let _ = cb.call1(&win, &JsValue::from_str(&json));
             }
         }
     }
