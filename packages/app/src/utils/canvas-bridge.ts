@@ -1,6 +1,10 @@
 /**
  * Bridge between the SolidJS app and the Rust WASM canvas.
  * Manages WASM lifecycle, save/load per session, in-memory cache.
+ *
+ * The WASM canvas is a singleton — one <canvas> element shared across all
+ * project shells. When projects switch, the canvas is moved to the active
+ * project's container and state is saved/loaded accordingly.
  */
 
 export const EMPTY_CANVAS_JSON =
@@ -19,21 +23,12 @@ const canvasCache = new Map<string, string>()
 let activeSessionId: string | undefined
 
 export async function initCanvas(container: HTMLElement): Promise<boolean> {
-  if (initialized) {
-    // WASM already running — re-adopt the canvas into the new container.
-    // This happens when the component re-mounts (e.g. project navigation)
-    // but the WASM singleton + its <canvas> element are still alive.
-    if (canvasEl && canvasEl.parentElement !== container) {
-      container.appendChild(canvasEl)
-    }
-    return true
-  }
+  if (initialized) return true
 
   try {
     const mod = await import("@opencode-ai/canvas-wasm")
     await mod.default()
 
-    // Grab the canvas element created by the WASM module
     canvasEl = container.querySelector("canvas")
 
     wasm = {
@@ -50,6 +45,31 @@ export async function initCanvas(container: HTMLElement): Promise<boolean> {
 
 export function isInitialized(): boolean {
   return initialized
+}
+
+/**
+ * Adopt the singleton canvas element into the given container.
+ * Called when a project becomes active — moves the canvas and loads state.
+ */
+export function adoptCanvas(container: HTMLElement, sessionId: string): void {
+  if (!canvasEl) return
+  if (canvasEl.parentElement !== container) {
+    container.appendChild(canvasEl)
+  }
+  activeSessionId = sessionId
+}
+
+/**
+ * Snapshot the current canvas state into the in-memory cache.
+ * Called when a project becomes inactive — preserves state before
+ * the canvas is moved to another project's container.
+ */
+export function snapshotToCache(): void {
+  if (!wasm || !activeSessionId) return
+  const sid = activeSessionId
+  wasm.save_canvas_request((json) => {
+    canvasCache.set(sid, json)
+  })
 }
 
 export function setActiveSession(sessionId: string): void {

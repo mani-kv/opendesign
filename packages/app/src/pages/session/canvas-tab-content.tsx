@@ -1,11 +1,13 @@
 import { createEffect, createSignal, on, onCleanup, onMount } from "solid-js"
 import { useProjectParams } from "@/context/project-scope"
 import { useSDK } from "@/context/sdk"
+import { useProjectActive } from "@/components/project-shell"
 import {
   initCanvas,
+  adoptCanvas,
+  snapshotToCache,
   loadCanvas,
   saveCanvas,
-  setActiveSession,
   getCachedCanvas,
   EMPTY_CANVAS_JSON,
 } from "@/utils/canvas-bridge"
@@ -13,6 +15,7 @@ import {
 export function CanvasTabContent() {
   const params = useProjectParams()
   const sdk = useSDK()
+  const isActive = useProjectActive()
   const [ready, setReady] = createSignal(false)
   const [error, setError] = createSignal<string>()
   let containerRef: HTMLDivElement | undefined
@@ -20,6 +23,7 @@ export function CanvasTabContent() {
 
   const sessionId = () => params.id ?? params.projectId
 
+  // One-time WASM initialization on first mount
   onMount(async () => {
     if (!containerRef) return
     const ok = await initCanvas(containerRef)
@@ -28,11 +32,24 @@ export function CanvasTabContent() {
       return
     }
     setReady(true)
-    loadSessionCanvas(sessionId())
+  })
+
+  // React to this project becoming active/inactive.
+  // This is the primary mechanism for project switching — the ProjectPool
+  // keeps all shells alive and toggles `active` reactively.
+  createEffect(() => {
+    if (!ready() || !containerRef) return
+    const active = isActive()
+    const sid = sessionId()
+    if (active && sid) {
+      adoptCanvas(containerRef, sid)
+      loadSessionCanvas(sid)
+    } else if (!active) {
+      snapshotToCache()
+    }
   })
 
   const loadSessionCanvas = async (sid: string) => {
-    setActiveSession(sid)
     const cached = getCachedCanvas(sid)
     if (cached) {
       loadCanvas(cached, sid)
@@ -62,11 +79,12 @@ export function CanvasTabContent() {
     })
   }
 
+  // Auto-save every 5 seconds of inactivity
   const scheduleSave = () => {
     if (saveTimer) clearTimeout(saveTimer)
     saveTimer = window.setTimeout(() => {
       const sid = sessionId()
-      if (sid && ready()) saveSessionCanvas(sid)
+      if (sid && ready() && isActive()) saveSessionCanvas(sid)
     }, 5000)
   }
 
@@ -81,9 +99,10 @@ export function CanvasTabContent() {
     })
   })
 
+  // Handle session switching within the same project
   createEffect(
     on(sessionId, (newId, oldId) => {
-      if (!ready() || !newId) return
+      if (!ready() || !isActive() || !newId) return
       if (oldId && oldId !== newId) saveSessionCanvas(oldId)
       loadSessionCanvas(newId)
     }),
