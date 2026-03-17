@@ -37,44 +37,55 @@ export function CanvasTabContent() {
     setReady(true)
   })
 
+  const loadSessionCanvas = (sid: string, onReady: () => void) => {
+    const afterLoad = () => {
+      requestAnimationFrame(() => {
+        if (!isActive() || sessionId() !== sid) return
+        onReady()
+      })
+    }
+
+    const cached = getCachedCanvas(sid)
+    if (cached) {
+      if (!isActive() || sessionId() !== sid) return
+      loadCanvas(cached, sid)
+      afterLoad()
+      return
+    }
+
+    setLoading(true)
+    sdk.client.session.canvas
+      .get({ sessionID: sid })
+      .then((res) => {
+        if (!isActive() || sessionId() !== sid) return
+        const json = res.data?.state ?? EMPTY_CANVAS_JSON
+        loadCanvas(json, sid)
+        afterLoad()
+      })
+      .catch(() => {
+        if (!isActive() || sessionId() !== sid) return
+        loadCanvas(EMPTY_CANVAS_JSON, sid)
+        afterLoad()
+      })
+  }
+
   // React to this project becoming active/inactive.
-  // This is the primary mechanism for project switching — the ProjectPool
-  // keeps all shells alive and toggles `active` reactively.
+  // Load state first (while canvas is in prev container), then adopt and reveal.
   createEffect(() => {
     if (!ready() || !containerRef) return
     const active = isActive()
     const sid = sessionId()
     if (active && sid) {
-      adoptCanvas(containerRef, sid)
-      loadSessionCanvas(sid)
+      setLoading(true)
+      loadSessionCanvas(sid, () => {
+        if (!containerRef || !isActive() || sessionId() !== sid) return
+        adoptCanvas(containerRef, sid)
+        setLoading(false)
+      })
     } else if (!active) {
       snapshotToCache()
     }
   })
-
-  const loadSessionCanvas = async (sid: string) => {
-    const cached = getCachedCanvas(sid)
-    if (cached) {
-      loadCanvas(cached, sid)
-      setLoading(false)
-      return
-    }
-
-    setLoading(true)
-    try {
-      const res = await sdk.client.session.canvas.get({ sessionID: sid })
-      if (res.data?.state) {
-        loadCanvas(res.data.state, sid)
-        setLoading(false)
-        return
-      }
-    } catch {
-      // No saved state — start empty
-    }
-
-    loadCanvas(EMPTY_CANVAS_JSON, sid)
-    setLoading(false)
-  }
 
   const saveSessionCanvas = (sid: string) => {
     saveCanvas(sid, async (json) => {
@@ -116,17 +127,21 @@ export function CanvasTabContent() {
     })
   })
 
-  // Handle session switching within the same project
+  // Handle session switching within the same project (no adopt; same container)
   createEffect(
     on(sessionId, (newId, oldId) => {
       if (!ready() || !isActive() || !newId) return
       if (oldId && oldId !== newId) saveSessionCanvas(oldId)
-      loadSessionCanvas(newId)
+      setLoading(true)
+      loadSessionCanvas(newId, () => {
+        if (!isActive() || sessionId() !== newId) return
+        setLoading(false)
+      })
     }),
   )
 
   return (
-    <div class="relative size-full">
+    <div class="relative size-full min-w-0 w-full">
       {error() ? (
         <div class="h-full flex items-center justify-center p-6">
           <div class="text-14-regular text-text-weak text-center max-w-80">
@@ -138,7 +153,7 @@ export function CanvasTabContent() {
           <div
             ref={containerRef}
             id="canvas-container"
-            class="absolute inset-0"
+            class="absolute inset-0 w-full min-w-0"
             style={{ "touch-action": "none" }}
           />
           <Show when={loading()}>

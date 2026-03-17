@@ -39,6 +39,17 @@ thread_local! {
     static PENDING_ZOOM: Cell<f64> = const { Cell::new(0.0) };
     static PENDING_SAVE: RefCell<Option<js_sys::Function>> = const { RefCell::new(None) };
     static PENDING_LOAD: RefCell<Option<String>> = const { RefCell::new(None) };
+    static CANVAS_WINDOW: RefCell<Option<Arc<Window>>> = const { RefCell::new(None) };
+}
+
+/// Wake the winit event loop so `about_to_wait` processes pending save/load.
+/// Without this, queued operations only run on the next user-input event.
+fn wake_event_loop() {
+    CANVAS_WINDOW.with(|r| {
+        if let Some(w) = r.borrow().as_ref() {
+            w.request_redraw();
+        }
+    });
 }
 
 // ── Render state ──────────────────────────────────────────────────────────────
@@ -398,6 +409,7 @@ fn install_wheel_zoom_listener(target: &web_sys::EventTarget) {
 #[wasm_bindgen]
 pub fn save_canvas_request(callback: js_sys::Function) {
     PENDING_SAVE.with(|r| *r.borrow_mut() = Some(callback));
+    wake_event_loop();
 }
 
 /// Request a canvas load from JSON. Applied on the next event loop tick.
@@ -407,6 +419,7 @@ pub fn save_canvas_request(callback: js_sys::Function) {
 pub fn load_canvas_request(json: JsValue) {
     let s = json.as_string().unwrap_or_default();
     PENDING_LOAD.with(|r| *r.borrow_mut() = Some(s));
+    wake_event_loop();
 }
 
 fn install_contextmenu_suppressor(target: &web_sys::EventTarget) {
@@ -442,6 +455,9 @@ pub fn start() {
             )
             .expect("window"),
     );
+
+    // Store the window so save/load requests can wake the event loop.
+    CANVAS_WINDOW.with(|r| *r.borrow_mut() = Some(window.clone()));
 
     // Mount winit's canvas into the SolidJS Chrome container (#canvas-container).
     // The SolidJS app.js renders synchronously before this WASM start() runs,

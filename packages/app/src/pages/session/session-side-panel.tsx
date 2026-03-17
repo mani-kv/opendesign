@@ -149,7 +149,7 @@ function CanvasHost(props: { active: boolean; splitOffset?: number; canvasFirst?
   const offset = () => props.splitOffset ?? 0
   return (
     <div
-      class="absolute overflow-hidden"
+      class="absolute overflow-hidden w-full"
       style={{
         top: "var(--tabs-bar-height, 48px)",
         left: props.canvasFirst ? "0" : offset() > 0 ? `calc(${offset() * 100}% + 1px)` : "0",
@@ -159,7 +159,7 @@ function CanvasHost(props: { active: boolean; splitOffset?: number; canvasFirst?
         "pointer-events": props.active ? "auto" : "none",
       }}
     >
-      <div class="absolute inset-0">
+      <div class="absolute inset-0 w-full h-full">
         <CanvasTabContent />
       </div>
     </div>
