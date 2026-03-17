@@ -13,16 +13,28 @@ type WasmExports = {
 
 let wasm: WasmExports | null = null
 let initialized = false
+let canvasEl: HTMLCanvasElement | null = null
 
 const canvasCache = new Map<string, string>()
 let activeSessionId: string | undefined
 
 export async function initCanvas(container: HTMLElement): Promise<boolean> {
-  if (initialized) return true
+  if (initialized) {
+    // WASM already running — re-adopt the canvas into the new container.
+    // This happens when the component re-mounts (e.g. project navigation)
+    // but the WASM singleton + its <canvas> element are still alive.
+    if (canvasEl && canvasEl.parentElement !== container) {
+      container.appendChild(canvasEl)
+    }
+    return true
+  }
 
   try {
     const mod = await import("@opencode-ai/canvas-wasm")
     await mod.default()
+
+    // Grab the canvas element created by the WASM module
+    canvasEl = container.querySelector("canvas")
 
     wasm = {
       save_canvas_request: mod.save_canvas_request,
@@ -62,8 +74,7 @@ export function saveCanvas(
   })
 
   requestAnimationFrame(() => {
-    const canvas = document.querySelector("#canvas-container canvas")
-    ;(canvas as HTMLElement)?.focus?.()
+    canvasEl?.focus?.()
   })
 }
 
@@ -80,6 +91,5 @@ export function getCachedCanvas(sessionId: string): string | null {
 }
 
 export function focusCanvas(): void {
-  const canvas = document.querySelector("#canvas-container canvas")
-  ;(canvas as HTMLElement)?.focus?.()
+  canvasEl?.focus?.()
 }
