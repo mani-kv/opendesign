@@ -8,6 +8,14 @@
       "dependsOn": [],
       "outputs": ["dist/**"]
     },
+    "@opencode-ai/canvas-wasm#build": {
+      "inputs": ["../../packages/canvas-core/src/**", "src/**", "Cargo.toml", "../../packages/canvas-core/Cargo.toml"],
+      "outputs": ["pkg/**"]
+    },
+    "@opencode-ai/app#build": {
+      "dependsOn": ["@opencode-ai/canvas-wasm#build"],
+      "outputs": ["dist/**"]
+    },
     "opencode#test": {
       "dependsOn": ["^build"],
       "outputs": []
