@@ -25,7 +25,7 @@ import { createFileTabListSync } from "@/pages/session/file-tab-scroll"
 import { FileTabContent } from "@/pages/session/file-tabs"
 import { FigmaTabContent } from "@/pages/session/figma-tab-content"
 import { CanvasTabContent } from "@/pages/session/canvas-tab-content"
-import { createOpenSessionFileTab, getTabReorderIndex, type Sizing } from "@/pages/session/helpers"
+import { createBodyResizing, createOpenSessionFileTab, getTabReorderIndex, type Sizing } from "@/pages/session/helpers"
 import { setSessionHandoff } from "@/pages/session/handoff"
 
 function CanvasFigmaEmpty() {
@@ -168,6 +168,7 @@ function CanvasHost(props: { active: boolean; splitOffset?: number; canvasFirst?
 
 function FigmaWebviewHost(props: { active: boolean; splitOffset?: number; figmaFirst?: boolean }) {
   const offset = () => props.splitOffset ?? 0
+  const resizing = createBodyResizing()
   return (
     <div
       class="absolute overflow-hidden"
@@ -183,6 +184,9 @@ function FigmaWebviewHost(props: { active: boolean; splitOffset?: number; figmaF
       <div class="absolute inset-0">
         <FigmaTabContent />
       </div>
+      <Show when={resizing()}>
+        <div class="absolute inset-0 z-10 bg-background-base/10" />
+      </Show>
     </div>
   )
 }
@@ -219,6 +223,7 @@ function FloatingPromptDock(props: {
       elLeft: rect.left - contRect.left,
       elTop: rect.top - contRect.top,
     })
+    document.body.dataset.resizing = ""
     setDragging(true)
   }
 
@@ -241,6 +246,7 @@ function FloatingPromptDock(props: {
       setPos({ x, y })
     }
     const up = () => {
+      delete document.body.dataset.resizing
       setDragging(false)
       setStart(undefined)
     }

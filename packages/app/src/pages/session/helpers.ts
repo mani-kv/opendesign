@@ -1,4 +1,4 @@
-import { batch, createEffect, on, onCleanup, onMount, type Accessor } from "solid-js"
+import { batch, createEffect, createSignal, on, onCleanup, onMount, type Accessor } from "solid-js"
 import { createStore } from "solid-js/store"
 
 export const focusTerminalById = (id: string) => {
@@ -117,6 +117,18 @@ export const createSizing = () => {
 }
 
 export type Sizing = ReturnType<typeof createSizing>
+
+export const createBodyResizing = () => {
+  const [resizing, setResizing] = createSignal(false)
+  onMount(() => {
+    const observer = new MutationObserver(() => {
+      setResizing(document.body.dataset.resizing !== undefined)
+    })
+    observer.observe(document.body, { attributes: true, attributeFilter: ["data-resizing"] })
+    onCleanup(() => observer.disconnect())
+  })
+  return resizing
+}
 
 export const createPresence = (open: Accessor<boolean>, wait = 200) => {
   const [state, setState] = createStore({

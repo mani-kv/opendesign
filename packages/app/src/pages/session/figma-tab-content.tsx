@@ -4,6 +4,7 @@ import { useLanguage } from "@/context/language"
 import { useLayout } from "@/context/layout"
 import { usePlatform } from "@/context/platform"
 import { buildFigmaEmbedUrl, parseFigmaUrl } from "@/utils/figma"
+import { createBodyResizing } from "@/pages/session/helpers"
 
 const FIGMA_ORIGIN = "https://www.figma.com"
 
@@ -28,6 +29,7 @@ export function FigmaTabContent() {
     const parsed = parseFigmaUrl(url)
     return parsed ? buildFigmaEmbedUrl(parsed.key, parsed.type) : null
   })
+  const resizing = createBodyResizing()
 
   onMount(() => {
     if (platform.openFigmaWindow) {
@@ -66,7 +68,7 @@ export function FigmaTabContent() {
             class="text-14-regular rounded-md border border-border-default bg-bg-default px-3 py-2 text-text focus:border-focus-ring focus:outline-none focus:ring-1 focus:ring-focus-ring"
           />
         </div>
-        <div class="flex-1 min-h-0 overflow-hidden">
+        <div class="relative flex-1 min-h-0 overflow-hidden">
           {embedSrc() ? (
             <iframe
               src={embedSrc()!}
@@ -79,6 +81,9 @@ export function FigmaTabContent() {
               <p class="text-14-regular text-text-weak">Enter a Figma design, file, prototype, or board URL above.</p>
             </div>
           )}
+          <Show when={resizing()}>
+            <div class="absolute inset-0 z-10 bg-background-base/10" />
+          </Show>
         </div>
       </div>
     )
