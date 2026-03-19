@@ -6,9 +6,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 OpenCode is an open-source AI coding agent with a client/server architecture. The server exposes a Hono-based HTTP/SSE API; clients include a TUI (SolidJS + opentui), a web app (SolidJS + Vite), and a native desktop app (Tauri).
 
-## Workflow                                                                                                                      
+## Workflow
 - Prefer automation: execute requested actions without confirmation unless blocked by missing info or safety/irreversibility.
-      
+- **Before starting any task**: read `.claude/code_insights.md` to recall accumulated knowledge about this codebase.
+- **After completing any edit session**: update `.claude/code_insights.md` with new insights — non-obvious patterns, gotchas, root causes of bugs, or decisions made. Keep entries concise and actionable. Do not duplicate what's already there.
+
 
 
 ## Commands

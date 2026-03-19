@@ -25,6 +25,7 @@ import { createFileTabListSync } from "@/pages/session/file-tab-scroll"
 import { FileTabContent } from "@/pages/session/file-tabs"
 import { FigmaTabContent } from "@/pages/session/figma-tab-content"
 import { CanvasTabContent } from "@/pages/session/canvas-tab-content"
+import { triggerCanvasResize } from "@/utils/canvas-bridge"
 import { createBodyResizing, createOpenSessionFileTab, getTabReorderIndex, type Sizing } from "@/pages/session/helpers"
 import { setSessionHandoff } from "@/pages/session/handoff"
 
@@ -56,7 +57,7 @@ function SplitPaneContent(props: {
               </SortablePaneTab>
             </Tabs.List>
           </div>
-          <Tabs.Content value="canvas" class="relative flex flex-col flex-1 min-h-0 overflow-hidden contain-strict">
+          <Tabs.Content value="canvas" class="relative flex flex-col flex-1 min-h-0 overflow-hidden contain-strict pointer-events-none">
             <div class="absolute inset-0" aria-hidden />
           </Tabs.Content>
         </Tabs>
@@ -77,7 +78,7 @@ function SplitPaneContent(props: {
                   <FigmaTabContent />
                 </div>
               ) : (
-                <div class="absolute inset-0" aria-hidden />
+                <div class="absolute inset-0 pointer-events-none" aria-hidden />
               )}
             </div>
           </Tabs.Content>
@@ -146,16 +147,42 @@ function CanvasFigmaSplit(props: {
 }
 
 function CanvasHost(props: { active: boolean; splitOffset?: number; canvasFirst?: boolean }) {
+  let hostRef: HTMLDivElement | undefined
+  createEffect(() => {
+    if (!hostRef) return
+    const ro = new ResizeObserver(() => triggerCanvasResize())
+    ro.observe(hostRef)
+    onCleanup(() => ro.disconnect())
+  })
+
   const offset = () => props.splitOffset ?? 0
+
+  // Use left+width only (never right) to avoid CSS over-constraint:
+  // when left+right+width are all set, `right` is silently ignored in LTR.
+  const left = () => {
+    if (offset() > 0 && !props.canvasFirst) return `calc(${offset() * 100}% + 1px)`
+    return "0"
+  }
+  const width = () => {
+    if (offset() > 0) {
+      if (props.canvasFirst) return `${offset() * 100}%`
+      return `calc(${(1 - offset()) * 100}% - 1px)`
+    }
+    return "100%"
+  }
+
   return (
     <div
-      class="absolute overflow-hidden w-full"
+      ref={hostRef}
+      class="absolute overflow-hidden"
       style={{
         top: "var(--tabs-bar-height, 48px)",
-        left: props.canvasFirst ? "0" : offset() > 0 ? `calc(${offset() * 100}% + 1px)` : "0",
-        right: props.canvasFirst && offset() > 0 ? `calc(${(1 - offset()) * 100}%)` : "0",
+        left: left(),
+        width: width(),
         bottom: "0",
-        "z-index": props.active ? 0 : -1,
+        // z-index:2 when active → above Tabs (which has opaque background-stronger)
+        // z-index:-1 when inactive → behind everything so figma/other tabs show through
+        "z-index": props.active ? 2 : -1,
         "pointer-events": props.active ? "auto" : "none",
       }}
     >
@@ -177,7 +204,7 @@ function FigmaWebviewHost(props: { active: boolean; splitOffset?: number; figmaF
         left: props.figmaFirst ? "0" : offset() > 0 ? `calc(${offset() * 100}% + 1px)` : "0",
         right: props.figmaFirst && offset() > 0 ? `calc(${(1 - offset()) * 100}%)` : "0",
         bottom: "0",
-        "z-index": props.active ? 0 : -1,
+        "z-index": props.active ? 1 : -1,
         "pointer-events": props.active ? "auto" : "none",
       }}
     >
@@ -627,7 +654,7 @@ export function SessionSidePanel(props: {
                   </div>
 
                       <Show when={canvasTab()}>
-                        <Tabs.Content value="canvas" class="relative flex flex-col h-full overflow-hidden contain-strict">
+                        <Tabs.Content value="canvas" class="relative flex flex-col h-full overflow-hidden contain-strict pointer-events-none">
                           <div class="absolute inset-0" aria-hidden />
                         </Tabs.Content>
                       </Show>
@@ -638,7 +665,7 @@ export function SessionSidePanel(props: {
                             <FigmaTabContent />
                           ) : (
                             /* Desktop: persistent FigmaWebviewHost shows through this transparent placeholder */
-                            <div class="size-full" aria-hidden />
+                            <div class="size-full pointer-events-none" aria-hidden />
                           )}
                         </Tabs.Content>
                       </Show>

@@ -1,6 +1,10 @@
 @import "@opencode-ai/ui/styles/tailwind";
 
 @layer components {
+  #canvas-container canvas {
+    width: 100% !important;
+  }
+
   [data-action="prompt-submit"][data-active] [data-slot="icon-svg"] {
     color: white !important;
   }
