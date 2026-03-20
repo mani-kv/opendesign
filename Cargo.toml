@@ -1,6 +1,5 @@
 [workspace]
 members = ["packages/canvas-core", "packages/canvas-wasm"]
-exclude = ["packages/desktop/src-tauri"]
 resolver = "2"
 
 [workspace.dependencies]

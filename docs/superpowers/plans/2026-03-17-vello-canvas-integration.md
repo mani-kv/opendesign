@@ -135,7 +135,6 @@ Create `/Users/Mani/Desktop/SideProjects/opendesign/Cargo.toml`:
 ```toml
 [workspace]
 members = ["packages/canvas-core", "packages/canvas-wasm"]
-exclude = ["packages/desktop/src-tauri"]
 resolver = "2"
 
 [workspace.dependencies]

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## About
 
-OpenCode is an open-source AI coding agent with a client/server architecture. The server exposes a Hono-based HTTP/SSE API; clients include a TUI (SolidJS + opentui), a web app (SolidJS + Vite), and a native desktop app (Tauri).
+OpenCode is an open-source AI coding agent with a client/server architecture. The server exposes a Hono-based HTTP/SSE API; clients include a TUI (SolidJS + opentui), a web app (SolidJS + Vite), and a native desktop app (Electron).
 
 ## Workflow
 - Prefer automation: execute requested actions without confirmation unless blocked by missing info or safety/irreversibility.
@@ -24,7 +24,7 @@ bun dev <directory>     # run TUI against a specific directory
 bun dev serve           # start headless API server on port 4096
 bun dev web             # start server + open web interface
 bun run --cwd packages/app dev   # run web app (requires server running)
-bun run --cwd packages/desktop tauri dev  # run desktop app (requires Rust/Tauri)
+bun run --cwd packages/desktop-electron dev  # run Electron desktop app
 ```
 
 ### Building
@@ -66,8 +66,7 @@ After changing `packages/opencode/src/server/server.ts`:
 
 - **`packages/opencode`** — Core business logic and API server. Entry: `src/index.ts` (yargs CLI)
 - **`packages/app`** — Shared web UI components (SolidJS + TailwindCSS v4), used by both web and desktop clients
-- **`packages/desktop`** — Native desktop app (Tauri v2 wrapping `packages/app`)
-- **`packages/desktop-electron`** — Electron-based desktop app alternative
+- **`packages/desktop-electron`** — Native desktop app (Electron wrapping `packages/app`)
 - **`packages/sdk/js`** — Generated TypeScript SDK (do not edit manually)
 - **`packages/plugin`** — `@opencode-ai/plugin` package for plugin authors
 - **`packages/ui`** — Shared UI primitives

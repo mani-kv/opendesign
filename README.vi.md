@@ -70,9 +70,9 @@ OpenCode cũng có sẵn dưới dạng ứng dụng desktop. Tải trực tiế
 
 | Nền tảng              | Tải xuống                             |
 | --------------------- | ------------------------------------- |
-| macOS (Apple Silicon) | `opencode-desktop-darwin-aarch64.dmg` |
-| macOS (Intel)         | `opencode-desktop-darwin-x64.dmg`     |
-| Windows               | `opencode-desktop-windows-x64.exe`    |
+| macOS (Apple Silicon) | `opencode-electron-darwin-arm64.dmg` |
+| macOS (Intel)         | `opencode-electron-darwin-x64.dmg`     |
+| Windows               | `opencode-electron-win32-x64.exe`    |
 | Linux                 | `.deb`, `.rpm`, hoặc AppImage         |
 
 ```bash

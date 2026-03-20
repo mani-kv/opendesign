@@ -70,9 +70,9 @@ OpenCode також доступний як десктопний застосу�
 
 | Платформа             | Завантаження                          |
 | --------------------- | ------------------------------------- |
-| macOS (Apple Silicon) | `opencode-desktop-darwin-aarch64.dmg` |
-| macOS (Intel)         | `opencode-desktop-darwin-x64.dmg`     |
-| Windows               | `opencode-desktop-windows-x64.exe`    |
+| macOS (Apple Silicon) | `opencode-electron-darwin-arm64.dmg` |
+| macOS (Intel)         | `opencode-electron-darwin-x64.dmg`     |
+| Windows               | `opencode-electron-win32-x64.exe`    |
 | Linux                 | `.deb`, `.rpm` або AppImage           |
 
 ```bash

@@ -92,4 +92,11 @@ Accumulated knowledge about this codebase. Read before starting any task. Update
 
 ---
 
-_Last updated: 2026-03-19 — dynamic z-index on CanvasHost, left+width split positioning, Tabs opaque background discovery_
+## Tauri desktop removed (2026-03-19)
+
+- The former `packages/desktop` (Tauri v2) was moved out of the repo to `/Users/Mani/Desktop/SideProjects/opendesign-tauri-archive` (local backup). Native desktop is **Electron only** (`packages/desktop-electron`).
+- **Nix**: `flake.nix` no longer exposes a `desktop` / `opencode-desktop` package; `nix/desktop.nix` was deleted. **`nix/hashes.json`** may need a refresh after `nix/node_modules.nix` changed (drop `packages/desktop` filter): use `nix build .#packages.<system>.node_modules_updater` with `lib.fakeHash` to obtain new `outputHash` values, or ask a Nix maintainer to rebuild.
+
+---
+
+_Last updated: 2026-03-19 — Tauri/desktop package removed; Electron-only desktop; Nix hash refresh may be needed_

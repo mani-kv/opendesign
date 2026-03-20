@@ -1,37 +1,273 @@
 {
   "version": 1,
   "transcripts": {
-    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/00140a80-43da-48e2-867e-cc3b8ed3d1fc/00140a80-43da-48e2-867e-cc3b8ed3d1fc.jsonl": {"mtimeMs": 1773471885000, "lastProcessedAt": "2026-03-15T00:00:00.000Z"},
-    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/040bab91-608a-4ac0-a8a5-3171336b42cf/040bab91-608a-4ac0-a8a5-3171336b42cf.jsonl": {"mtimeMs": 1773216515000, "lastProcessedAt": "2026-03-15T00:00:00.000Z"},
-    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/05d44217-5293-4a7c-a02f-c94109c466e3/05d44217-5293-4a7c-a02f-c94109c466e3.jsonl": {"mtimeMs": 1773542481000, "lastProcessedAt": "2026-03-15T00:00:00.000Z"},
-    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/0aa513a2-69d5-470c-ba0e-93dc54fa7095/0aa513a2-69d5-470c-ba0e-93dc54fa7095.jsonl": {"mtimeMs": 1773555815000, "lastProcessedAt": "2026-03-15T00:00:00.000Z"},
-    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/18668eb9-be10-46a4-9099-917de3f3f173/18668eb9-be10-46a4-9099-917de3f3f173.jsonl": {"mtimeMs": 1773474063000, "lastProcessedAt": "2026-03-15T00:00:00.000Z"},
-    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/19d0127f-4752-41af-935c-ea3fd93b6312/19d0127f-4752-41af-935c-ea3fd93b6312.jsonl": {"mtimeMs": 1773542183000, "lastProcessedAt": "2026-03-15T00:00:00.000Z"},
-    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/21c7c20d-eb17-41bc-9586-238a0c0e5839/21c7c20d-eb17-41bc-9586-238a0c0e5839.jsonl": {"mtimeMs": 1773542383000, "lastProcessedAt": "2026-03-15T00:00:00.000Z"},
-    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/2b6a957d-cd0d-4ed7-8e78-4a06c8e60fea/2b6a957d-cd0d-4ed7-8e78-4a06c8e60fea.jsonl": {"mtimeMs": 1773231213000, "lastProcessedAt": "2026-03-15T00:00:00.000Z"},
-    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/2cf2205e-f1d6-4778-9348-a82c5f389aef/2cf2205e-f1d6-4778-9348-a82c5f389aef.jsonl": {"mtimeMs": 1773535306000, "lastProcessedAt": "2026-03-15T00:00:00.000Z"},
-    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/34a3e7a8-e1fa-4e6f-bdef-ac002aa7efab/34a3e7a8-e1fa-4e6f-bdef-ac002aa7efab.jsonl": {"mtimeMs": 1773216445000, "lastProcessedAt": "2026-03-15T00:00:00.000Z"},
-    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/368ba348-4c7b-4eee-ba0d-ce4ad2b42352/368ba348-4c7b-4eee-ba0d-ce4ad2b42352.jsonl": {"mtimeMs": 1773533057000, "lastProcessedAt": "2026-03-15T00:00:00.000Z"},
-    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/478f9afa-56da-4928-9c00-046fca3876ea/478f9afa-56da-4928-9c00-046fca3876ea.jsonl": {"mtimeMs": 1773460344000, "lastProcessedAt": "2026-03-15T00:00:00.000Z"},
-    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/49deeaf8-1f51-461c-a67f-5c33818c1676/49deeaf8-1f51-461c-a67f-5c33818c1676.jsonl": {"mtimeMs": 1773213514000, "lastProcessedAt": "2026-03-15T00:00:00.000Z"},
-    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/5655ce69-765c-4f99-bfbd-68634400c51d/5655ce69-765c-4f99-bfbd-68634400c51d.jsonl": {"mtimeMs": 1773542621000, "lastProcessedAt": "2026-03-15T00:00:00.000Z"},
-    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/62ecfe9f-96e2-421f-b90b-21bae5f90c55/62ecfe9f-96e2-421f-b90b-21bae5f90c55.jsonl": {"mtimeMs": 1773307765000, "lastProcessedAt": "2026-03-15T00:00:00.000Z"},
-    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/6a4f97f8-0940-4596-8a7a-7684e90a2318/6a4f97f8-0940-4596-8a7a-7684e90a2318.jsonl": {"mtimeMs": 1773562999000, "lastProcessedAt": "2026-03-15T00:00:00.000Z"},
-    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/6cab9745-7cd7-42f9-9daa-8efe4999c686/6cab9745-7cd7-42f9-9daa-8efe4999c686.jsonl": {"mtimeMs": 1773472177000, "lastProcessedAt": "2026-03-15T00:00:00.000Z"},
-    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/8775fd7b-a830-4fbb-9109-09064e95e4f3/8775fd7b-a830-4fbb-9109-09064e95e4f3.jsonl": {"mtimeMs": 1773546702000, "lastProcessedAt": "2026-03-15T00:00:00.000Z"},
-    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/96e45756-34c0-4b4b-ae8b-91887ade6157/96e45756-34c0-4b4b-ae8b-91887ade6157.jsonl": {"mtimeMs": 1773473037000, "lastProcessedAt": "2026-03-15T00:00:00.000Z"},
-    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/9ed35906-2fb3-4a03-9ba2-a6faa40ce7af/9ed35906-2fb3-4a03-9ba2-a6faa40ce7af.jsonl": {"mtimeMs": 1773558185000, "lastProcessedAt": "2026-03-15T00:00:00.000Z"},
-    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/ab72c00a-e9d0-429c-8520-ad2b5689807b/ab72c00a-e9d0-429c-8520-ad2b5689807b.jsonl": {"mtimeMs": 1773472567000, "lastProcessedAt": "2026-03-15T00:00:00.000Z"},
-    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/b46fb6f1-5988-45ab-a8ec-ef7d9aa4adca/b46fb6f1-5988-45ab-a8ec-ef7d9aa4adca.jsonl": {"mtimeMs": 1773308393000, "lastProcessedAt": "2026-03-15T00:00:00.000Z"},
-    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/b532fdd1-4cbb-4534-a5a0-1cf22d1dec01/b532fdd1-4cbb-4534-a5a0-1cf22d1dec01.jsonl": {"mtimeMs": 1773466526000, "lastProcessedAt": "2026-03-15T00:00:00.000Z"},
-    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/bad9bfa8-f1a7-446e-8bfa-54a3aa82f179/bad9bfa8-f1a7-446e-8bfa-54a3aa82f179.jsonl": {"mtimeMs": 1773475519000, "lastProcessedAt": "2026-03-15T00:00:00.000Z"},
-    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/ddee5468-d6e9-4f52-81ad-ed9e020a8840/ddee5468-d6e9-4f52-81ad-ed9e020a8840.jsonl": {"mtimeMs": 1773472050000, "lastProcessedAt": "2026-03-15T00:00:00.000Z"},
-    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/de233706-ae45-4b73-8084-ddc2975b6284/de233706-ae45-4b73-8084-ddc2975b6284.jsonl": {"mtimeMs": 1773474156000, "lastProcessedAt": "2026-03-15T00:00:00.000Z"},
-    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/e328e33d-c4f0-4d13-9d3c-1257799d02bf/e328e33d-c4f0-4d13-9d3c-1257799d02bf.jsonl": {"mtimeMs": 1773284245000, "lastProcessedAt": "2026-03-15T00:00:00.000Z"},
-    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/f69b5f4c-6cf8-4ec8-86b7-495a7faf4513/f69b5f4c-6cf8-4ec8-86b7-495a7faf4513.jsonl": {"mtimeMs": 1773533189000, "lastProcessedAt": "2026-03-15T00:00:00.000Z"},
-    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/fbb79e48-8ab0-455a-ba73-0c45640e901f/fbb79e48-8ab0-455a-ba73-0c45640e901f.jsonl": {"mtimeMs": 1773263609000, "lastProcessedAt": "2026-03-15T00:00:00.000Z"},
-    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/fd20aed1-8d52-46e3-9bbd-549d42bebacc/fd20aed1-8d52-46e3-9bbd-549d42bebacc.jsonl": {"mtimeMs": 1773471949000, "lastProcessedAt": "2026-03-15T00:00:00.000Z"},
-    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/4a8e2cc2-a5f8-4d6a-a1a1-4a01596e17dd/4a8e2cc2-a5f8-4d6a-a1a1-4a01596e17dd.jsonl": {"mtimeMs": 1773233826000, "lastProcessedAt": "2026-03-15T00:00:00.000Z"},
-    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/7cc76d98-625a-483e-ae5e-ff6005fe8a33/7cc76d98-625a-483e-ae5e-ff6005fe8a33.jsonl": {"mtimeMs": 1773294802000, "lastProcessedAt": "2026-03-15T00:00:00.000Z"}
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/00140a80-43da-48e2-867e-cc3b8ed3d1fc/00140a80-43da-48e2-867e-cc3b8ed3d1fc.jsonl": {
+      "mtimeMs": 1773471885971,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/0210b085-0002-4b33-9a2b-4aaceb357469/0210b085-0002-4b33-9a2b-4aaceb357469.jsonl": {
+      "mtimeMs": 1773728843391,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/040bab91-608a-4ac0-a8a5-3171336b42cf/040bab91-608a-4ac0-a8a5-3171336b42cf.jsonl": {
+      "mtimeMs": 1773216515972,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/0426266e-9140-4ae8-b453-9fa7b48c0d36/0426266e-9140-4ae8-b453-9fa7b48c0d36.jsonl": {
+      "mtimeMs": 1773730018655,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/045b9682-f88c-4508-ad2e-799f2159c24c/045b9682-f88c-4508-ad2e-799f2159c24c.jsonl": {
+      "mtimeMs": 1773913700230,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/047f3e07-51a2-40c6-a003-2e5b348bacc7/047f3e07-51a2-40c6-a003-2e5b348bacc7.jsonl": {
+      "mtimeMs": 1773766552563,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/05d44217-5293-4a7c-a02f-c94109c466e3/05d44217-5293-4a7c-a02f-c94109c466e3.jsonl": {
+      "mtimeMs": 1773542481002,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/0aa513a2-69d5-470c-ba0e-93dc54fa7095/0aa513a2-69d5-470c-ba0e-93dc54fa7095.jsonl": {
+      "mtimeMs": 1773555815861,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/18668eb9-be10-46a4-9099-917de3f3f173/18668eb9-be10-46a4-9099-917de3f3f173.jsonl": {
+      "mtimeMs": 1773474063622,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/19d0127f-4752-41af-935c-ea3fd93b6312/19d0127f-4752-41af-935c-ea3fd93b6312.jsonl": {
+      "mtimeMs": 1773542183269,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/19d0127f-4752-41af-935c-ea3fd93b6312/subagents/0204593d-7c0d-428a-98f2-5b10c1b6450b.jsonl": {
+      "mtimeMs": 1773476837324,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/19d0127f-4752-41af-935c-ea3fd93b6312/subagents/5b1c812b-446d-450a-95df-30bc5ed5ac54.jsonl": {
+      "mtimeMs": 1773476830934,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/19d0127f-4752-41af-935c-ea3fd93b6312/subagents/740bf54d-81b1-4732-b83c-281e5367aeff.jsonl": {
+      "mtimeMs": 1773476834311,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/21c7c20d-eb17-41bc-9586-238a0c0e5839/21c7c20d-eb17-41bc-9586-238a0c0e5839.jsonl": {
+      "mtimeMs": 1773542383231,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/28d6a575-c437-4fc1-8a31-bb843a92f441/28d6a575-c437-4fc1-8a31-bb843a92f441.jsonl": {
+      "mtimeMs": 1773576577958,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/2b6a957d-cd0d-4ed7-8e78-4a06c8e60fea/2b6a957d-cd0d-4ed7-8e78-4a06c8e60fea.jsonl": {
+      "mtimeMs": 1773231213433,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/2cf2205e-f1d6-4778-9348-a82c5f389aef/2cf2205e-f1d6-4778-9348-a82c5f389aef.jsonl": {
+      "mtimeMs": 1773535306838,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/2ec894d3-9d54-48b0-a706-23123b5fc835/2ec894d3-9d54-48b0-a706-23123b5fc835.jsonl": {
+      "mtimeMs": 1773752308788,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/2fcd85ce-23fe-4902-a0cd-0a722c19fe88/2fcd85ce-23fe-4902-a0cd-0a722c19fe88.jsonl": {
+      "mtimeMs": 1773577347877,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/34a3e7a8-e1fa-4e6f-bdef-ac002aa7efab/34a3e7a8-e1fa-4e6f-bdef-ac002aa7efab.jsonl": {
+      "mtimeMs": 1773216445282,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/368ba348-4c7b-4eee-ba0d-ce4ad2b42352/368ba348-4c7b-4eee-ba0d-ce4ad2b42352.jsonl": {
+      "mtimeMs": 1773533057473,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/39638915-0414-47bb-98ca-cfd5165a9c52/39638915-0414-47bb-98ca-cfd5165a9c52.jsonl": {
+      "mtimeMs": 1773729028781,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/3c1a3d4d-79de-49eb-87b6-0c97c5fb3431/3c1a3d4d-79de-49eb-87b6-0c97c5fb3431.jsonl": {
+      "mtimeMs": 1773576568358,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/478f9afa-56da-4928-9c00-046fca3876ea/478f9afa-56da-4928-9c00-046fca3876ea.jsonl": {
+      "mtimeMs": 1773460344011,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/49deeaf8-1f51-461c-a67f-5c33818c1676/49deeaf8-1f51-461c-a67f-5c33818c1676.jsonl": {
+      "mtimeMs": 1773213514066,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/4a2a3107-8679-436f-bb6b-2afed3bd7266/4a2a3107-8679-436f-bb6b-2afed3bd7266.jsonl": {
+      "mtimeMs": 1773729705629,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/4a8e2cc2-a5f8-4d6a-a1a1-4a01596e17dd/4a8e2cc2-a5f8-4d6a-a1a1-4a01596e17dd.jsonl": {
+      "mtimeMs": 1773233826343,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/5655ce69-765c-4f99-bfbd-68634400c51d/5655ce69-765c-4f99-bfbd-68634400c51d.jsonl": {
+      "mtimeMs": 1773542621958,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/5f52a092-0556-46d9-8e59-815ff87bf3d3/5f52a092-0556-46d9-8e59-815ff87bf3d3.jsonl": {
+      "mtimeMs": 1773565573281,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/5f5c740e-47d5-4e8a-9ca7-57b0fcd42fd1/5f5c740e-47d5-4e8a-9ca7-57b0fcd42fd1.jsonl": {
+      "mtimeMs": 1773578786606,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/62ecfe9f-96e2-421f-b90b-21bae5f90c55/62ecfe9f-96e2-421f-b90b-21bae5f90c55.jsonl": {
+      "mtimeMs": 1773307765033,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/65f0da41-7f56-4bfa-9184-f8806ba9a86e/65f0da41-7f56-4bfa-9184-f8806ba9a86e.jsonl": {
+      "mtimeMs": 1773976532281,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/6a4f97f8-0940-4596-8a7a-7684e90a2318/6a4f97f8-0940-4596-8a7a-7684e90a2318.jsonl": {
+      "mtimeMs": 1773564743690,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/6cab9745-7cd7-42f9-9daa-8efe4999c686/6cab9745-7cd7-42f9-9daa-8efe4999c686.jsonl": {
+      "mtimeMs": 1773472177111,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/6e1afeba-c995-49bd-abc9-04b3902f5fd9/6e1afeba-c995-49bd-abc9-04b3902f5fd9.jsonl": {
+      "mtimeMs": 1773565817286,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/7862a7e6-75a6-4da3-a269-633365d5ed53/7862a7e6-75a6-4da3-a269-633365d5ed53.jsonl": {
+      "mtimeMs": 1773729208760,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/7ca5912a-5563-4ae9-8210-e55e3bde1436/7ca5912a-5563-4ae9-8210-e55e3bde1436.jsonl": {
+      "mtimeMs": 1773578005217,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/7cc76d98-625a-483e-ae5e-ff6005fe8a33/7cc76d98-625a-483e-ae5e-ff6005fe8a33.jsonl": {
+      "mtimeMs": 1773294802707,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/7ea8dccc-08a4-42c2-b159-52f7e546c136/7ea8dccc-08a4-42c2-b159-52f7e546c136.jsonl": {
+      "mtimeMs": 1773725363660,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/80211a55-0e07-42c4-8781-7eb467b4436c/80211a55-0e07-42c4-8781-7eb467b4436c.jsonl": {
+      "mtimeMs": 1773576373044,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/8775fd7b-a830-4fbb-9109-09064e95e4f3/8775fd7b-a830-4fbb-9109-09064e95e4f3.jsonl": {
+      "mtimeMs": 1773568362177,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/8cc4e7fe-43f7-4492-bdd8-6cdac6acebe3/8cc4e7fe-43f7-4492-bdd8-6cdac6acebe3.jsonl": {
+      "mtimeMs": 1773575557682,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/928b30e7-244b-485f-bdc2-e64d04d9b1da/928b30e7-244b-485f-bdc2-e64d04d9b1da.jsonl": {
+      "mtimeMs": 1773730197658,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/96e45756-34c0-4b4b-ae8b-91887ade6157/96e45756-34c0-4b4b-ae8b-91887ade6157.jsonl": {
+      "mtimeMs": 1773473037209,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/9e22c5c0-efda-43f1-ba55-b62b5d845b53/9e22c5c0-efda-43f1-ba55-b62b5d845b53.jsonl": {
+      "mtimeMs": 1773729705212,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/9ed35906-2fb3-4a03-9ba2-a6faa40ce7af/9ed35906-2fb3-4a03-9ba2-a6faa40ce7af.jsonl": {
+      "mtimeMs": 1773558185039,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/a295f637-54c0-40e5-b1bf-59bb93e4adbd/a295f637-54c0-40e5-b1bf-59bb93e4adbd.jsonl": {
+      "mtimeMs": 1773575709627,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/a84776bc-a1de-4056-8aaf-e0a0160dd7c8/a84776bc-a1de-4056-8aaf-e0a0160dd7c8.jsonl": {
+      "mtimeMs": 1773913551690,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/ab72c00a-e9d0-429c-8520-ad2b5689807b/ab72c00a-e9d0-429c-8520-ad2b5689807b.jsonl": {
+      "mtimeMs": 1773472567720,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/ad9550bb-2d2e-41e7-9501-b7c9aa358c20/ad9550bb-2d2e-41e7-9501-b7c9aa358c20.jsonl": {
+      "mtimeMs": 1773732517127,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/b46fb6f1-5988-45ab-a8ec-ef7d9aa4adca/b46fb6f1-5988-45ab-a8ec-ef7d9aa4adca.jsonl": {
+      "mtimeMs": 1773308393806,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/b532fdd1-4cbb-4534-a5a0-1cf22d1dec01/b532fdd1-4cbb-4534-a5a0-1cf22d1dec01.jsonl": {
+      "mtimeMs": 1773466526491,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/bad9bfa8-f1a7-446e-8bfa-54a3aa82f179/bad9bfa8-f1a7-446e-8bfa-54a3aa82f179.jsonl": {
+      "mtimeMs": 1773475519628,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/bedc6d9e-6274-44eb-ac88-4f3293b1c5c4/bedc6d9e-6274-44eb-ac88-4f3293b1c5c4.jsonl": {
+      "mtimeMs": 1773578253737,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/c20b79cd-fb9c-43b1-8943-abc8da9298db/c20b79cd-fb9c-43b1-8943-abc8da9298db.jsonl": {
+      "mtimeMs": 1773942973736,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/c734be5e-9c92-44c9-bb2d-d6dcef5acab8/c734be5e-9c92-44c9-bb2d-d6dcef5acab8.jsonl": {
+      "mtimeMs": 1773578665786,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/d4087f5c-799d-4263-a69b-a62bd151f311/d4087f5c-799d-4263-a69b-a62bd151f311.jsonl": {
+      "mtimeMs": 1773565242005,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/d639279b-fba8-4501-9a7f-c2ff45fa903e/d639279b-fba8-4501-9a7f-c2ff45fa903e.jsonl": {
+      "mtimeMs": 1773579225073,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/dc3aeee9-6194-483a-bd1b-b382103164b4/dc3aeee9-6194-483a-bd1b-b382103164b4.jsonl": {
+      "mtimeMs": 1773575514124,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/ddee5468-d6e9-4f52-81ad-ed9e020a8840/ddee5468-d6e9-4f52-81ad-ed9e020a8840.jsonl": {
+      "mtimeMs": 1773472050474,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/de233706-ae45-4b73-8084-ddc2975b6284/de233706-ae45-4b73-8084-ddc2975b6284.jsonl": {
+      "mtimeMs": 1773474156846,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/e328e33d-c4f0-4d13-9d3c-1257799d02bf/e328e33d-c4f0-4d13-9d3c-1257799d02bf.jsonl": {
+      "mtimeMs": 1773284245916,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/edf1d937-cc21-4d82-bd80-8b488328f19c/edf1d937-cc21-4d82-bd80-8b488328f19c.jsonl": {
+      "mtimeMs": 1773919121704,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/f089d1a8-667e-4126-ab02-cd26a7bea0e0/f089d1a8-667e-4126-ab02-cd26a7bea0e0.jsonl": {
+      "mtimeMs": 1773575773538,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/f69b5f4c-6cf8-4ec8-86b7-495a7faf4513/f69b5f4c-6cf8-4ec8-86b7-495a7faf4513.jsonl": {
+      "mtimeMs": 1773533189427,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/fbb79e48-8ab0-455a-ba73-0c45640e901f/fbb79e48-8ab0-455a-ba73-0c45640e901f.jsonl": {
+      "mtimeMs": 1773263609711,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    },
+    "/Users/Mani/.cursor/projects/Users-Mani-Desktop-SideProjects-opendesign/agent-transcripts/fd20aed1-8d52-46e3-9bbd-549d42bebacc/fd20aed1-8d52-46e3-9bbd-549d42bebacc.jsonl": {
+      "mtimeMs": 1773471949561,
+      "lastProcessedAt": "2026-03-20T03:16:15.295Z"
+    }
   }
 }

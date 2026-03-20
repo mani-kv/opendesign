@@ -134,4 +134,5 @@ const table = sqliteTable("session", {
 ## Learned Workspace Facts
 
 - Use forward slash (/) not greater-than (>) for workspace/project hierarchy separators in breadcrumbs.
+- Native desktop is `packages/desktop-electron` (Electron); this workspace does not include a Tauri `packages/desktop` package.
 

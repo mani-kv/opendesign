@@ -184,7 +184,7 @@ flowchart TB
     subgraph Clients["Clients"]
         TUI["TUI (opentui + SolidJS)"]
         Web["Web App (Vite + SolidJS)"]
-        Desktop["Desktop (Tauri / Electron)"]
+        Desktop["Desktop (Electron)"]
     end
 
     subgraph SDK["SDK (TypeScript)"]
@@ -228,7 +228,7 @@ flowchart LR
     subgraph Packages["Turborepo Packages"]
         OpenCode["opencode\n(Core + API)"]
         App["app\n(Web UI)"]
-        Desktop["desktop\n(Tauri)"]
+        Desktop["desktop-electron"]
         SDK["sdk/js\n(Generated)"]
         UI["ui\n(Primitives)"]
         Plugin["plugin"]

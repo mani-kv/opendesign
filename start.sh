@@ -29,16 +29,11 @@ start_electron() {
   bun run dev:desktop-electron
 }
 
-start_tauri() {
-  bun run --cwd packages/desktop tauri dev
-}
-
 usage() {
-  echo "Usage: ./start.sh --web | --electron | --tauri"
+  echo "Usage: ./start.sh --web | --electron"
   echo ""
   echo "  --web      Backend + web app (http://localhost:$APP_PORT)"
   echo "  --electron Electron desktop app"
-  echo "  --tauri    Tauri desktop app"
   echo ""
   echo "Env: BACKEND_PORT (default 4096), APP_PORT (default 3000)"
   exit 1
@@ -47,6 +42,5 @@ usage() {
 case "${1:-}" in
   --web)     start_web ;;
   --electron) start_electron ;;
-  --tauri)   start_tauri ;;
   *)         usage ;;
 esac

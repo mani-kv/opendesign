@@ -70,9 +70,9 @@ OpenCode est aussi disponible en application de bureau. Téléchargez-la directe
 
 | Plateforme            | Téléchargement                        |
 | --------------------- | ------------------------------------- |
-| macOS (Apple Silicon) | `opencode-desktop-darwin-aarch64.dmg` |
-| macOS (Intel)         | `opencode-desktop-darwin-x64.dmg`     |
-| Windows               | `opencode-desktop-windows-x64.exe`    |
+| macOS (Apple Silicon) | `opencode-electron-darwin-arm64.dmg` |
+| macOS (Intel)         | `opencode-electron-darwin-x64.dmg`     |
+| Windows               | `opencode-electron-win32-x64.exe`    |
 | Linux                 | `.deb`, `.rpm`, ou AppImage           |
 
 ```bash

@@ -8,7 +8,7 @@ The implementation is based on the working prototype at `/Users/Mani/Desktop/Sid
 
 ## Approach
 
-**Direct WASM integration** — Load the WASM module directly in the SolidJS app. The canvas renders via WebGPU into an HTML `<canvas>` element. Works in both web and Tauri desktop (Chromium webview supports WebGPU). This is the simplest approach and matches how the vello-test prototype already works.
+**Direct WASM integration** — Load the WASM module directly in the SolidJS app. The canvas renders via WebGPU into an HTML `<canvas>` element. Works in both web and Electron desktop (Chromium supports WebGPU). This is the simplest approach and matches how the vello-test prototype already works.
 
 The canvas is a **singleton WASM instance**. Per-project switching is handled via save/load (serialize canvas state to JSON, send to server, load new project's state). This matches how a design tool naturally works — one active canvas at a time.
 
@@ -42,12 +42,11 @@ packages/
     pkg/                      # wasm-pack output (gitignored)
 ```
 
-A root `Cargo.toml` defines the workspace. The Tauri crate is **excluded** to avoid cross-target dependency conflicts (wasm-bindgen/web-sys don't resolve on native targets):
+A root `Cargo.toml` defines the workspace:
 
 ```toml
 [workspace]
 members = ["packages/canvas-core", "packages/canvas-wasm"]
-exclude = ["packages/desktop/src-tauri"]
 resolver = "2"
 
 [workspace.dependencies]
@@ -235,13 +234,13 @@ The server's proxy route sets CSP headers including `script-src 'self' 'wasm-uns
 1. Check if the dev server (Vite, port 3000) bypasses CSP (it typically does)
 2. For production, update the CSP in `server.ts` to add `'unsafe-eval'` if needed for WebGPU shader compilation
 
-The Tauri desktop config already has `"csp": null` (CSP disabled), so desktop will not have this issue.
+Electron does not apply the same CSP constraints as static hosting in many setups, so desktop will not have this issue.
 
 ## Testing & Verification
 
 1. **WASM build**: `wasm-pack build packages/canvas-wasm --target web --out-dir pkg` succeeds
 2. **Web**: Open canvas tab → WebGPU canvas renders → draw rectangles → switch sessions → canvas state preserved
-3. **Desktop (Tauri)**: Same as web (Tauri webview supports WebGPU)
+3. **Desktop (Electron)**: Same as web (Chromium supports WebGPU)
 4. **Split mode**: Canvas + Figma side-by-side → both render correctly → canvas host positioned correctly
 5. **Persistence**: Draw on canvas → reload page → canvas state restored from server
 6. **Session switching**: Rapidly switch sessions → no state corruption (race condition guard)
