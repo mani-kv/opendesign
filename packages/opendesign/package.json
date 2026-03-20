@@ -1,0 +1,47 @@
+{
+  "name": "@opencode-ai/opendesign",
+  "version": "0.0.1",
+  "type": "module",
+  "license": "MIT",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": "./src/index.ts",
+    "./types": "./src/types/index.ts",
+    "./types/*": "./src/types/*.ts",
+    "./canvas": "./src/canvas/index.ts",
+    "./canvas/*": "./src/canvas/*.ts",
+    "./figma": "./src/figma/index.ts",
+    "./figma/*": "./src/figma/*.ts",
+    "./sandpack": "./src/sandpack/index.ts",
+    "./sandpack/*": "./src/sandpack/*.ts",
+    "./git": "./src/git/index.ts",
+    "./git/*": "./src/git/*.ts",
+    "./design-system": "./src/design-system/index.ts",
+    "./design-system/*": "./src/design-system/*.ts",
+    "./context": "./src/context/index.ts",
+    "./context/*": "./src/context/*.ts",
+    "./simulation": "./src/simulation/index.ts",
+    "./simulation/*": "./src/simulation/*.ts",
+    "./workspace": "./src/workspace/index.ts",
+    "./workspace/*": "./src/workspace/*.ts",
+    "./agent": "./src/agent/index.ts",
+    "./agent/*": "./src/agent/*.ts"
+  },
+  "scripts": {
+    "typecheck": "tsgo --noEmit",
+    "test": "bun test ./test"
+  },
+  "dependencies": {
+    "@opencode-ai/sdk": "workspace:*",
+    "@opencode-ai/util": "workspace:*",
+    "solid-js": "catalog:",
+    "zod": "catalog:",
+    "remeda": "catalog:"
+  },
+  "devDependencies": {
+    "@tsconfig/node22": "catalog:",
+    "@types/bun": "catalog:",
+    "@typescript/native-preview": "catalog:",
+    "typescript": "catalog:"
+  }
+}
