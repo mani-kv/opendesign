@@ -31,7 +31,7 @@ describe("session.prompt missing file", () => {
         const missing = path.join(tmp.path, "does-not-exist.ts")
         const msg = await SessionPrompt.prompt({
           sessionID: session.id,
-          agent: "build",
+          agent: "opendesign-agent",
           noReply: true,
           parts: [
             { type: "text", text: "please review @does-not-exist.ts" },
@@ -76,7 +76,7 @@ describe("session.prompt missing file", () => {
         const missing = path.join(tmp.path, "still-missing.ts")
         const msg = await SessionPrompt.prompt({
           sessionID: session.id,
-          agent: "build",
+          agent: "opendesign-agent",
           noReply: true,
           parts: [
             {
@@ -157,7 +157,7 @@ describe("session.prompt agent variant", () => {
         git: true,
         config: {
           agent: {
-            build: {
+            "opendesign-agent": {
               model: "openai/gpt-5.2",
               variant: "xhigh",
             },
@@ -172,7 +172,7 @@ describe("session.prompt agent variant", () => {
 
           const other = await SessionPrompt.prompt({
             sessionID: session.id,
-            agent: "build",
+            agent: "opendesign-agent",
             model: { providerID: "opencode", modelID: "kimi-k2.5-free" },
             noReply: true,
             parts: [{ type: "text", text: "hello" }],
@@ -182,7 +182,7 @@ describe("session.prompt agent variant", () => {
 
           const match = await SessionPrompt.prompt({
             sessionID: session.id,
-            agent: "build",
+            agent: "opendesign-agent",
             noReply: true,
             parts: [{ type: "text", text: "hello again" }],
           })
@@ -192,7 +192,7 @@ describe("session.prompt agent variant", () => {
 
           const override = await SessionPrompt.prompt({
             sessionID: session.id,
-            agent: "build",
+            agent: "opendesign-agent",
             noReply: true,
             variant: "high",
             parts: [{ type: "text", text: "hello third" }],
