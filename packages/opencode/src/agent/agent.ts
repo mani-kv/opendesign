@@ -13,6 +13,12 @@ import PROMPT_COMPACTION from "./prompt/compaction.txt"
 import PROMPT_EXPLORE from "./prompt/explore.txt"
 import PROMPT_SUMMARY from "./prompt/summary.txt"
 import PROMPT_TITLE from "./prompt/title.txt"
+import PROMPT_AGENT from "./prompt/agent.txt"
+import PROMPT_ASK from "./prompt/ask.txt"
+import PROMPT_SCENARIO from "./prompt/scenario.txt"
+import PROMPT_RESEARCH from "./prompt/research.txt"
+import PROMPT_AUDIT from "./prompt/audit.txt"
+import PROMPT_FIGMA_WRITE from "./prompt/figma-write.txt"
 import { PermissionNext } from "@/permission/next"
 import { mergeDeep, pipe, sortBy, values } from "remeda"
 import { Global } from "@/global"
@@ -74,37 +80,43 @@ export namespace Agent {
     const user = PermissionNext.fromConfig(cfg.permission ?? {})
 
     const result: Record<string, Info> = {
-      build: {
-        name: "build",
-        description: "The default agent. Executes tools based on configured permissions.",
+      "opendesign-agent": {
+        name: "opendesign-agent",
+        description: "The default agent. Decomposes design requests into scenarios and dispatches agents.",
         options: {},
+        prompt: PROMPT_AGENT,
         permission: PermissionNext.merge(
           defaults,
           PermissionNext.fromConfig({
             question: "allow",
-            plan_enter: "allow",
+            edit: "deny",
+            write: "deny",
           }),
           user,
         ),
         mode: "primary",
         native: true,
       },
-      plan: {
-        name: "plan",
-        description: "Plan mode. Disallows all edit tools.",
+      "opendesign-ask": {
+        name: "opendesign-ask",
+        description: "Ask mode. Read-only brainstorming and design Q&A with full context access.",
         options: {},
+        prompt: PROMPT_ASK,
         permission: PermissionNext.merge(
           defaults,
           PermissionNext.fromConfig({
+            "*": "deny",
             question: "allow",
-            plan_exit: "allow",
+            grep: "allow",
+            glob: "allow",
+            list: "allow",
+            read: "allow",
+            webfetch: "allow",
+            websearch: "allow",
+            codesearch: "allow",
             external_directory: {
-              [path.join(Global.Path.data, "plans", "*")]: "allow",
-            },
-            edit: {
-              "*": "deny",
-              [path.join(".opencode", "plans", "*.md")]: "allow",
-              [path.relative(Instance.worktree, path.join(Global.Path.data, path.join("plans", "*.md")))]: "allow",
+              "*": "ask",
+              ...Object.fromEntries(whitelistedDirs.map((dir) => [dir, "allow"])),
             },
           }),
           user,
@@ -150,6 +162,93 @@ export namespace Agent {
         ),
         description: `Fast agent specialized for exploring codebases. Use this when you need to quickly find files by patterns (eg. "src/components/**/*.tsx"), search code for keywords (eg. "API endpoints"), or answer questions about the codebase (eg. "how do API endpoints work?"). When calling this agent, specify the desired thoroughness level: "quick" for basic searches, "medium" for moderate exploration, or "very thorough" for comprehensive analysis across multiple locations and naming conventions.`,
         prompt: PROMPT_EXPLORE,
+        options: {},
+        mode: "subagent",
+        native: true,
+      },
+      "opendesign-scenario": {
+        name: "opendesign-scenario",
+        description: "Builds a working interactive prototype for a single design scenario.",
+        permission: PermissionNext.merge(
+          defaults,
+          PermissionNext.fromConfig({
+            todoread: "deny",
+            todowrite: "deny",
+          }),
+          user,
+        ),
+        prompt: PROMPT_SCENARIO,
+        options: {},
+        mode: "subagent",
+        native: true,
+      },
+      research: {
+        name: "research",
+        description: "Synthesizes insights from project context documents to inform design decisions.",
+        permission: PermissionNext.merge(
+          defaults,
+          PermissionNext.fromConfig({
+            "*": "deny",
+            grep: "allow",
+            glob: "allow",
+            list: "allow",
+            read: "allow",
+            webfetch: "allow",
+            websearch: "allow",
+            codesearch: "allow",
+            external_directory: {
+              "*": "ask",
+              ...Object.fromEntries(whitelistedDirs.map((dir) => [dir, "allow"])),
+            },
+          }),
+          user,
+        ),
+        prompt: PROMPT_RESEARCH,
+        options: {},
+        mode: "subagent",
+        native: true,
+      },
+      audit: {
+        name: "audit",
+        description: "Checks prototypes for design system compliance, accessibility, and consistency.",
+        permission: PermissionNext.merge(
+          defaults,
+          PermissionNext.fromConfig({
+            "*": "deny",
+            grep: "allow",
+            glob: "allow",
+            list: "allow",
+            bash: "allow",
+            read: "allow",
+            external_directory: {
+              "*": "ask",
+              ...Object.fromEntries(whitelistedDirs.map((dir) => [dir, "allow"])),
+            },
+          }),
+          user,
+        ),
+        prompt: PROMPT_AUDIT,
+        options: {},
+        mode: "subagent",
+        native: true,
+      },
+      "figma-write": {
+        name: "figma-write",
+        description: "Modifies Figma designs via the webview injection bridge.",
+        permission: PermissionNext.merge(
+          defaults,
+          PermissionNext.fromConfig({
+            "*": "deny",
+            read: "allow",
+            bash: "allow",
+            external_directory: {
+              "*": "ask",
+              ...Object.fromEntries(whitelistedDirs.map((dir) => [dir, "allow"])),
+            },
+          }),
+          user,
+        ),
+        prompt: PROMPT_FIGMA_WRITE,
         options: {},
         mode: "subagent",
         native: true,
@@ -259,7 +358,7 @@ export namespace Agent {
     return pipe(
       await state(),
       values(),
-      sortBy([(x) => (cfg.default_agent ? x.name === cfg.default_agent : x.name === "build"), "desc"]),
+      sortBy([(x) => (cfg.default_agent ? x.name === cfg.default_agent : x.name === "opendesign-agent"), "desc"]),
     )
   }
 
