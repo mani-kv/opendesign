@@ -57,20 +57,16 @@ export function adoptCanvas(container: HTMLElement, sessionId: string): void {
     container.appendChild(canvasEl)
   }
   activeSessionId = sessionId
-  // Nudge winit's ResizeObserver after the layout settles
-  requestAnimationFrame(() => triggerCanvasResize())
+  // DOM move: winit may miss the new container size — one hard layout nudge.
+  requestAnimationFrame(() => hardNudgeCanvasResize())
 }
 
 /**
- * Force the canvas to re-evaluate its size.
- * Winit watches the canvas element via ResizeObserver, but DOM moves
- * and container layout changes (tab↔split) may not trigger it.
- * Toggling a style forces a layout recalc that the observer picks up.
+ * Hard nudge after adopt/mount only — briefly toggles display so winit recalculates.
  */
-export function triggerCanvasResize(): void {
+function hardNudgeCanvasResize(): void {
   if (!canvasEl) return
   canvasEl.style.display = "none"
-  // Force reflow
   void canvasEl.offsetHeight
   canvasEl.style.display = "block"
 }

@@ -9,7 +9,6 @@ import {
   loadCanvas,
   saveCanvas,
   getCachedCanvas,
-  triggerCanvasResize,
   EMPTY_CANVAS_JSON,
 } from "@/utils/canvas-bridge"
 
@@ -111,19 +110,10 @@ export function CanvasTabContent() {
     containerRef?.addEventListener("pointerup", handler)
     containerRef?.addEventListener("keyup", handler)
 
-    // Watch for container size changes (tab↔split toggle, split ratio drag)
-    // and nudge winit's ResizeObserver so the canvas re-evaluates its size.
-    let ro: ResizeObserver | undefined
-    if (containerRef) {
-      ro = new ResizeObserver(() => triggerCanvasResize())
-      ro.observe(containerRef)
-    }
-
     onCleanup(() => {
       containerRef?.removeEventListener("pointerup", handler)
       containerRef?.removeEventListener("keyup", handler)
       if (saveTimer) clearTimeout(saveTimer)
-      ro?.disconnect()
     })
   })
 
@@ -141,7 +131,7 @@ export function CanvasTabContent() {
   )
 
   return (
-    <div class="relative size-full min-w-0 w-full">
+    <div class="relative size-full min-h-0 min-w-0 w-full h-full">
       {error() ? (
         <div class="h-full flex items-center justify-center p-6">
           <div class="text-14-regular text-text-weak text-center max-w-80">
@@ -153,7 +143,7 @@ export function CanvasTabContent() {
           <div
             ref={containerRef}
             id="canvas-container"
-            class="absolute inset-0 w-full min-w-0"
+            class="absolute inset-0 size-full min-h-0 min-w-0"
             style={{ "touch-action": "none" }}
           />
           <Show when={loading()}>

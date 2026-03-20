@@ -25,7 +25,6 @@ import { createFileTabListSync } from "@/pages/session/file-tab-scroll"
 import { FileTabContent } from "@/pages/session/file-tabs"
 import { FigmaTabContent } from "@/pages/session/figma-tab-content"
 import { CanvasTabContent } from "@/pages/session/canvas-tab-content"
-import { triggerCanvasResize } from "@/utils/canvas-bridge"
 import { createBodyResizing, createOpenSessionFileTab, getTabReorderIndex, type Sizing } from "@/pages/session/helpers"
 import { setSessionHandoff } from "@/pages/session/handoff"
 
@@ -88,9 +87,7 @@ function SplitPaneContent(props: {
   )
 }
 
-function CanvasFigmaSplit(props: {
-  size: { start: () => void; touch: () => void }
-}) {
+function CanvasFigmaSplit() {
   const layout = useLayout()
   const paneOrder = () => layout.canvasPanel.paneOrder()
   const splitRatio = () => layout.canvasPanel.splitRatio()
@@ -122,7 +119,7 @@ function CanvasFigmaSplit(props: {
             pane={paneOrder()[0]}
           />
         </div>
-        <div class="relative w-px shrink-0 flex items-stretch" onPointerDown={() => props.size.start()}>
+        <div class="relative w-px shrink-0 flex items-stretch">
           <div class="pointer-events-none absolute inset-y-0 left-0 w-px bg-border-weaker-base" aria-hidden />
           <ResizeHandle
             direction="horizontal"
@@ -130,10 +127,7 @@ function CanvasFigmaSplit(props: {
             size={leftSize()}
             min={minPane}
             max={maxLeft()}
-            onResize={(px) => {
-              props.size.touch()
-              setSplitRatio(px / width())
-            }}
+            onResize={(px) => setSplitRatio(px / width())}
           />
         </div>
         <div class="relative flex-1 flex flex-col min-h-0 min-w-0">
@@ -148,45 +142,54 @@ function CanvasFigmaSplit(props: {
 
 function CanvasHost(props: { active: boolean; splitOffset?: number; canvasFirst?: boolean }) {
   let hostRef: HTMLDivElement | undefined
+  const [dims, setDims] = createSignal<{ w: number; h: number }>({ w: 0, h: 0 })
+
+  // Track the host div's pixel size via ResizeObserver.
+  // The inner div always uses integer pixel dimensions so there is never
+  // a discontinuous jump (no freeze/unfreeze → no wobble on release).
+  // GPU surface reconfiguration is throttled on the Rust side (~30 Hz).
   createEffect(() => {
     if (!hostRef) return
-    const ro = new ResizeObserver(() => triggerCanvasResize())
+    const update = () => {
+      const r = hostRef!.getBoundingClientRect()
+      const w = Math.round(r.width)
+      const h = Math.round(r.height)
+      setDims(prev => prev.w === w && prev.h === h ? prev : { w, h })
+    }
+    const ro = new ResizeObserver(update)
     ro.observe(hostRef)
+    update()
     onCleanup(() => ro.disconnect())
   })
 
   const offset = () => props.splitOffset ?? 0
 
-  // Use left+width only (never right) to avoid CSS over-constraint:
-  // when left+right+width are all set, `right` is silently ignored in LTR.
-  const left = () => {
-    if (offset() > 0 && !props.canvasFirst) return `calc(${offset() * 100}% + 1px)`
-    return "0"
-  }
-  const width = () => {
-    if (offset() > 0) {
-      if (props.canvasFirst) return `${offset() * 100}%`
-      return `calc(${(1 - offset()) * 100}% - 1px)`
+  const horizontal = () => {
+    const o = offset()
+    if (o <= 0) return { left: "0", right: "0", width: "auto" }
+    if (props.canvasFirst) return { left: "0", width: `${o * 100}%` }
+    return {
+      left: `calc(${o * 100}% + 1px)`,
+      width: `calc(${(1 - o) * 100}% - 1px)`,
     }
-    return "100%"
   }
 
   return (
     <div
       ref={hostRef}
-      class="absolute overflow-hidden"
+      class="absolute overflow-hidden min-h-0 min-w-0"
       style={{
         top: "var(--tabs-bar-height, 48px)",
-        left: left(),
-        width: width(),
         bottom: "0",
-        // z-index:2 when active → above Tabs (which has opaque background-stronger)
-        // z-index:-1 when inactive → behind everything so figma/other tabs show through
+        ...horizontal(),
         "z-index": props.active ? 2 : -1,
         "pointer-events": props.active ? "auto" : "none",
       }}
     >
-      <div class="absolute inset-0 w-full h-full">
+      <div
+        class="absolute min-h-0 min-w-0"
+        style={{ top: "0", left: "0", width: `${dims().w}px`, height: `${dims().h}px` }}
+      >
         <CanvasTabContent />
       </div>
     </div>
@@ -589,9 +592,7 @@ export function SessionSidePanel(props: {
                 <div class="relative flex-1 flex min-h-0 min-w-0 flex-col">
                 <Switch>
                   <Match when={splitMode() && panes().canvas && panes().figma}>
-                    <CanvasFigmaSplit
-                      size={props.size}
-                    />
+                    <CanvasFigmaSplit />
                   </Match>
                   <Match when={true}>
                 <Tabs value={activeTab()} onChange={openTab}>

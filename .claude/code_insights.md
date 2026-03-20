@@ -32,11 +32,12 @@ Accumulated knowledge about this codebase. Read before starting any task. Update
 - **Do NOT add `z-index: 1` to the tabs container div**: This was tried and broke canvas visibility by making the opaque Tabs background paint over CanvasHost.
 - **FigmaWebviewHost** (electron): z-index:1 when active. Renders after CanvasHost in DOM; in split mode their areas don't overlap.
 
-### Canvas responsiveness — ResizeObserver must be on CanvasHost itself
-- The WASM canvas (`canvasEl`) has pixel-based inline `width`/`height` set by winit at init time. When the outer panel is dragged or the window resizes, `triggerCanvasResize()` must be called to force winit to re-read the container's client dimensions.
-- **Fix**: `CanvasHost` has a `ResizeObserver` on its root div that calls `triggerCanvasResize()`. This catches all resize vectors: panel drag, window resize, split ratio change.
-- `triggerCanvasResize()` (in `canvas-bridge.ts`) works by toggling `canvasEl.style.display = "none" → "block"`, which forces winit's own internal ResizeObserver to fire.
-- Import: `import { triggerCanvasResize } from "@/utils/canvas-bridge"` in `session-side-panel.tsx`.
+### Canvas responsiveness — JS + WASM
+- **Freeze-during-drag**: `CanvasHost` uses `createBodyResizing()` to detect split-pane drag. While dragging, the inner canvas div is frozen at its pre-drag pixel dimensions. The host div (with `overflow-hidden`) still changes size, providing smooth visual clipping. The canvas element never resizes → no GPU surface reconfigure → no flicker. A `background: #fff` on the host matches `CANVAS_BG` so any gap during freeze is invisible. On drag end, the freeze is released and a single resize occurs.
+- No JS `ResizeObserver` on `CanvasHost`; winit's internal `ResizeObserver` on the canvas element handles resize detection.
+- `scheduleCanvasResize()` removed — was redundant with winit's observer.
+- **Hard nudge** (display toggle) only in `adoptCanvas` after moving the canvas DOM.
+- **Rust (`packages/canvas-wasm`)**: `Resized` queues `PENDING_RESIZE` and requests redraw. `RedrawRequested` uses **throttled** `flush_pending_resize(true)` (~30Hz min gap). `about_to_wait` does NOT flush — it only requests a redraw if pending, so all resizes go through the throttled path. If throttle skips, `RedrawRequested` re-requests a redraw to settle later. Rebuild with `bun run --cwd packages/canvas-wasm build`.
 
 ### pointer-events-none pattern for transparent overlays
 - Canvas tab `Tabs.Content` (both main tabs and `SplitPaneContent`) must have `pointer-events-none` so mouse events fall through to CanvasHost.
@@ -65,8 +66,7 @@ Accumulated knowledge about this codebase. Read before starting any task. Update
 
 - The WASM canvas is a **singleton** — one `<canvas>` element shared across all sessions.
 - `initCanvas(container)` — one-time WASM init; finds the canvas via `container.querySelector("canvas")` after `mod.default()` runs.
-- `adoptCanvas(container, sessionId)` — moves the canvas DOM element into the active session's container. Calls `triggerCanvasResize()` after a RAF.
-- `triggerCanvasResize()` — toggles `canvasEl.style.display = "none" → "block"` + forced reflow to trigger winit's internal ResizeObserver. Does NOT set pixel dimensions — winit reads `canvas.clientWidth/Height` after the toggle.
+- `adoptCanvas(container, sessionId)` — moves the canvas DOM element into the active session's container. After RAF, runs one hard layout nudge (display toggle) so winit picks up the new container size.
 - Canvas state is saved/loaded as JSON per session. An in-memory cache (`canvasCache`) avoids redundant server fetches when switching sessions.
 
 ---

@@ -37,6 +37,9 @@ use winit::window::{CursorIcon, Window};
 
 thread_local! {
     static PENDING_ZOOM: Cell<f64> = const { Cell::new(0.0) };
+    static PENDING_RESIZE: Cell<Option<(u32, u32)>> = const { Cell::new(None) };
+    /// Last `performance.now()` when we called `resize_surface` (redraw-throttled path).
+    static LAST_RESIZE_MS: Cell<f64> = const { Cell::new(0.0) };
     static PENDING_SAVE: RefCell<Option<js_sys::Function>> = const { RefCell::new(None) };
     static PENDING_LOAD: RefCell<Option<String>> = const { RefCell::new(None) };
     static CANVAS_WINDOW: RefCell<Option<Arc<Window>>> = const { RefCell::new(None) };
@@ -50,6 +53,10 @@ fn wake_event_loop() {
             w.request_redraw();
         }
     });
+}
+
+fn performance_now_ms() -> f64 {
+    js_sys::Date::now()
 }
 
 // ── Render state ──────────────────────────────────────────────────────────────
@@ -70,6 +77,46 @@ struct WebApp {
 }
 
 impl WebApp {
+    /// Apply pending logical size to the GPU surface.
+    /// `throttle`: when true (RedrawRequested path), cap how often we reconfigure the surface.
+    /// `CursorMoved` requests redraw every frame while dragging a splitter, so without this we
+    /// still hit `resize_surface` ~60×/s and the canvas flickers. `about_to_wait` uses
+    /// `throttle = false` so the final size always settles when the event loop goes idle.
+    fn flush_pending_resize(&mut self, throttle: bool) -> bool {
+        let pending = PENDING_RESIZE.with(|c| c.get());
+        let Some((w, h)) = pending else { return false };
+        let Some(rs) = &mut self.state else { return false };
+
+        if w == 0 || h == 0 {
+            PENDING_RESIZE.with(|c| c.set(None));
+            rs.valid_surface = false;
+            return false;
+        }
+
+        let cw = rs.surface.config.width;
+        let ch = rs.surface.config.height;
+        if cw == w && ch == h {
+            PENDING_RESIZE.with(|c| c.set(None));
+            return false;
+        }
+
+        if throttle {
+            let now = performance_now_ms();
+            let last = LAST_RESIZE_MS.with(|c| c.get());
+            if now - last < 33.0 {
+                return false;
+            }
+            LAST_RESIZE_MS.with(|c| c.set(now));
+        } else {
+            LAST_RESIZE_MS.with(|c| c.set(performance_now_ms()));
+        }
+
+        PENDING_RESIZE.with(|c| c.set(None));
+        self.context.resize_surface(&mut rs.surface, w, h);
+        rs.valid_surface = true;
+        true
+    }
+
     fn new(context: RenderContext, render_state: RenderState) -> Self {
         let mut renderers = Vec::new();
         renderers.resize_with(context.devices.len(), || None);
@@ -142,6 +189,15 @@ impl ApplicationHandler for WebApp {
     /// Drain any zoom accumulated by the JS wheel listener and apply it once
     /// per event-loop iteration, before the next redraw.
     fn about_to_wait(&mut self, _event_loop: &ActiveEventLoop) {
+        // Don't flush resize here — the unthrottled path caused flicker during
+        // continuous split-pane drag.  Just request a redraw so RedrawRequested
+        // can apply the resize through its throttled path.
+        if PENDING_RESIZE.with(|c| c.get().is_some()) {
+            if let Some(rs) = &self.state {
+                rs.window.request_redraw();
+            }
+        }
+
         let delta = PENDING_ZOOM.with(|c| {
             let v = c.get();
             c.set(0.0);
@@ -188,12 +244,15 @@ impl ApplicationHandler for WebApp {
             WindowEvent::CloseRequested => event_loop.exit(),
 
             WindowEvent::Resized(sz) => {
-                let Some(rs) = &mut self.state else { return; };
-                if sz.width > 0 && sz.height > 0 {
-                    self.context.resize_surface(&mut rs.surface, sz.width, sz.height);
-                    rs.valid_surface = true;
+                let w = sz.width;
+                let h = sz.height;
+                if w > 0 && h > 0 {
+                    PENDING_RESIZE.with(|c| c.set(Some((w, h))));
                 } else {
-                    rs.valid_surface = false;
+                    PENDING_RESIZE.with(|c| c.set(None));
+                    if let Some(rs) = &mut self.state {
+                        rs.valid_surface = false;
+                    }
                 }
                 window.request_redraw();
             }
@@ -302,6 +361,12 @@ impl ApplicationHandler for WebApp {
             }
 
             WindowEvent::RedrawRequested => {
+                let applied = self.flush_pending_resize(true);
+                // If throttle skipped the resize, request another redraw so it
+                // settles once the throttle window passes.
+                if !applied && PENDING_RESIZE.with(|c| c.get().is_some()) {
+                    window.request_redraw();
+                }
                 let Some(rs) = &self.state else { return; };
                 if !rs.valid_surface { return; }
                 let width  = rs.surface.config.width;
