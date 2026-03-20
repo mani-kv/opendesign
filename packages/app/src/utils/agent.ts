@@ -1,8 +1,6 @@
 const defaults: Record<string, string> = {
-  ask: "var(--icon-agent-ask-base)",
-  build: "var(--icon-agent-build-base)",
-  docs: "var(--icon-agent-docs-base)",
-  plan: "var(--icon-agent-plan-base)",
+  "opendesign-agent": "var(--icon-agent-build-base)",
+  "opendesign-ask": "var(--icon-agent-ask-base)",
 }
 
 export function agentColor(name: string, custom?: string) {

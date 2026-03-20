@@ -8,7 +8,7 @@ const message = (input?: Partial<Pick<UserMessage, "agent" | "model" | "variant"
     sessionID: "session",
     role: "user",
     time: { created: 1 },
-    agent: input?.agent ?? "build",
+    agent: input?.agent ?? "opendesign-agent",
     model: input?.model ?? { providerID: "anthropic", modelID: "claude-sonnet-4" },
     variant: input?.variant,
   }) as UserMessage
@@ -45,7 +45,7 @@ describe("syncSessionModel", () => {
     )
 
     expect(calls).toEqual([
-      ["agent", "build"],
+      ["agent", "opendesign-agent"],
       ["model", { providerID: "anthropic", modelID: "claude-sonnet-4" }],
       ["variant", "high"],
     ])
@@ -82,7 +82,7 @@ describe("syncSessionModel", () => {
     )
 
     expect(calls).toEqual([
-      ["agent", "build"],
+      ["agent", "opendesign-agent"],
       ["model", { providerID: "anthropic", modelID: "claude-sonnet-4" }],
     ])
   })
