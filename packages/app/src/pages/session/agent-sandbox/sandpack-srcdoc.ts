@@ -1,12 +1,9 @@
-/** Self-contained React hello world for WoZ testing. Loads React via CDN + Babel. */
+/** Lightweight vanilla JS hello world for WoZ testing. No CDN deps. */
 export const SANDPACK_SRCDOC = `<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0a;color:#e5e5e5;display:flex;align-items:center;justify-content:center;min-height:100vh}
@@ -19,20 +16,15 @@ button:hover{background:#6366f1}
 </style>
 </head>
 <body>
-<div id="root"></div>
-<script type="text/babel">
-function App() {
-  const [count, setCount] = React.useState(0)
-  return (
-    <div className="card">
-      <h1>Hello from Agent</h1>
-      <p>Sandpack prototype preview</p>
-      <div className="count">{count}</div>
-      <button onClick={() => setCount(c => c + 1)}>Increment</button>
-    </div>
-  )
-}
-ReactDOM.createRoot(document.getElementById("root")).render(<App />)
+<div class="card">
+  <h1>Hello from Agent</h1>
+  <p>Sandpack prototype preview</p>
+  <div class="count" id="count">0</div>
+  <button id="btn">Increment</button>
+</div>
+<script>
+var c=0;
+document.getElementById("btn").onclick=function(){document.getElementById("count").textContent=++c};
 </script>
 </body>
 </html>`

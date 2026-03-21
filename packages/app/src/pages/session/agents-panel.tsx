@@ -1,5 +1,6 @@
 import { For } from "solid-js"
 import { Icon } from "@opencode-ai/ui/icon"
+import { Spinner } from "@opencode-ai/ui/spinner"
 import { useLanguage } from "@/context/language"
 import { useAgents, type DemoAgent } from "@/context/agents"
 import type { AgentState } from "@opencode-ai/opendesign/types"
@@ -37,11 +38,7 @@ function AgentRow(props: { agent: DemoAgent; selected: boolean; onSelect: () => 
             />
           </div>
         ) : (
-          <div class="size-4 flex items-center justify-center gap-px">
-            <div class="size-1 rounded-full bg-text-dimmer animate-pulse" style={{ "animation-delay": "0ms" }} />
-            <div class="size-1 rounded-full bg-text-dimmer animate-pulse" style={{ "animation-delay": "150ms" }} />
-            <div class="size-1 rounded-full bg-text-dimmer animate-pulse" style={{ "animation-delay": "300ms" }} />
-          </div>
+          <Spinner class="size-4" />
         )}
       </div>
       <div class="flex-1 min-w-0 flex flex-col gap-0.5">

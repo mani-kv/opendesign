@@ -1,5 +1,7 @@
-import { Show, createMemo, createEffect, on, onCleanup } from "solid-js"
+import { Show, createEffect, on, onCleanup } from "solid-js"
 import { Mark } from "@opencode-ai/ui/logo"
+import { Icon } from "@opencode-ai/ui/icon"
+import { IconButton } from "@opencode-ai/ui/icon-button"
 import { useLanguage } from "@/context/language"
 import { useAgents } from "@/context/agents"
 import { stateColor } from "@opencode-ai/opendesign/agent"
@@ -85,6 +87,26 @@ export function AgentSandboxTabContent() {
     onCleanup(() => el.removeEventListener("wheel", handler))
   }
 
+  function zoomIn() {
+    if (!svgRef) return
+    const rect = svgRef.getBoundingClientRect()
+    const cx = rect.width / 2
+    const cy = rect.height / 2
+    const snap = { x: vp.x, y: vp.y, zoom: vp.zoom }
+    setVpClamped(zoomAtPoint(snap, clampZoom(snap.zoom * 1.2, MIN_ZOOM, MAX_ZOOM), cx, cy))
+  }
+
+  function zoomOut() {
+    if (!svgRef) return
+    const rect = svgRef.getBoundingClientRect()
+    const cx = rect.width / 2
+    const cy = rect.height / 2
+    const snap = { x: vp.x, y: vp.y, zoom: vp.zoom }
+    setVpClamped(zoomAtPoint(snap, clampZoom(snap.zoom / 1.2, MIN_ZOOM, MAX_ZOOM), cx, cy))
+  }
+
+  const zoomPct = () => Math.round(vp.zoom * 100)
+
   return (
     <div class="relative size-full min-h-0 min-w-0">
       <Show
@@ -99,71 +121,111 @@ export function AgentSandboxTabContent() {
         {(a) => {
           const color = () => stateColor(a().state)
           return (
-            <svg
-              ref={(el) => {
-                svgRef = el
-                bindWheelConstrained(el)
-                requestAnimationFrame(() => fitView())
-              }}
-              class="size-full select-none"
-              style={{
-                "background-color": "var(--background-stronger)",
-                "background-image": "radial-gradient(circle, var(--border-weaker-base) 1px, transparent 1px)",
-                "background-size": `${20 * vp.zoom}px ${20 * vp.zoom}px`,
-                "background-position": `${vp.x}px ${vp.y}px`,
-              }}
-              onPointerDown={panZoom.onPointerDown}
-            >
-              <g transform={`translate(${vp.x}, ${vp.y}) scale(${vp.zoom})`}>
-                <foreignObject x={0} y={0} width={NODE_W} height={NODE_H + HEADER_H} class="overflow-visible">
-                  <div
-                    class="rounded-lg border bg-background-base shadow-lg overflow-hidden select-none"
-                    style={{ width: `${NODE_W}px`, height: `${NODE_H + HEADER_H}px` }}
-                  >
-                    {/* Header — drag handle */}
+            <>
+              <svg
+                ref={(el) => {
+                  svgRef = el
+                  bindWheelConstrained(el)
+                  requestAnimationFrame(() => fitView())
+                }}
+                class="size-full select-none"
+                style={{
+                  "background-color": "var(--background-stronger)",
+                  "background-image": "radial-gradient(circle, var(--border-weaker-base) 1px, transparent 1px)",
+                  "background-size": `${20 * vp.zoom}px ${20 * vp.zoom}px`,
+                  "background-position": `${vp.x}px ${vp.y}px`,
+                }}
+                onPointerDown={panZoom.onPointerDown}
+              >
+                <g transform={`translate(${vp.x}, ${vp.y}) scale(${vp.zoom})`}>
+                  <foreignObject x={0} y={0} width={NODE_W} height={NODE_H + HEADER_H} class="overflow-visible">
                     <div
-                      class="px-3 py-2 flex items-center gap-2 border-b border-[var(--border-weaker-base)] cursor-grab active:cursor-grabbing"
-                      style={{ height: `${HEADER_H}px` }}
-                      onPointerDown={(e) => {
-                        e.stopPropagation()
-                        const startX = e.clientX
-                        const startY = e.clientY
-                        const origVp = { ...vp }
-
-                        const onMove = (ev: PointerEvent) => {
-                          const dx = ev.clientX - startX
-                          const dy = ev.clientY - startY
-                          setVpClamped({ x: origVp.x + dx, y: origVp.y + dy, zoom: origVp.zoom })
-                        }
-                        const onUp = () => {
-                          document.removeEventListener("pointermove", onMove)
-                          document.removeEventListener("pointerup", onUp)
-                        }
-                        document.addEventListener("pointermove", onMove)
-                        document.addEventListener("pointerup", onUp)
-                      }}
+                      class="rounded-lg border bg-background-base shadow-lg overflow-hidden select-none"
+                      style={{ width: `${NODE_W}px`, height: `${NODE_H + HEADER_H}px` }}
                     >
-                      <div class="size-2 rounded-full shrink-0" style={{ "background-color": color() }} />
-                      <div class="text-12-medium text-text-base truncate">{a().scenario}</div>
-                      <div class="ml-auto text-11-regular text-text-weak font-mono truncate">{a().branch}</div>
-                    </div>
+                      {/* Header — drag handle */}
+                      <div
+                        class="px-3 py-2 flex items-center gap-2 border-b border-[var(--border-weaker-base)] cursor-grab active:cursor-grabbing"
+                        style={{ height: `${HEADER_H}px` }}
+                        onPointerDown={(e) => {
+                          e.stopPropagation()
+                          const startX = e.clientX
+                          const startY = e.clientY
+                          const origVp = { x: vp.x, y: vp.y, zoom: vp.zoom }
 
-                    {/* Sandpack iframe */}
-                    <div class="relative" style={{ height: `${NODE_H}px` }}>
-                      <iframe
-                        srcdoc={SANDPACK_SRCDOC}
-                        class="size-full border-0"
-                        sandbox="allow-scripts"
-                        title="Sandpack preview"
-                      />
-                      <Show when={resizing()}>
-                        <div class="absolute inset-0 z-10" />
-                      </Show>
+                          const onMove = (ev: PointerEvent) => {
+                            const dx = ev.clientX - startX
+                            const dy = ev.clientY - startY
+                            setVpClamped({ x: origVp.x + dx, y: origVp.y + dy, zoom: origVp.zoom })
+                          }
+                          const onUp = () => {
+                            document.removeEventListener("pointermove", onMove)
+                            document.removeEventListener("pointerup", onUp)
+                          }
+                          document.addEventListener("pointermove", onMove)
+                          document.addEventListener("pointerup", onUp)
+                        }}
+                      >
+                        <div class="size-2 rounded-full shrink-0" style={{ "background-color": color() }} />
+                        <div class="text-12-medium text-text-base truncate">{a().scenario}</div>
+                        <div class="ml-auto text-11-regular text-text-weak font-mono truncate">{a().branch}</div>
+                      </div>
+
+                      {/* Sandpack iframe */}
+                      <div class="relative" style={{ height: `${NODE_H}px` }}>
+                        <iframe
+                          srcdoc={SANDPACK_SRCDOC}
+                          class="size-full border-0"
+                          sandbox="allow-scripts"
+                          title="Sandpack preview"
+                        />
+                        <Show when={resizing()}>
+                          <div class="absolute inset-0 z-10" />
+                        </Show>
+                      </div>
                     </div>
-                  </div>
-                </foreignObject>
-              </g>
-            </svg>
+                  </foreignObject>
+                </g>
+              </svg>
+
+              {/* Zoom controls */}
+              <div class="absolute bottom-3 right-3 flex items-center gap-1 bg-background-base border border-[var(--border-weaker-base)] rounded-lg shadow-sm px-1 py-0.5">
+                <IconButton
+                  icon="dash"
+                  size="small"
+                  variant="ghost"
+                  class="size-7"
+                  onClick={zoomOut}
+                  disabled={vp.zoom <= MIN_ZOOM}
+                  aria-label="Zoom out"
+                />
+                <button
+                  class="text-11-medium text-text-dimmer tabular-nums w-10 text-center hover:text-text-base transition-colors"
+                  onClick={fitView}
+                  title="Fit to view"
+                >
+                  {zoomPct()}%
+                </button>
+                <IconButton
+                  icon="plus"
+                  size="small"
+                  variant="ghost"
+                  class="size-7"
+                  onClick={zoomIn}
+                  disabled={vp.zoom >= MAX_ZOOM}
+                  aria-label="Zoom in"
+                />
+                <div class="w-px h-4 bg-[var(--border-weaker-base)] mx-0.5" />
+                <IconButton
+                  icon="expand"
+                  size="small"
+                  variant="ghost"
+                  class="size-7"
+                  onClick={fitView}
+                  aria-label="Fit to view"
+                />
+              </div>
+            </>
           )
         }}
       </Show>
