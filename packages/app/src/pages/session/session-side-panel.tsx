@@ -25,6 +25,7 @@ import { createFileTabListSync } from "@/pages/session/file-tab-scroll"
 import { FileTabContent } from "@/pages/session/file-tabs"
 import { FigmaTabContent } from "@/pages/session/figma-tab-content"
 import { CanvasTabContent } from "@/pages/session/canvas-tab-content"
+import { AgentSandboxTabContent } from "@/pages/session/agent-sandbox-tab-content"
 import { createBodyResizing, createOpenSessionFileTab, getTabReorderIndex, type Sizing } from "@/pages/session/helpers"
 import { setSessionHandoff } from "@/pages/session/handoff"
 
@@ -33,16 +34,12 @@ function CanvasFigmaEmpty() {
   return (
     <div class="h-full px-6 pb-24 flex flex-col items-center justify-center gap-6">
       <Mark class="w-14 opacity-10" />
-      <div class="text-14-regular text-text-weak max-w-56 text-center">
-        {language.t("session.files.selectToOpen")}
-      </div>
+      <div class="text-14-regular text-text-weak max-w-56 text-center">{language.t("session.files.selectToOpen")}</div>
     </div>
   )
 }
 
-function SplitPaneContent(props: {
-  pane: string
-}) {
+function SplitPaneContent(props: { pane: string }) {
   const language = useLanguage()
   const platform = usePlatform()
   return (
@@ -51,12 +48,13 @@ function SplitPaneContent(props: {
         <Tabs value="canvas">
           <div class="sticky top-0 z-10 shrink-0 flex items-center border-b border-border-weaker-base">
             <Tabs.List class="min-w-0 w-fit">
-              <SortablePaneTab pane="canvas">
-                {language.t("session.tab.canvas")}
-              </SortablePaneTab>
+              <SortablePaneTab pane="canvas">{language.t("session.tab.canvas")}</SortablePaneTab>
             </Tabs.List>
           </div>
-          <Tabs.Content value="canvas" class="relative flex flex-col flex-1 min-h-0 overflow-hidden contain-strict pointer-events-none">
+          <Tabs.Content
+            value="canvas"
+            class="relative flex flex-col flex-1 min-h-0 overflow-hidden contain-strict pointer-events-none"
+          >
             <div class="absolute inset-0" aria-hidden />
           </Tabs.Content>
         </Tabs>
@@ -65,9 +63,7 @@ function SplitPaneContent(props: {
         <Tabs value="figma">
           <div class="sticky top-0 z-10 shrink-0 flex items-center border-b border-border-weaker-base">
             <Tabs.List class="min-w-0 w-fit">
-              <SortablePaneTab pane="figma">
-                {language.t("session.tab.figma")}
-              </SortablePaneTab>
+              <SortablePaneTab pane="figma">{language.t("session.tab.figma")}</SortablePaneTab>
             </Tabs.List>
           </div>
           <Tabs.Content value="figma" class="relative flex flex-col flex-1 min-h-0 overflow-hidden contain-strict">
@@ -79,6 +75,22 @@ function SplitPaneContent(props: {
               ) : (
                 <div class="absolute inset-0 pointer-events-none" aria-hidden />
               )}
+            </div>
+          </Tabs.Content>
+        </Tabs>
+      </Match>
+      <Match when={props.pane === "sandbox"}>
+        <Tabs value="sandbox">
+          <div class="sticky top-0 z-10 shrink-0 flex items-center border-b border-border-weaker-base">
+            <Tabs.List class="min-w-0 w-fit">
+              <SortablePaneTab pane="sandbox">{language.t("session.tab.sandbox")}</SortablePaneTab>
+            </Tabs.List>
+          </div>
+          <Tabs.Content value="sandbox" class="relative flex flex-col flex-1 min-h-0 overflow-hidden contain-strict">
+            <div class="relative flex-1 min-h-0 overflow-hidden">
+              <div class="absolute inset-0">
+                <AgentSandboxTabContent />
+              </div>
             </div>
           </Tabs.Content>
         </Tabs>
@@ -111,13 +123,8 @@ function CanvasFigmaSplit() {
   return (
     <SortableProvider ids={paneOrder()}>
       <div ref={setContainerRef} class="relative flex-1 flex min-h-0 min-w-0">
-        <div
-          class="relative flex flex-col min-h-0 shrink-0 overflow-hidden"
-          style={{ width: `${leftSize()}px` }}
-        >
-          <SplitPaneContent
-            pane={paneOrder()[0]}
-          />
+        <div class="relative flex flex-col min-h-0 shrink-0 overflow-hidden" style={{ width: `${leftSize()}px` }}>
+          <SplitPaneContent pane={paneOrder()[0]} />
         </div>
         <div class="relative w-px shrink-0 flex items-stretch">
           <div class="pointer-events-none absolute inset-y-0 left-0 w-px bg-border-weaker-base" aria-hidden />
@@ -131,9 +138,7 @@ function CanvasFigmaSplit() {
           />
         </div>
         <div class="relative flex-1 flex flex-col min-h-0 min-w-0">
-          <SplitPaneContent
-            pane={paneOrder()[1]}
-          />
+          <SplitPaneContent pane={paneOrder()[1]} />
         </div>
       </div>
     </SortableProvider>
@@ -154,7 +159,7 @@ function CanvasHost(props: { active: boolean; splitOffset?: number; canvasFirst?
       const r = hostRef!.getBoundingClientRect()
       const w = Math.round(r.width)
       const h = Math.round(r.height)
-      setDims(prev => prev.w === w && prev.h === h ? prev : { w, h })
+      setDims((prev) => (prev.w === w && prev.h === h ? prev : { w, h }))
     }
     const ro = new ResizeObserver(update)
     ro.observe(hostRef)
@@ -221,10 +226,7 @@ function FigmaWebviewHost(props: { active: boolean; splitOffset?: number; figmaF
   )
 }
 
-function FloatingPromptDock(props: {
-  boundaryRef?: () => HTMLElement | undefined
-  children: JSX.Element
-}) {
+function FloatingPromptDock(props: { boundaryRef?: () => HTMLElement | undefined; children: JSX.Element }) {
   const language = useLanguage()
   const [pos, setPos] = createSignal<{ x: number; y: number } | null>(null)
   const [dragging, setDragging] = createSignal(false)
@@ -232,9 +234,9 @@ function FloatingPromptDock(props: {
   const [focused, setFocused] = createSignal(false)
   const [container, setContainer] = createSignal<HTMLDivElement | undefined>(undefined)
   const [prompt, setPrompt] = createSignal<HTMLDivElement | undefined>(undefined)
-  const [start, setStart] = createSignal<{ clientX: number; clientY: number; elLeft: number; elTop: number } | undefined>(
-    undefined
-  )
+  const [start, setStart] = createSignal<
+    { clientX: number; clientY: number; elLeft: number; elTop: number } | undefined
+  >(undefined)
 
   const clamp = (val: number, min: number, max: number) => Math.max(min, Math.min(max, val))
 
@@ -372,10 +374,9 @@ export function SessionSidePanel(props: {
   const shouldFill = createMemo(() => open() && reviewOpen() && !layout.agents.opened())
   const canvasTab = createMemo(() => isDesktop() && panes().canvas)
   const figmaTab = createMemo(() => isDesktop() && panes().figma)
-  const bothClosed = createMemo(() => isDesktop() && !panes().canvas && !panes().figma)
-  const visiblePaneTabs = createMemo(() =>
-    layout.canvasPanel.paneOrder().filter((p) => panes()[p] && isDesktop()),
-  )
+  const sandboxTab = createMemo(() => isDesktop() && panes().sandbox)
+  const bothClosed = createMemo(() => isDesktop() && !panes().canvas && !panes().figma && !panes().sandbox)
+  const visiblePaneTabs = createMemo(() => layout.canvasPanel.paneOrder().filter((p) => panes()[p] && isDesktop()))
   const panelWidth = createMemo(() => {
     if (!open()) return "0px"
     if (shouldFill()) return undefined
@@ -465,7 +466,7 @@ export function SessionSidePanel(props: {
   const openedTabs = createMemo(() =>
     tabs()
       .all()
-      .filter((tab) => tab !== "context" && tab !== "canvas" && tab !== "figma"),
+      .filter((tab) => tab !== "context" && tab !== "canvas" && tab !== "figma" && tab !== "sandbox"),
   )
 
   const activeTab = createMemo(() => {
@@ -473,6 +474,7 @@ export function SessionSidePanel(props: {
     if (active === "context") return "context"
     if (active === "canvas" && canvasTab()) return "canvas"
     if (active === "figma" && figmaTab()) return "figma"
+    if (active === "sandbox" && sandboxTab()) return "sandbox"
     if (active && file.pathFromTab(active)) return normalizeTab(active)
 
     const first = openedTabs()[0]
@@ -480,6 +482,7 @@ export function SessionSidePanel(props: {
     if (contextOpen()) return "context"
     if (canvasTab()) return "canvas"
     if (figmaTab()) return "figma"
+    if (sandboxTab()) return "sandbox"
     return "empty"
   })
 
@@ -506,7 +509,7 @@ export function SessionSidePanel(props: {
     setStore("activeDraggable", id)
   }
 
-  const isPaneTab = (id: string) => id === "canvas" || id === "figma"
+  const isPaneTab = (id: string) => id === "canvas" || id === "figma" || id === "sandbox"
 
   const handleDragOver = (event: DragEvent) => {
     const { draggable, droppable } = event
@@ -516,7 +519,14 @@ export function SessionSidePanel(props: {
     const dropId = droppable.id.toString()
 
     if (isPaneTab(dragId) && isPaneTab(dropId) && dragId !== dropId) {
-      layout.canvasPanel.swapPaneOrder()
+      const order = [...layout.canvasPanel.paneOrder()]
+      const fromIdx = order.indexOf(dragId as any)
+      const toIdx = order.indexOf(dropId as any)
+      if (fromIdx !== -1 && toIdx !== -1) {
+        order.splice(fromIdx, 1)
+        order.splice(toIdx, 0, dragId as any)
+        layout.canvasPanel.setPaneOrder(order)
+      }
       return
     }
 
@@ -581,191 +591,188 @@ export function SessionSidePanel(props: {
           >
             <div class="relative size-full min-w-0 min-h-0 flex flex-col overflow-hidden bg-background-base">
               <div class="relative min-h-0 flex-1 overflow-hidden flex flex-col">
-              <DragDropProvider
-                onDragStart={handleDragStart}
-                onDragEnd={handleDragEnd}
-                onDragOver={handleDragOver}
-                collisionDetector={closestCenter}
-              >
-                <DragDropSensors />
-                <ConstrainDragYAxis />
-                <div class="relative flex-1 flex min-h-0 min-w-0 flex-col">
-                <Switch>
-                  <Match when={splitMode() && panes().canvas && panes().figma}>
-                    <CanvasFigmaSplit />
-                  </Match>
-                  <Match when={true}>
-                <Tabs value={activeTab()} onChange={openTab}>
-                  <div class="sticky top-0 z-10 shrink-0 flex items-center border-b border-border-weaker-base">
-                    <Tabs.List
-                      ref={(el: HTMLDivElement) => {
-                        const stop = createFileTabListSync({ el, contextOpen })
-                        onCleanup(stop)
-                      }}
-                      class="min-w-0 w-fit"
-                    >
-                      <SortableProvider ids={visiblePaneTabs()}>
-                        <For each={visiblePaneTabs()}>
-                          {(pane) => (
-                            <SortablePaneTab pane={pane}>
+                <DragDropProvider
+                  onDragStart={handleDragStart}
+                  onDragEnd={handleDragEnd}
+                  onDragOver={handleDragOver}
+                  collisionDetector={closestCenter}
+                >
+                  <DragDropSensors />
+                  <ConstrainDragYAxis />
+                  <div class="relative flex-1 flex min-h-0 min-w-0 flex-col">
+                    <Switch>
+                      <Match when={splitMode() && panes().canvas && panes().figma}>
+                        <CanvasFigmaSplit />
+                      </Match>
+                      <Match when={true}>
+                        <Tabs value={activeTab()} onChange={openTab}>
+                          <div class="sticky top-0 z-10 shrink-0 flex items-center border-b border-border-weaker-base">
+                            <Tabs.List
+                              ref={(el: HTMLDivElement) => {
+                                const stop = createFileTabListSync({ el, contextOpen })
+                                onCleanup(stop)
+                              }}
+                              class="min-w-0 w-fit"
+                            >
+                              <SortableProvider ids={visiblePaneTabs()}>
+                                <For each={visiblePaneTabs()}>
+                                  {(pane) => (
+                                    <SortablePaneTab pane={pane}>
+                                      <Switch>
+                                        <Match when={pane === "canvas"}>{language.t("session.tab.canvas")}</Match>
+                                        <Match when={pane === "figma"}>{language.t("session.tab.figma")}</Match>
+                                        <Match when={pane === "sandbox"}>{language.t("session.tab.sandbox")}</Match>
+                                      </Switch>
+                                    </SortablePaneTab>
+                                  )}
+                                </For>
+                              </SortableProvider>
+                              <Show when={contextOpen()}>
+                                <Tabs.Trigger
+                                  value="context"
+                                  closeButton={
+                                    <TooltipKeybind
+                                      title={language.t("common.closeTab")}
+                                      keybind={command.keybind("tab.close")}
+                                      placement="bottom"
+                                      gutter={10}
+                                    >
+                                      <IconButton
+                                        icon="close-small"
+                                        variant="ghost"
+                                        class="h-5 w-5"
+                                        onClick={() => tabs().close("context")}
+                                        aria-label={language.t("common.closeTab")}
+                                      />
+                                    </TooltipKeybind>
+                                  }
+                                  hideCloseButton
+                                  onMiddleClick={() => tabs().close("context")}
+                                >
+                                  <div class="flex items-center gap-2">
+                                    <SessionContextUsage variant="indicator" />
+                                    <div>{language.t("session.tab.context")}</div>
+                                  </div>
+                                </Tabs.Trigger>
+                              </Show>
+                              <SortableProvider ids={openedTabs()}>
+                                <For each={openedTabs()}>
+                                  {(tab) => <SortableTab tab={tab} onTabClose={tabs().close} />}
+                                </For>
+                              </SortableProvider>
+                            </Tabs.List>
+                          </div>
+
+                          <Show when={canvasTab()}>
+                            <Tabs.Content
+                              value="canvas"
+                              class="relative flex flex-col h-full overflow-hidden contain-strict pointer-events-none"
+                            >
+                              <div class="absolute inset-0" aria-hidden />
+                            </Tabs.Content>
+                          </Show>
+
+                          <Show when={figmaTab()}>
+                            <Tabs.Content
+                              value="figma"
+                              class="relative flex flex-col h-full overflow-hidden contain-strict"
+                            >
+                              {platform.platform === "web" ? (
+                                <FigmaTabContent />
+                              ) : (
+                                /* Desktop: persistent FigmaWebviewHost shows through this transparent placeholder */
+                                <div class="size-full pointer-events-none" aria-hidden />
+                              )}
+                            </Tabs.Content>
+                          </Show>
+
+                          <Show when={sandboxTab()}>
+                            <Tabs.Content value="sandbox" class="relative flex flex-col h-full overflow-hidden contain-strict">
+                              <AgentSandboxTabContent />
+                            </Tabs.Content>
+                          </Show>
+
+                          <Tabs.Content value="empty" class="flex flex-col h-full overflow-hidden contain-strict">
+                            <Show when={activeTab() === "empty"}>
                               <Switch>
-                                <Match when={pane === "canvas"}>
-                                  {language.t("session.tab.canvas")}
+                                <Match when={bothClosed()}>
+                                  <CanvasFigmaEmpty />
                                 </Match>
-                                <Match when={pane === "figma"}>
-                                  {language.t("session.tab.figma")}
+                                <Match when={true}>
+                                  <div class="relative pt-2 flex-1 min-h-0 overflow-hidden">
+                                    <div class="h-full px-6 pb-42 -mt-4 flex flex-col items-center justify-center text-center gap-6">
+                                      <Mark class="w-14 opacity-10" />
+                                      <div class="text-14-regular text-text-weak max-w-56">
+                                        {language.t("session.files.selectToOpen")}
+                                      </div>
+                                    </div>
+                                  </div>
                                 </Match>
                               </Switch>
-                            </SortablePaneTab>
-                          )}
-                        </For>
-                      </SortableProvider>
-                      <Show when={contextOpen()}>
-                        <Tabs.Trigger
-                          value="context"
-                          closeButton={
-                            <TooltipKeybind
-                              title={language.t("common.closeTab")}
-                              keybind={command.keybind("tab.close")}
-                              placement="bottom"
-                              gutter={10}
-                            >
-                              <IconButton
-                                icon="close-small"
-                                variant="ghost"
-                                class="h-5 w-5"
-                                onClick={() => tabs().close("context")}
-                                aria-label={language.t("common.closeTab")}
-                              />
-                            </TooltipKeybind>
-                          }
-                          hideCloseButton
-                          onMiddleClick={() => tabs().close("context")}
-                        >
-                          <div class="flex items-center gap-2">
-                            <SessionContextUsage variant="indicator" />
-                            <div>{language.t("session.tab.context")}</div>
-                          </div>
-                        </Tabs.Trigger>
-                      </Show>
-                      <SortableProvider ids={openedTabs()}>
-                        <For each={openedTabs()}>{(tab) => <SortableTab tab={tab} onTabClose={tabs().close} />}</For>
-                      </SortableProvider>
-                    </Tabs.List>
-                  </div>
+                            </Show>
+                          </Tabs.Content>
 
-                      <Show when={canvasTab()}>
-                        <Tabs.Content value="canvas" class="relative flex flex-col h-full overflow-hidden contain-strict pointer-events-none">
-                          <div class="absolute inset-0" aria-hidden />
-                        </Tabs.Content>
-                      </Show>
-
-                      <Show when={figmaTab()}>
-                        <Tabs.Content value="figma" class="relative flex flex-col h-full overflow-hidden contain-strict">
-                          {platform.platform === "web" ? (
-                            <FigmaTabContent />
-                          ) : (
-                            /* Desktop: persistent FigmaWebviewHost shows through this transparent placeholder */
-                            <div class="size-full pointer-events-none" aria-hidden />
-                          )}
-                        </Tabs.Content>
-                      </Show>
-
-                      <Tabs.Content value="empty" class="flex flex-col h-full overflow-hidden contain-strict">
-                        <Show when={activeTab() === "empty"}>
-                          <Switch>
-                            <Match when={bothClosed()}>
-                              <CanvasFigmaEmpty />
-                            </Match>
-                            <Match when={true}>
-                              <div class="relative pt-2 flex-1 min-h-0 overflow-hidden">
-                                <div class="h-full px-6 pb-42 -mt-4 flex flex-col items-center justify-center text-center gap-6">
-                                  <Mark class="w-14 opacity-10" />
-                                  <div class="text-14-regular text-text-weak max-w-56">
-                                    {language.t("session.files.selectToOpen")}
-                                  </div>
+                          <Show when={contextOpen()}>
+                            <Tabs.Content value="context" class="flex flex-col h-full overflow-hidden contain-strict">
+                              <Show when={activeTab() === "context"}>
+                                <div class="relative pt-2 flex-1 min-h-0 overflow-hidden">
+                                  <SessionContextTab />
                                 </div>
-                              </div>
-                            </Match>
-                          </Switch>
-                        </Show>
-                      </Tabs.Content>
-
-                      <Show when={contextOpen()}>
-                        <Tabs.Content value="context" class="flex flex-col h-full overflow-hidden contain-strict">
-                          <Show when={activeTab() === "context"}>
-                            <div class="relative pt-2 flex-1 min-h-0 overflow-hidden">
-                              <SessionContextTab />
-                            </div>
+                              </Show>
+                            </Tabs.Content>
                           </Show>
-                        </Tabs.Content>
-                      </Show>
 
-                      <Show when={activeFileTab()} keyed>
-                        {(tab) => <FileTabContent tab={tab} />}
-                      </Show>
-                </Tabs>
-                  </Match>
-                </Switch>
-                </div>
-                <DragOverlay>
-                  <Show when={store.activeDraggable} keyed>
-                    {(tab) => {
-                      if (tab === "canvas" || tab === "figma") {
+                          <Show when={activeFileTab()} keyed>
+                            {(tab) => <FileTabContent tab={tab} />}
+                          </Show>
+                        </Tabs>
+                      </Match>
+                    </Switch>
+                  </div>
+                  <DragOverlay>
+                    <Show when={store.activeDraggable} keyed>
+                      {(tab) => {
+                        if (tab === "canvas" || tab === "figma" || tab === "sandbox") {
+                          return (
+                            <div data-component="tabs-drag-preview">
+                              <span class="text-14-medium">
+                                {tab === "canvas"
+                                  ? language.t("session.tab.canvas")
+                                  : tab === "figma"
+                                    ? language.t("session.tab.figma")
+                                    : language.t("session.tab.sandbox")}
+                              </span>
+                            </div>
+                          )
+                        }
+                        const path = createMemo(() => file.pathFromTab(tab))
                         return (
                           <div data-component="tabs-drag-preview">
-                            <span class="text-14-medium">
-                              {tab === "canvas" ? language.t("session.tab.canvas") : language.t("session.tab.figma")}
-                            </span>
+                            <Show when={path()}>{(p) => <FileVisual active path={p()} />}</Show>
                           </div>
                         )
-                      }
-                      const path = createMemo(() => file.pathFromTab(tab))
-                      return (
-                        <div data-component="tabs-drag-preview">
-                          <Show when={path()}>{(p) => <FileVisual active path={p()} />}</Show>
-                        </div>
-                      )
-                    }}
-                  </Show>
-                </DragOverlay>
-              </DragDropProvider>
+                      }}
+                    </Show>
+                  </DragOverlay>
+                </DragDropProvider>
               </div>
               {/* Persistent canvas host — survives split↔tabbed switches. */}
               <Show when={canvasTab()}>
                 <CanvasHost
-                  active={
-                    splitMode() && panes().canvas
-                      ? true
-                      : activeTab() === "canvas"
-                  }
-                  splitOffset={
-                    splitMode() && panes().canvas && panes().figma
-                      ? layout.canvasPanel.splitRatio()
-                      : 0
-                  }
+                  active={splitMode() && panes().canvas ? true : activeTab() === "canvas"}
+                  splitOffset={splitMode() && panes().canvas && panes().figma ? layout.canvasPanel.splitRatio() : 0}
                   canvasFirst={
-                    splitMode() && panes().canvas && panes().figma
-                      && layout.canvasPanel.paneOrder()[0] === "canvas"
+                    splitMode() && panes().canvas && panes().figma && layout.canvasPanel.paneOrder()[0] === "canvas"
                   }
                 />
               </Show>
               {/* Persistent figma webview host — same pattern as CanvasHost. */}
               <Show when={figmaTab() && platform.platform !== "web"}>
                 <FigmaWebviewHost
-                  active={
-                    splitMode() && panes().figma
-                      ? true
-                      : activeTab() === "figma"
-                  }
-                  splitOffset={
-                    splitMode() && panes().canvas && panes().figma
-                      ? layout.canvasPanel.splitRatio()
-                      : 0
-                  }
+                  active={splitMode() && panes().figma ? true : activeTab() === "figma"}
+                  splitOffset={splitMode() && panes().canvas && panes().figma ? layout.canvasPanel.splitRatio() : 0}
                   figmaFirst={
-                    splitMode() && panes().canvas && panes().figma
-                      && layout.canvasPanel.paneOrder()[0] === "figma"
+                    splitMode() && panes().canvas && panes().figma && layout.canvasPanel.paneOrder()[0] === "figma"
                   }
                 />
               </Show>

@@ -1,3 +1,5 @@
+import type { AgentState } from "../types/agent-state"
+
 const defaults: Record<string, string> = {
   "opendesign-agent": "var(--icon-agent-build-base)",
   "opendesign-ask": "var(--icon-agent-ask-base)",
@@ -6,4 +8,17 @@ const defaults: Record<string, string> = {
 export function agentColor(name: string, custom?: string) {
   if (custom) return custom
   return defaults[name] ?? defaults[name.toLowerCase()]
+}
+
+const stateColors: Record<AgentState, string> = {
+  created: "var(--text-dimmer)",
+  working: "var(--icon-info-base)",
+  waiting: "var(--icon-warning-base)",
+  ready: "var(--icon-success-base)",
+  approved: "var(--icon-success-base)",
+  archived: "var(--text-dimmer)",
+}
+
+export function stateColor(state: string): string {
+  return stateColors[state as AgentState] ?? "var(--text-dimmer)"
 }

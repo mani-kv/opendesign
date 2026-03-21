@@ -30,6 +30,7 @@
       "dependencies": {
         "@kobalte/core": "catalog:",
         "@opencode-ai/canvas-wasm": "workspace:*",
+        "@opencode-ai/opendesign": "workspace:*",
         "@opencode-ai/sdk": "workspace:*",
         "@opencode-ai/ui": "workspace:*",
         "@opencode-ai/util": "workspace:*",
@@ -382,6 +383,23 @@
         "vscode-languageserver-types": "3.17.5",
         "why-is-node-running": "3.2.2",
         "zod-to-json-schema": "3.24.5",
+      },
+    },
+    "packages/opendesign": {
+      "name": "@opencode-ai/opendesign",
+      "version": "0.0.1",
+      "dependencies": {
+        "@opencode-ai/sdk": "workspace:*",
+        "@opencode-ai/util": "workspace:*",
+        "remeda": "catalog:",
+        "solid-js": "catalog:",
+        "zod": "catalog:",
+      },
+      "devDependencies": {
+        "@tsconfig/node22": "catalog:",
+        "@types/bun": "catalog:",
+        "@typescript/native-preview": "catalog:",
+        "typescript": "catalog:",
       },
     },
     "packages/plugin": {
@@ -1385,6 +1403,8 @@
     "@opencode-ai/enterprise": ["@opencode-ai/enterprise@workspace:packages/enterprise"],
 
     "@opencode-ai/function": ["@opencode-ai/function@workspace:packages/function"],
+
+    "@opencode-ai/opendesign": ["@opencode-ai/opendesign@workspace:packages/opendesign"],
 
     "@opencode-ai/plugin": ["@opencode-ai/plugin@workspace:packages/plugin"],
 

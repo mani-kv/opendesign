@@ -40,6 +40,7 @@
   },
   "dependencies": {
     "@opencode-ai/canvas-wasm": "workspace:*",
+    "@opencode-ai/opendesign": "workspace:*",
     "@kobalte/core": "catalog:",
     "@opencode-ai/sdk": "workspace:*",
     "@opencode-ai/ui": "workspace:*",

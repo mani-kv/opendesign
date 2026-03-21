@@ -215,13 +215,8 @@ export const { use: useLayout, provider: LayoutProvider } = createSimpleContext(
             if (!isRecord(tabs) || !Array.isArray(tabs.all)) return [key, tabs]
 
             const current = {
-              all: tabs.all
-                .filter((tab): tab is string => typeof tab === "string")
-                .map(mapReviewToCanvas),
-              active:
-                typeof tabs.active === "string"
-                  ? mapReviewToCanvas(tabs.active)
-                  : undefined,
+              all: tabs.all.filter((tab): tab is string => typeof tab === "string").map(mapReviewToCanvas),
+              active: typeof tabs.active === "string" ? mapReviewToCanvas(tabs.active) : undefined,
             }
             const normalized = normalizeStoredSessionTabs(sessionPath, key, current)
             if (tabs.all.some((t) => t === "review") || tabs.active === "review") changed = true
@@ -239,16 +234,19 @@ export const { use: useLayout, provider: LayoutProvider } = createSimpleContext(
       const canvasPanel = value.canvasPanel
       const migratedCanvasPanel = (() => {
         if (isRecord(canvasPanel) && typeof canvasPanel.layout === "string" && isRecord(canvasPanel.panes)) {
-          if (!Array.isArray(canvasPanel.paneOrder)) {
-            return { ...canvasPanel, paneOrder: ["canvas", "figma"] }
-          }
-          return canvasPanel
+          const panes = { ...canvasPanel.panes } as Record<string, boolean>
+          if (panes.sandbox === undefined) panes.sandbox = true
+          const order = Array.isArray(canvasPanel.paneOrder)
+            ? [...(canvasPanel.paneOrder as string[])]
+            : ["canvas", "figma", "sandbox"]
+          if (!order.includes("sandbox")) order.push("sandbox")
+          return { ...canvasPanel, panes, paneOrder: order }
         }
         return {
           layout: "tabs" as const,
-          panes: { canvas: true, figma: true },
+          panes: { canvas: true, figma: true, sandbox: true },
           splitRatio: 0.5,
-          paneOrder: ["canvas", "figma"],
+          paneOrder: ["canvas", "figma", "sandbox"],
         }
       })()
 
@@ -314,9 +312,9 @@ export const { use: useLayout, provider: LayoutProvider } = createSimpleContext(
         },
         canvasPanel: {
           layout: "tabs" as "tabs" | "split",
-          panes: { canvas: true, figma: true },
+          panes: { canvas: true, figma: true, sandbox: true },
           splitRatio: 0.5,
-          paneOrder: ["canvas", "figma"] as ("canvas" | "figma")[],
+          paneOrder: ["canvas", "figma", "sandbox"] as ("canvas" | "figma" | "sandbox")[],
         },
       }),
     )
@@ -810,29 +808,32 @@ export const { use: useLayout, provider: LayoutProvider } = createSimpleContext(
       },
       canvasPanel: {
         layout: createMemo(() => (store.canvasPanel?.layout ?? "tabs") as "tabs" | "split"),
-        panes: createMemo(() => store.canvasPanel?.panes ?? { canvas: true, figma: true }),
+        panes: createMemo(() => store.canvasPanel?.panes ?? { canvas: true, figma: true, sandbox: true }),
         splitRatio: createMemo(() => store.canvasPanel?.splitRatio ?? 0.5),
-        paneOrder: createMemo(() => (store.canvasPanel?.paneOrder ?? ["canvas", "figma"]) as ("canvas" | "figma")[]),
+        paneOrder: createMemo(
+          () =>
+            (store.canvasPanel?.paneOrder ?? ["canvas", "figma", "sandbox"]) as ("canvas" | "figma" | "sandbox")[],
+        ),
         toggleLayout() {
           const next = (store.canvasPanel?.layout ?? "tabs") === "tabs" ? "split" : "tabs"
           if (!store.canvasPanel) {
             setStore("canvasPanel", {
               layout: next,
-              panes: { canvas: true, figma: true },
+              panes: { canvas: true, figma: true, sandbox: true },
               splitRatio: 0.5,
-              paneOrder: ["canvas", "figma"],
+              paneOrder: ["canvas", "figma", "sandbox"],
             })
             return
           }
           setStore("canvasPanel", "layout", next)
         },
-        setPane(pane: "canvas" | "figma", open: boolean) {
+        setPane(pane: "canvas" | "figma" | "sandbox", open: boolean) {
           if (!store.canvasPanel) {
             setStore("canvasPanel", {
               layout: "tabs",
-              panes: { canvas: true, figma: true, [pane]: open },
+              panes: { canvas: true, figma: true, sandbox: true, [pane]: open },
               splitRatio: 0.5,
-              paneOrder: ["canvas", "figma"],
+              paneOrder: ["canvas", "figma", "sandbox"],
             })
             return
           }
@@ -842,19 +843,17 @@ export const { use: useLayout, provider: LayoutProvider } = createSimpleContext(
           if (!store.canvasPanel) return
           setStore("canvasPanel", "splitRatio", Math.max(0.2, Math.min(0.8, ratio)))
         },
-        swapPaneOrder() {
-          const current = store.canvasPanel?.paneOrder ?? ["canvas", "figma"]
-          const next = [current[1], current[0]]
+        setPaneOrder(order: ("canvas" | "figma" | "sandbox")[]) {
           if (!store.canvasPanel) {
             setStore("canvasPanel", {
               layout: "tabs",
-              panes: { canvas: true, figma: true },
+              panes: { canvas: true, figma: true, sandbox: true },
               splitRatio: 0.5,
-              paneOrder: next as ("canvas" | "figma")[],
+              paneOrder: order,
             })
             return
           }
-          setStore("canvasPanel", "paneOrder", next as ("canvas" | "figma")[])
+          setStore("canvasPanel", "paneOrder", order)
         },
       },
       mobileSidebar: {
