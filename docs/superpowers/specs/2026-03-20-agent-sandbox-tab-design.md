@@ -19,7 +19,18 @@ The Agent Sandbox is a **pane tab** — same category as canvas and figma. Pane 
 - `canvasPanel.panes` type expands: `{ canvas: boolean; figma: boolean; sandbox: boolean }`
 - `canvasPanel.paneOrder` type expands: `("canvas" | "figma" | "sandbox")[]`
 - Default: `{ canvas: true, figma: true, sandbox: true }`, order: `["canvas", "figma", "sandbox"]`
-- `isPaneTab()` helper in session-side-panel: includes `"sandbox"`
+
+Specific locations requiring type/value changes:
+- Line ~314: store default `paneOrder` array and `panes` object — add `sandbox`
+- Line ~810: `paneOrder` memo return type cast — widen to include `"sandbox"`
+- Line ~824: `setPane` — accept `"sandbox"` as valid pane key
+- Lines ~840-852: `swapPaneOrder` — replace with general `setPaneOrder(order)` that accepts any permutation of the pane union (see "Split Mode" section below)
+- Migration logic (lines ~236-244): handle existing persisted state missing `sandbox` key
+
+### Session Side Panel Changes (`packages/app/src/pages/session/session-side-panel.tsx`)
+
+- `isPaneTab()` helper (line ~492): expand to include `"sandbox"`
+- `visiblePaneTabs` (line ~361): already reads `panes()[p]` dynamically — works once `sandbox` key exists
 
 ### Session Side Panel Changes (`packages/app/src/pages/session/session-side-panel.tsx`)
 
@@ -39,7 +50,7 @@ The Agent Sandbox is a **pane tab** — same category as canvas and figma. Pane 
 An `<svg>` element filling the tab content area with:
 - A `<g>` transform group: `transform={translate(vp.x, vp.y) scale(vp.zoom)}` driven by `GraphStore.state.viewport`
 - Edges rendered as SVG `<path>` elements with cubic bezier curves
-- Nodes rendered as `<foreignObject>` wrappers around HTML cards
+- Nodes rendered as `<foreignObject>` wrappers around HTML cards — `width`/`height` from `node.width ?? 320` / `node.height ?? 240` (matching defaults in `node-layout.ts`)
 
 ### Viewport Interaction (`use-pan-zoom.ts`)
 
@@ -47,6 +58,7 @@ An `<svg>` element filling the tab content area with:
 - **Zoom**: wheel event adjusts viewport.zoom (clamped 0.1–3.0), zooms toward cursor
 - **Fit**: expose `fitToContent()` using `centerViewport()` from `@opencode-ai/opendesign/canvas`
 - Updates `graph.setViewport()` on every change
+- **Cleanup**: mousemove/mouseup listeners attached to `document` during drag, removed in `onCleanup()` to prevent leaks
 
 ### Edge Rendering (`edge-path.tsx`)
 
@@ -61,7 +73,7 @@ Each `CanvasNode.type` maps to a card component rendered inside `<foreignObject>
 
 | Type | Card | Visual |
 |------|------|--------|
-| `agent` | `AgentNodeCard` | Scenario name, branch badge, state indicator (colored dot per `agentColor()`), working/ready/etc label |
+| `agent` | `AgentNodeCard` | Scenario name, branch badge, state indicator (colored dot via `stateColor()`), state label (created/working/waiting/ready/approved/archived) |
 | `frame` | `FrameNodeCard` | Figma frame name, dimensions |
 | `persona` | `PersonaNodeCard` | Persona name, viewport/language info |
 | `context` | `ContextNodeCard` | Document name, type badge (figma/url/file/text) |
@@ -109,7 +121,8 @@ When `store.state.nodes.length === 0`:
 ## Styling
 
 - Node cards use existing design tokens (`var(--background-base)`, `var(--border-weaker-base)`, etc.)
-- Agent state colors use `agentColor()` from `@opencode-ai/opendesign/agent`
+- Agent **name** colors use `agentColor(name)` from `@opencode-ai/opendesign/agent` (maps agent names like `"opendesign-agent"` to CSS vars)
+- Agent **state** colors use a new `stateColor(state: AgentState)` function added to `@opencode-ai/opendesign/agent` that maps the 6 lifecycle states to CSS color vars (e.g., created→gray, working→blue, waiting→amber, ready→green, approved→emerald, archived→dim)
 - Edge strokes use `var(--border-base)` with type-specific dash arrays
 - Selection highlight: `var(--border-info-base)` 2px border
 - Background: `var(--background-stronger)` with subtle dot grid pattern
@@ -125,9 +138,16 @@ When `store.state.nodes.length === 0`:
 - Unit tests for edge path computation (bezier control points)
 - Existing `packages/opendesign` tests cover graph store, node factory, layout, visibility (131 tests)
 
+## Split Mode
+
+The existing `swapPaneOrder()` only handles a 2-element array. With 3 pane types, this must be generalized:
+
+- Replace `swapPaneOrder()` with `setPaneOrder(order: PaneId[])` in layout context
+- `SortableProvider` in `CanvasFigmaSplit` already handles N-item drag-reorder — the DnD `handleDragOver` just needs the `isPaneTab` guard updated
+- Split mode shows exactly 2 panes side by side; the third is hidden. The split uses the first 2 items in `paneOrder` that are enabled in `panes`
+
 ## Out of Scope
 
 - Sandpack iframe embedding inside agent nodes (Priority 2 later phase)
 - Server-side persistence of sandbox graph state (uses in-memory store for now)
 - Agent-to-sandbox node creation pipeline (needs agent orchestrator wiring)
-- Split mode with sandbox + other panes (works via existing split infrastructure, no special handling)
