@@ -15,7 +15,10 @@ function projectDir(home: string, projectId: string) {
 }
 
 function uuid() {
-  return crypto.randomUUID?.() ?? "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/x/g, () => ((Math.random() * 16) | 0).toString(16))
+  return (
+    crypto.randomUUID?.() ??
+    "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/x/g, () => ((Math.random() * 16) | 0).toString(16))
+  )
 }
 
 export function DialogAddProject(props: { workspaceId: string; onAdded?: (id: string) => void }) {

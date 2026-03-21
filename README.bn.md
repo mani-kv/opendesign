@@ -68,12 +68,12 @@ nix run nixpkgs#opencode           # or github:anomalyco/opencode for latest dev
 
 OpenCode ডেস্কটপ অ্যাপ্লিকেশন হিসেবেও উপলব্ধ। সরাসরি [রিলিজ পেজ](https://github.com/anomalyco/opencode/releases) অথবা [opencode.ai/download](https://opencode.ai/download) থেকে ডাউনলোড করুন।
 
-| প্ল্যাটফর্ম           | ডাউনলোড                               |
-| --------------------- | ------------------------------------- |
+| প্ল্যাটফর্ম           | ডাউনলোড                              |
+| --------------------- | ------------------------------------ |
 | macOS (Apple Silicon) | `opencode-electron-darwin-arm64.dmg` |
-| macOS (Intel)         | `opencode-electron-darwin-x64.dmg`     |
+| macOS (Intel)         | `opencode-electron-darwin-x64.dmg`   |
 | Windows               | `opencode-electron-win32-x64.exe`    |
-| Linux                 | `.deb`, `.rpm`, or AppImage           |
+| Linux                 | `.deb`, `.rpm`, or AppImage          |
 
 ```bash
 # macOS (Homebrew)

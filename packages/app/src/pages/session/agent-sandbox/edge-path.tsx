@@ -1,4 +1,4 @@
-import type { CanvasEdge } from "@opencode-ai/opendesign"
+import type { CanvasEdge } from "@opencode-ai/opendesign/types"
 
 type NodeRect = { x: number; y: number; width?: number; height?: number }
 
@@ -34,13 +34,5 @@ export function EdgePath(props: { edge: CanvasEdge; sourceNode: NodeRect; target
   const path = () => computeEdgePath(props.sourceNode, props.targetNode)
   const style = () => edgeStrokeStyle(props.edge.type)
 
-  return (
-    <path
-      d={path()}
-      fill="none"
-      stroke={style().color}
-      stroke-width="1.5"
-      stroke-dasharray={style().dasharray}
-    />
-  )
+  return <path d={path()} fill="none" stroke={style().color} stroke-width="1.5" stroke-dasharray={style().dasharray} />
 }

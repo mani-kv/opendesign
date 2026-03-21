@@ -130,9 +130,10 @@ const table = sqliteTable("session", {
 ## Learned User Preferences
 
 - For create, bug fix, or refactor requests, follow the create-something-workflow rule: confirm understanding first, analyze risks, catalogue decisions and assumptions, iterate until aligned, implement, then add tests; skip for explanations or documentation.
+- When the user states they accept breaking changes, remove dead API or UI surface (routes, SDK operations, modes) instead of keeping compatibility shims.
 
 ## Learned Workspace Facts
 
 - Use forward slash (/) not greater-than (>) for workspace/project hierarchy separators in breadcrumbs.
 - Native desktop is `packages/desktop-electron` (Electron); this workspace does not include a Tauri `packages/desktop` package.
-
+- After changing `packages/canvas-wasm` (Rust) or pulling canvas resize fixes, run `bun run --cwd packages/canvas-wasm build` and restart the app dev server so web/Electron pick up the new `pkg/`.

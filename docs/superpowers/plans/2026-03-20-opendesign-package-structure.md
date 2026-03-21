@@ -150,13 +150,13 @@ packages/opendesign/
 
 ## Migration Plan
 
-| Source (`packages/app/src/`) | Destination (`packages/opendesign/src/`) | Notes |
-|---|---|---|
-| `utils/figma.ts` | `figma/parse.ts` | Verbatim. Update app imports to `@opencode-ai/opendesign/figma`. |
-| `utils/agent.ts` | `agent/color.ts` | Verbatim. |
-| `context/workspace.tsx` | `workspace/store.ts` | Extract store logic (no JSX). Provider wrapper stays in app. |
-| `context/project-scope.tsx` | `workspace/project-scope.ts` | Extract types + logic. JSX provider stays in app. |
-| `utils/canvas-bridge.ts` | **Stays in app** | WASM DOM lifecycle — not this package's concern. |
+| Source (`packages/app/src/`) | Destination (`packages/opendesign/src/`) | Notes                                                            |
+| ---------------------------- | ---------------------------------------- | ---------------------------------------------------------------- |
+| `utils/figma.ts`             | `figma/parse.ts`                         | Verbatim. Update app imports to `@opencode-ai/opendesign/figma`. |
+| `utils/agent.ts`             | `agent/color.ts`                         | Verbatim.                                                        |
+| `context/workspace.tsx`      | `workspace/store.ts`                     | Extract store logic (no JSX). Provider wrapper stays in app.     |
+| `context/project-scope.tsx`  | `workspace/project-scope.ts`             | Extract types + logic. JSX provider stays in app.                |
+| `utils/canvas-bridge.ts`     | **Stays in app**                         | WASM DOM lifecycle — not this package's concern.                 |
 
 ---
 
@@ -173,6 +173,7 @@ packages/opendesign/
 ## Build Order
 
 ### Phase A — Scaffold and migrations (first)
+
 1. Create `packages/opendesign/` with package.json, tsconfig.json
 2. Create `src/types/` — all type definitions (zero deps, unblocks everything)
 3. Migrate `figma/parse.ts` (smallest, proves import pattern)
@@ -180,6 +181,7 @@ packages/opendesign/
 5. Create `workspace/store.ts` (extract from workspace.tsx)
 
 ### Phase B — Canvas data model
+
 6. `canvas/graph-store.ts` — SolidJS store for nodes/edges
 7. `canvas/node-factory.ts` — typed node creation
 8. `canvas/node-layout.ts` — auto-layout
@@ -187,6 +189,7 @@ packages/opendesign/
 10. `canvas/focus-mode.ts`
 
 ### Phase C — Agent and Sandpack
+
 11. `agent/lifecycle.ts` — state machine
 12. `agent/orchestrator.ts` — pre-flight plan parsing
 13. `sandpack/instance.ts` — file map management
@@ -194,6 +197,7 @@ packages/opendesign/
 15. `sandpack/inspector.ts` — DOM selection
 
 ### Phase D — Design system and git
+
 16. `design-system/registry.ts` — workspace store
 17. `design-system/tokens.ts` — CSS generation
 18. `design-system/components.ts` — component palette
@@ -201,6 +205,7 @@ packages/opendesign/
 20. `git/checkpoint.ts`
 
 ### Phase E — Context and simulation
+
 21. `context/documents.ts` — doc upload/storage
 22. `context/query.ts` — RAG query
 23. `simulation/presets.ts` — viewport/a11y presets
@@ -215,6 +220,7 @@ packages/opendesign/
 All tests run via `cd packages/opendesign && bun test`.
 
 **Unit tests (pure logic):**
+
 - `figma/parse.test.ts` — URL parsing, embed URL building
 - `canvas/node-layout.test.ts` — positioning algorithm
 - `canvas/node-factory.test.ts` — node defaults
@@ -227,6 +233,7 @@ All tests run via `cd packages/opendesign && bun test`.
 - `agent/color.test.ts` — color mapping
 
 **Integration tests (with mock SDK):**
+
 - `sandpack/files.test.ts` — file map from mock branch data
 - `workspace/store.test.ts` — workspace CRUD with persistence
 - `canvas/graph-store.test.ts` — reactive node add/remove

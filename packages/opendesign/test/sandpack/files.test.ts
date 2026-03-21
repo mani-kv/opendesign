@@ -25,10 +25,7 @@ test("toSandpackFileMap marks hidden files based on patterns", () => {
 })
 
 test("toSandpackFileMap uses custom hidden patterns", () => {
-  const result = toSandpackFileMap(
-    { "src/secret.ts": "secret", "src/App.tsx": "app" },
-    { hiddenPatterns: ["secret"] },
-  )
+  const result = toSandpackFileMap({ "src/secret.ts": "secret", "src/App.tsx": "app" }, { hiddenPatterns: ["secret"] })
 
   expect(result["/src/secret.ts"].hidden).toBe(true)
   expect(result["/src/App.tsx"].hidden).toBeUndefined()

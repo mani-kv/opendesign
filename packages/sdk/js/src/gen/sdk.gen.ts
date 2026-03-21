@@ -100,9 +100,6 @@ import type {
   SessionCommandData,
   SessionCommandResponses,
   SessionCommandErrors,
-  SessionShellData,
-  SessionShellResponses,
-  SessionShellErrors,
   SessionRevertData,
   SessionRevertResponses,
   SessionRevertErrors,
@@ -653,20 +650,6 @@ class Session extends _HeyApiClient {
   public command<ThrowOnError extends boolean = false>(options: Options<SessionCommandData, ThrowOnError>) {
     return (options.client ?? this._client).post<SessionCommandResponses, SessionCommandErrors, ThrowOnError>({
       url: "/session/{id}/command",
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
-    })
-  }
-
-  /**
-   * Run a shell command
-   */
-  public shell<ThrowOnError extends boolean = false>(options: Options<SessionShellData, ThrowOnError>) {
-    return (options.client ?? this._client).post<SessionShellResponses, SessionShellErrors, ThrowOnError>({
-      url: "/session/{id}/shell",
       ...options,
       headers: {
         "Content-Type": "application/json",

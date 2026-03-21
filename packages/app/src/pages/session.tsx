@@ -264,9 +264,7 @@ export default function Page() {
     return open
   }, desktopReviewOpen())
 
-  const turnDiffs = createMemo(
-    () => (lastUserMessage() as UserMessage | undefined)?.summary?.diffs ?? [],
-  )
+  const turnDiffs = createMemo(() => (lastUserMessage() as UserMessage | undefined)?.summary?.diffs ?? [])
   const reviewDiffs = createMemo(() => (store.changes === "session" ? diffs() : turnDiffs()))
 
   const newSessionWorktree = createMemo(() => {
@@ -348,7 +346,6 @@ export default function Page() {
       })
     }),
   )
-
 
   createEffect(
     on(
@@ -810,9 +807,7 @@ export default function Page() {
     const id = scope.sessionId()
     if (!id) return
 
-    const wants = isDesktop()
-      ? desktopFileTreeOpen() || (desktopReviewOpen() && activeTab() === "canvas")
-      : true
+    const wants = isDesktop() ? desktopFileTreeOpen() || (desktopReviewOpen() && activeTab() === "canvas") : true
     if (!wants) return
     if (sync.data.session_diff[id] !== undefined) return
     if (sync.status === "loading") return
@@ -849,7 +844,6 @@ export default function Page() {
     ),
   )
 
-
   onMount(() => {
     document.addEventListener("keydown", handleKeyDown)
   })
@@ -864,10 +858,7 @@ export default function Page() {
   return (
     <div class="relative bg-background-base size-full overflow-hidden flex flex-col">
       <SessionHeader />
-      <div
-        ref={setWorkspaceRef}
-        class="relative flex-1 min-h-0 flex flex-col md:flex-row"
-      >
+      <div ref={setWorkspaceRef} class="relative flex-1 min-h-0 flex flex-col md:flex-row">
         <SessionMobileTabs
           open={!isDesktop() && !!scope.sessionId()}
           mobileTab={store.mobileTab}
@@ -891,48 +882,46 @@ export default function Page() {
               width: agentsPanelWidth(),
             }}
           >
-          <AgentsPanel />
-          <Show when={desktopReviewOpen()}>
-            <div onPointerDown={() => size.start()}>
-              <ResizeHandle
-                direction="horizontal"
-                size={layout.agents.width()}
-                min={180}
-                max={typeof window === "undefined" ? 480 : Math.min(480, window.innerWidth * 0.4)}
-                onResize={(width) => {
-                  size.touch()
-                  layout.agents.resize(width)
+            <AgentsPanel />
+            <Show when={desktopReviewOpen()}>
+              <div onPointerDown={() => size.start()}>
+                <ResizeHandle
+                  direction="horizontal"
+                  size={layout.agents.width()}
+                  min={180}
+                  max={typeof window === "undefined" ? 480 : Math.min(480, window.innerWidth * 0.4)}
+                  onResize={(width) => {
+                    size.touch()
+                    layout.agents.resize(width)
+                  }}
+                />
+              </div>
+            </Show>
+            <Show when={!isDesktop()}>
+              <SessionComposerRegion
+                state={composer}
+                ready={!store.deferRender && messagesReady()}
+                centered={true}
+                inputRef={(el) => {
+                  inputRef = el
+                }}
+                newSessionWorktree={newSessionWorktree()}
+                onNewSessionWorktreeReset={() => setStore("newSessionWorktree", "main")}
+                onSubmit={() => {
+                  comments.clear()
+                  resumeScroll()
+                }}
+                onResponseSubmit={resumeScroll}
+                setPromptDockRef={(el) => {
+                  promptDock = el
                 }}
               />
-            </div>
-          </Show>
-          <Show when={!isDesktop()}>
-            <SessionComposerRegion
-              state={composer}
-              ready={!store.deferRender && messagesReady()}
-              centered={true}
-              inputRef={(el) => {
-                inputRef = el
-              }}
-              newSessionWorktree={newSessionWorktree()}
-              onNewSessionWorktreeReset={() => setStore("newSessionWorktree", "main")}
-              onSubmit={() => {
-                comments.clear()
-                resumeScroll()
-              }}
-              onResponseSubmit={resumeScroll}
-              setPromptDockRef={(el) => {
-                promptDock = el
-              }}
-            />
-          </Show>
+            </Show>
           </div>
         </Show>
 
         <SessionSidePanel
-          floatingDockBoundary={() =>
-            (workspaceRef()?.closest("main") ?? workspaceRef()) as HTMLElement | undefined
-          }
+          floatingDockBoundary={() => (workspaceRef()?.closest("main") ?? workspaceRef()) as HTMLElement | undefined}
           floatingPrompt={() => (
             <SessionComposerRegion
               state={composer}

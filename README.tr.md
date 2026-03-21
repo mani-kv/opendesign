@@ -68,12 +68,12 @@ nix run nixpkgs#opencode           # veya en güncel geliştirme dalı için git
 
 OpenCode ayrıca masaüstü uygulaması olarak da mevcuttur. Doğrudan [sürüm sayfasından](https://github.com/anomalyco/opencode/releases) veya [opencode.ai/download](https://opencode.ai/download) adresinden indirebilirsiniz.
 
-| Platform              | İndirme                               |
-| --------------------- | ------------------------------------- |
+| Platform              | İndirme                              |
+| --------------------- | ------------------------------------ |
 | macOS (Apple Silicon) | `opencode-electron-darwin-arm64.dmg` |
-| macOS (Intel)         | `opencode-electron-darwin-x64.dmg`     |
+| macOS (Intel)         | `opencode-electron-darwin-x64.dmg`   |
 | Windows               | `opencode-electron-win32-x64.exe`    |
-| Linux                 | `.deb`, `.rpm` veya AppImage          |
+| Linux                 | `.deb`, `.rpm` veya AppImage         |
 
 ```bash
 # macOS (Homebrew)

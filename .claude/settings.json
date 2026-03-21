@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(/Users/Mani/.bun/bin/bun run:*)"
+      "Bash(/Users/Mani/.bun/bin/bun run:*)",
+      "Bash(bunx tsc:*)"
     ]
   }
 }

@@ -28,11 +28,7 @@ export function nextPosition(existing: CanvasNode[], width = DEFAULT_WIDTH, heig
  * Arrange nodes in a grid layout.
  * Returns new positions without mutating original nodes.
  */
-export function gridLayout(
-  nodes: CanvasNode[],
-  columns = 3,
-  gap = GRID_GAP,
-): { id: string; x: number; y: number }[] {
+export function gridLayout(nodes: CanvasNode[], columns = 3, gap = GRID_GAP): { id: string; x: number; y: number }[] {
   return nodes.map((node, i) => {
     const col = i % columns
     const row = Math.floor(i / columns)
@@ -56,7 +52,10 @@ export function centerViewport(
 ): { x: number; y: number; zoom: number } {
   if (nodes.length === 0) return { x: 0, y: 0, zoom: 1 }
 
-  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity
+  let minX = Infinity,
+    minY = Infinity,
+    maxX = -Infinity,
+    maxY = -Infinity
   for (const n of nodes) {
     minX = Math.min(minX, n.x)
     minY = Math.min(minY, n.y)

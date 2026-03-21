@@ -23,11 +23,7 @@ export function detectDocType(filename: string): ContextDocType {
 /**
  * Create context document metadata.
  */
-export function createContextDoc(input: {
-  name: string
-  path: string
-  type?: ContextDocType
-}): ContextDocument {
+export function createContextDoc(input: { name: string; path: string; type?: ContextDocType }): ContextDocument {
   return {
     id: `doc_${Date.now().toString(36)}`,
     name: input.name,

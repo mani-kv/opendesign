@@ -7,7 +7,10 @@ export type Workspace = { id: string; name: string; order: number }
 export type Project = { id: string; workspaceId: string; name: string; order: number; sessionId: string }
 
 function uuid() {
-  return crypto.randomUUID?.() ?? `xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx`.replace(/x/g, () => ((Math.random() * 16) | 0).toString(16))
+  return (
+    crypto.randomUUID?.() ??
+    `xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx`.replace(/x/g, () => ((Math.random() * 16) | 0).toString(16))
+  )
 }
 
 const target = Persist.global("opendesign.workspace", ["opendesign.workspace.v2", "opendesign.workspace.v1"])
@@ -28,7 +31,8 @@ function migrate(value: unknown): unknown {
       }
     }),
     projects: projects.map((p: unknown) => {
-      if (typeof p !== "object" || p === null) return { id: uuid(), workspaceId: "", name: "Project", order: 0, sessionId: uuid() }
+      if (typeof p !== "object" || p === null)
+        return { id: uuid(), workspaceId: "", name: "Project", order: 0, sessionId: uuid() }
       const x = p as Record<string, unknown>
       const id = typeof x.id === "string" ? x.id : uuid()
       const sessionId = typeof x.sessionId === "string" ? x.sessionId : uuid()
@@ -63,11 +67,7 @@ export const { use: useWorkspace, provider: WorkspaceProvider } = createSimpleCo
 
     const list = createMemo(() => [...store.workspaces].sort((a, b) => a.order - b.order))
     const projects = (workspaceId: string) =>
-      createMemo(() =>
-        store.projects
-          .filter((p) => p.workspaceId === workspaceId)
-          .sort((a, b) => a.order - b.order),
-      )
+      createMemo(() => store.projects.filter((p) => p.workspaceId === workspaceId).sort((a, b) => a.order - b.order))
 
     const add = (name: string) => {
       const max = store.workspaces.reduce((m, w) => Math.max(m, w.order), -1)

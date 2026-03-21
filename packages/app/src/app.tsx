@@ -25,6 +25,7 @@ import { usePlatform } from "@/context/platform"
 import { PromptProvider } from "@/context/prompt"
 import { type ServerConnection, ServerProvider, useServer } from "@/context/server"
 import { SettingsProvider } from "@/context/settings"
+import { AgentsProvider } from "@/context/agents"
 import { TerminalProvider } from "@/context/terminal"
 import ProjectLayout from "@/pages/project-layout"
 import Layout from "@/pages/layout"
@@ -77,15 +78,17 @@ function AppShellProviders(props: ParentProps) {
       <PermissionProvider>
         <WorkspaceProvider>
           <LayoutProvider>
-            <NotificationProvider>
-            <ModelsProvider>
-              <CommandProvider>
-                <HighlightsProvider>
-                  <Layout>{props.children}</Layout>
-                </HighlightsProvider>
-              </CommandProvider>
-            </ModelsProvider>
-            </NotificationProvider>
+            <AgentsProvider>
+              <NotificationProvider>
+                <ModelsProvider>
+                  <CommandProvider>
+                    <HighlightsProvider>
+                      <Layout>{props.children}</Layout>
+                    </HighlightsProvider>
+                  </CommandProvider>
+                </ModelsProvider>
+              </NotificationProvider>
+            </AgentsProvider>
           </LayoutProvider>
         </WorkspaceProvider>
       </PermissionProvider>

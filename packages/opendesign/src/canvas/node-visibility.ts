@@ -8,10 +8,7 @@ export interface VisibilityState {
  * Given a list of agent node IDs sorted by proximity to viewport center,
  * return the set that should be active (max 5).
  */
-export function computeActiveNodes(
-  sortedByProximity: string[],
-  max = MAX_ACTIVE,
-): Set<string> {
+export function computeActiveNodes(sortedByProximity: string[], max = MAX_ACTIVE): Set<string> {
   return new Set(sortedByProximity.slice(0, max))
 }
 
@@ -34,12 +31,7 @@ export function isNodeVisible(
   const screenH = h * viewport.zoom
 
   // Check AABB overlap with container
-  return (
-    screenX + screenW > 0 &&
-    screenX < containerWidth &&
-    screenY + screenH > 0 &&
-    screenY < containerHeight
-  )
+  return screenX + screenW > 0 && screenX < containerWidth && screenY + screenH > 0 && screenY < containerHeight
 }
 
 /**

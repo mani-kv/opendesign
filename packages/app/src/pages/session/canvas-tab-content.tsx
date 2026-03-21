@@ -134,9 +134,7 @@ export function CanvasTabContent() {
     <div class="relative size-full min-h-0 min-w-0 w-full h-full">
       {error() ? (
         <div class="h-full flex items-center justify-center p-6">
-          <div class="text-14-regular text-text-weak text-center max-w-80">
-            {error()}
-          </div>
+          <div class="text-14-regular text-text-weak text-center max-w-80">{error()}</div>
         </div>
       ) : (
         <>
@@ -147,10 +145,7 @@ export function CanvasTabContent() {
             style={{ "touch-action": "none" }}
           />
           <Show when={loading()}>
-            <div
-              class="absolute inset-0 z-10 flex flex-col gap-3 bg-background-base p-4"
-              aria-hidden
-            >
+            <div class="absolute inset-0 z-10 flex flex-col gap-3 bg-background-base p-4" aria-hidden>
               <div class="flex items-center gap-2 px-2">
                 <div class="h-6 w-6 rounded bg-surface-raised-base opacity-50 animate-pulse" />
                 <div class="h-6 w-6 rounded bg-surface-raised-base opacity-50 animate-pulse" />

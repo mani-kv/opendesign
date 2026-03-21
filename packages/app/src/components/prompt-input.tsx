@@ -1,5 +1,4 @@
 import { useFilteredList } from "@opencode-ai/ui/hooks"
-import { useSpring } from "@opencode-ai/ui/motion-spring"
 import { createEffect, on, Component, Show, onCleanup, Switch, Match, createMemo, createSignal } from "solid-js"
 import { createStore } from "solid-js/store"
 import { createFocusSignal } from "@solid-primitives/active-element"
@@ -27,7 +26,6 @@ import { ProviderIcon } from "@opencode-ai/ui/provider-icon"
 import { Tooltip, TooltipKeybind } from "@opencode-ai/ui/tooltip"
 import { IconButton } from "@opencode-ai/ui/icon-button"
 import { Select } from "@opencode-ai/ui/select"
-import { RadioGroup } from "@opencode-ai/ui/radio-group"
 import { useDialog } from "@opencode-ai/ui/context/dialog"
 import { ModelSelectorPopover } from "@/components/dialog-select-model"
 import { DialogSelectModelUnpaid } from "@/components/dialog-select-model-unpaid"
@@ -242,7 +240,6 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
     savedPrompt: PromptHistoryEntry | null
     placeholder: number
     draggingType: "image" | "@mention" | null
-    mode: "normal" | "shell"
     applyingHistory: boolean
   }>({
     popover: null,
@@ -250,22 +247,12 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
     savedPrompt: null as PromptHistoryEntry | null,
     placeholder: Math.floor(Math.random() * EXAMPLES.length),
     draggingType: null,
-    mode: "normal",
     applyingHistory: false,
   })
 
-  const buttonsSpring = useSpring(() => (store.mode === "normal" ? 1 : 0), { visualDuration: 0.2, bounce: 0 })
+  const commentCount = createMemo(() => prompt.context.items().filter((item) => !!item.comment?.trim()).length)
 
-  const commentCount = createMemo(() => {
-    if (store.mode === "shell") return 0
-    return prompt.context.items().filter((item) => !!item.comment?.trim()).length
-  })
-
-  const contextItems = createMemo(() => {
-    const items = prompt.context.items()
-    if (store.mode !== "shell") return items
-    return items.filter((item) => !item.comment?.trim())
-  })
+  const contextItems = createMemo(() => prompt.context.items())
 
   const hasUserPrompt = createMemo(() => {
     const sessionID = params.id
@@ -283,20 +270,11 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
       entries: [],
     }),
   )
-  const [shellHistory, setShellHistory] = persisted(
-    Persist.global("prompt-history-shell", ["prompt-history-shell.v1"]),
-    createStore<{
-      entries: PromptHistoryStoredEntry[]
-    }>({
-      entries: [],
-    }),
-  )
 
   const suggest = createMemo(() => !hasUserPrompt())
 
   const placeholder = createMemo(() =>
     promptPlaceholder({
-      mode: store.mode,
       commentCount: commentCount(),
       example: suggest() ? language.t(EXAMPLES[store.placeholder]) : "",
       suggest: suggest(),
@@ -397,39 +375,13 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
 
   const pick = () => fileInputRef?.click()
 
-  const setMode = (mode: "normal" | "shell") => {
-    setStore("mode", mode)
-    setStore("popover", null)
-    requestAnimationFrame(() => editorRef?.focus())
-  }
-
-  const shellModeKey = "mod+shift+x"
-  const normalModeKey = "mod+shift+e"
-
   command.register("prompt-input", () => [
     {
       id: "file.attach",
       title: language.t("prompt.action.attachFile"),
       category: language.t("command.category.file"),
       keybind: "mod+u",
-      disabled: store.mode !== "normal",
       onSelect: pick,
-    },
-    {
-      id: "prompt.mode.shell",
-      title: language.t("command.prompt.mode.shell"),
-      category: language.t("command.category.session"),
-      keybind: shellModeKey,
-      disabled: store.mode === "shell",
-      onSelect: () => setMode("shell"),
-    },
-    {
-      id: "prompt.mode.normal",
-      title: language.t("command.prompt.mode.normal"),
-      category: language.t("command.category.session"),
-      keybind: normalModeKey,
-      disabled: store.mode === "normal",
-      onSelect: () => setMode("normal"),
     },
   ])
 
@@ -495,9 +447,10 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
   const agentList = createMemo(() =>
     sync.data.agent
       .filter((agent) => !agent.hidden && agent.mode !== "primary")
-      .map((agent): AtOption => ({ type: "agent", name: agent.name, display: agent.name })),
+      .map((agent): AtOption => ({ type: "agent", name: agent.name, display: agent.label ?? agent.name })),
   )
   const agentNames = createMemo(() => local.agent.list().map((agent) => agent.name))
+  const agentLabel = (name: string) => local.agent.list().find((a) => a.name === name)?.label ?? name
 
   const handleAtSelect = (option: AtOption | undefined) => {
     if (!option) return
@@ -808,21 +761,15 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
       return
     }
 
-    const shellMode = store.mode === "shell"
+    const atMatch = rawText.substring(0, cursorPosition).match(/@(\S*)$/)
+    const slashMatch = rawText.match(/^\/(\S*)$/)
 
-    if (!shellMode) {
-      const atMatch = rawText.substring(0, cursorPosition).match(/@(\S*)$/)
-      const slashMatch = rawText.match(/^\/(\S*)$/)
-
-      if (atMatch) {
-        atOnInput(atMatch[1])
-        setStore("popover", "at")
-      } else if (slashMatch) {
-        slashOnInput(slashMatch[1])
-        setStore("popover", "slash")
-      } else {
-        closePopover()
-      }
+    if (atMatch) {
+      atOnInput(atMatch[1])
+      setStore("popover", "at")
+    } else if (slashMatch) {
+      slashOnInput(slashMatch[1])
+      setStore("popover", "slash")
     } else {
       closePopover()
     }
@@ -915,18 +862,16 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
     return true
   }
 
-  const addToHistory = (prompt: Prompt, mode: "normal" | "shell") => {
-    const currentHistory = mode === "shell" ? shellHistory : history
-    const setCurrentHistory = mode === "shell" ? setShellHistory : setHistory
-    const next = prependHistoryEntry(currentHistory.entries, prompt, mode === "shell" ? [] : historyComments())
-    if (next === currentHistory.entries) return
-    setCurrentHistory("entries", next)
+  const addToHistory = (p: Prompt) => {
+    const next = prependHistoryEntry(history.entries, p, historyComments())
+    if (next === history.entries) return
+    setHistory("entries", next)
   }
 
   const navigateHistory = (direction: "up" | "down") => {
     const result = navigatePromptHistory({
       direction,
-      entries: store.mode === "shell" ? shellHistory.entries : history.entries,
+      entries: history.entries,
       historyIndex: store.historyIndex,
       currentPrompt: prompt.current(),
       currentComments: historyComments(),
@@ -964,7 +909,6 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
     imageAttachments,
     commentCount,
     autoAccept: () => accepting(),
-    mode: () => store.mode,
     working,
     editor: () => editorRef,
     queueScroll,
@@ -973,7 +917,6 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
     resetHistoryNavigation: () => {
       resetHistoryNavigation(true)
     },
-    setMode: (mode) => setStore("mode", mode),
     setPopover: (popover) => setStore("popover", popover),
     newSessionWorktree: () => props.newSessionWorktree,
     onNewSessionWorktreeReset: props.onNewSessionWorktreeReset,
@@ -983,7 +926,6 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
   const handleKeyDown = (event: KeyboardEvent) => {
     if ((event.metaKey || event.ctrlKey) && !event.altKey && !event.shiftKey && event.key.toLowerCase() === "u") {
       event.preventDefault()
-      if (store.mode !== "normal") return
       pick()
       return
     }
@@ -1006,26 +948,9 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
       }
     }
 
-    if (event.key === "!" && store.mode === "normal") {
-      const cursorPosition = getCursorPosition(editorRef)
-      if (cursorPosition === 0) {
-        setStore("mode", "shell")
-        setStore("popover", null)
-        event.preventDefault()
-        return
-      }
-    }
-
     if (event.key === "Escape") {
       if (store.popover) {
         closePopover()
-        event.preventDefault()
-        event.stopPropagation()
-        return
-      }
-
-      if (store.mode === "shell") {
-        setStore("mode", "normal")
         event.preventDefault()
         event.stopPropagation()
         return
@@ -1042,15 +967,6 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
         editorRef.blur()
         event.preventDefault()
         event.stopPropagation()
-        return
-      }
-    }
-
-    if (store.mode === "shell") {
-      const { collapsed, cursorPosition, textLength } = getCaretState()
-      if (event.key === "Backspace" && collapsed && cursorPosition === 0 && textLength === 0) {
-        setStore("mode", "normal")
-        event.preventDefault()
         return
       }
     }
@@ -1213,9 +1129,9 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
               aria-multiline="true"
               aria-label={placeholder()}
               contenteditable="true"
-              autocapitalize={store.mode === "normal" ? "sentences" : "off"}
-              autocorrect={store.mode === "normal" ? "on" : "off"}
-              spellcheck={store.mode === "normal"}
+              autocapitalize="sentences"
+              autocorrect="on"
+              spellcheck
               onInput={handleInput}
               onPaste={handlePaste}
               onCompositionStart={() => setComposing(true)}
@@ -1227,14 +1143,10 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
                 "w-full pl-3 pr-2 pt-2 pb-11 text-14-regular text-text-strong focus:outline-none whitespace-pre-wrap": true,
                 "[&_[data-type=file]]:text-syntax-property": true,
                 "[&_[data-type=agent]]:text-syntax-type": true,
-                "font-mono!": store.mode === "shell",
               }}
             />
             <Show when={!prompt.dirty()}>
-              <div
-                class="absolute top-0 inset-x-0 pl-3 pr-2 pt-2 pb-11 text-14-regular text-text-weak pointer-events-none whitespace-nowrap truncate"
-                classList={{ "font-mono!": store.mode === "shell" }}
-              >
+              <div class="absolute top-0 inset-x-0 pl-3 pr-2 pt-2 pb-11 text-14-regular text-text-weak pointer-events-none whitespace-nowrap truncate">
                 {placeholder()}
               </div>
             </Show>
@@ -1253,13 +1165,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
               }}
             />
 
-            <div
-              aria-hidden={store.mode !== "normal"}
-              class="flex items-center gap-1"
-              style={{
-                "pointer-events": buttonsSpring() > 0.5 ? "auto" : "none",
-              }}
-            >
+            <div class="flex items-center gap-1">
               <TooltipKeybind
                 placement="top"
                 title={language.t("prompt.action.attachFile")}
@@ -1270,14 +1176,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
                   type="button"
                   variant="ghost"
                   class="size-8 p-0"
-                  style={{
-                    opacity: buttonsSpring(),
-                    transform: `scale(${0.95 + buttonsSpring() * 0.05})`,
-                    filter: `blur(${(1 - buttonsSpring()) * 2}px)`,
-                  }}
                   onClick={pick}
-                  disabled={store.mode !== "normal"}
-                  tabIndex={store.mode === "normal" ? undefined : -1}
                   aria-label={language.t("prompt.action.attachFile")}
                 >
                   <Icon name="plus" class="size-4.5" />
@@ -1308,19 +1207,12 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
                   data-action="prompt-submit"
                   data-active={prompt.dirty() || working() || commentCount() > 0 ? "" : undefined}
                   type="submit"
-                  disabled={store.mode !== "normal" || (!prompt.dirty() && !working() && commentCount() === 0)}
-                  tabIndex={store.mode === "normal" ? undefined : -1}
+                  disabled={!prompt.dirty() && !working() && commentCount() === 0}
                   icon={working() ? "stop" : "arrow-up"}
                   variant={prompt.dirty() || working() || commentCount() > 0 ? "primary" : "secondary"}
                   class="size-8 rounded-full"
                   classList={{
-                    "!bg-[#575cff] text-white":
-                      prompt.dirty() || working() || commentCount() > 0,
-                  }}
-                  style={{
-                    opacity: buttonsSpring(),
-                    transform: `scale(${0.95 + buttonsSpring() * 0.05})`,
-                    filter: `blur(${(1 - buttonsSpring()) * 2}px)`,
+                    "!bg-[#575cff] text-white": prompt.dirty() || working() || commentCount() > 0,
                   }}
                   aria-label={working() ? language.t("prompt.action.stop") : language.t("prompt.action.send")}
                 />
@@ -1328,152 +1220,54 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
             </div>
           </div>
 
-          <div class="pointer-events-none absolute bottom-2 left-2">
-            <div class="pointer-events-auto">
-              <TooltipKeybind
-                placement="top"
-                gutter={8}
-                title={language.t(
-                  accepting() ? "command.permissions.autoaccept.disable" : "command.permissions.autoaccept.enable",
-                )}
-                keybind={command.keybind("permissions.autoaccept")}
-              >
-                <Button
-                  data-action="prompt-permissions"
-                  variant="ghost"
-                  onClick={() => {
-                    if (!params.id) {
-                      permission.toggleAutoAcceptDirectory(sdk.directory)
-                      return
-                    }
-                    permission.toggleAutoAccept(params.id, sdk.directory)
-                  }}
-                  classList={{
-                    "size-6 flex items-center justify-center": true,
-                    "text-text-base": !accepting(),
-                    "hover:bg-surface-success-base": accepting(),
-                  }}
-                  aria-label={
-                    accepting()
-                      ? language.t("command.permissions.autoaccept.disable")
-                      : language.t("command.permissions.autoaccept.enable")
-                  }
-                  aria-pressed={accepting()}
-                >
-                  <Icon
-                    name="chevron-double-right"
-                    size="small"
-                    classList={{ "text-icon-success-base": accepting() }}
-                  />
-                </Button>
-              </TooltipKeybind>
-            </div>
-          </div>
+          {/* Auto-accept is always on — this space reserved for DOM inspector toggle */}
         </div>
       </DockShellForm>
-      <Show when={store.mode === "normal" || store.mode === "shell"}>
-        <div
-          class="-mt-3.5 overflow-hidden transition-[max-height] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]"
-          style={{ "max-height": trayExpanded() ? "calc(80px + 0.875rem)" : "0px" }}
-        >
-          <DockTray attach="top">
+      <div
+        class="-mt-3.5 overflow-hidden transition-[max-height] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]"
+        style={{ "max-height": trayExpanded() ? "calc(80px + 0.875rem)" : "0px" }}
+      >
+        <DockTray attach="top">
           <div class="pt-10 pb-3 px-3 flex items-center gap-2 min-w-0">
-            <div class="flex items-center gap-1.5 min-w-0 flex-1 relative">
-              <div
-                class="h-7 flex items-center gap-1.5 max-w-[160px] min-w-0 absolute inset-y-0 left-0"
-                style={{
-                  padding: "0 4px 0 8px",
-                  opacity: 1 - buttonsSpring(),
-                  transform: `scale(${0.95 + (1 - buttonsSpring()) * 0.05})`,
-                  filter: `blur(${buttonsSpring() * 2}px)`,
-                  "pointer-events": buttonsSpring() < 0.5 ? "auto" : "none",
-                }}
+            <div class="flex items-center gap-1.5 min-w-0 flex-1">
+              <TooltipKeybind
+                placement="top"
+                gutter={4}
+                title={language.t("command.agent.cycle")}
+                keybind={command.keybind("agent.cycle")}
               >
-                <span class="truncate text-13-medium text-text-strong">{language.t("prompt.mode.shell")}</span>
-                <div class="size-4 shrink-0" />
-              </div>
-              <div class="flex items-center gap-1.5 min-w-0 flex-1">
-                <TooltipKeybind
-                  placement="top"
-                  gutter={4}
-                  title={language.t("command.agent.cycle")}
-                  keybind={command.keybind("agent.cycle")}
-                >
-                  <Select
-                    size="normal"
-                    options={agentNames()}
-                    current={local.agent.current()?.name ?? ""}
-                    onSelect={local.agent.set}
-                    class="capitalize max-w-[160px]"
-                    valueClass="truncate text-13-regular"
-                    triggerStyle={{
-                      height: "28px",
-                      opacity: buttonsSpring(),
-                      transform: `scale(${0.95 + buttonsSpring() * 0.05})`,
-                      filter: `blur(${(1 - buttonsSpring()) * 2}px)`,
-                      "pointer-events": buttonsSpring() > 0.5 ? "auto" : "none",
-                    }}
-                    variant="ghost"
-                  />
-                </TooltipKeybind>
-                <Show
-                  when={providers.paid().length > 0}
-                  fallback={
-                    <TooltipKeybind
-                      placement="top"
-                      gutter={4}
-                      title={language.t("command.model.choose")}
-                      keybind={command.keybind("model.choose")}
-                    >
-                      <Button
-                        as="div"
-                        variant="ghost"
-                        size="normal"
-                        class="min-w-0 max-w-[320px] text-13-regular group"
-                        style={{
-                          height: "28px",
-                          opacity: buttonsSpring(),
-                          transform: `scale(${0.95 + buttonsSpring() * 0.05})`,
-                          filter: `blur(${(1 - buttonsSpring()) * 2}px)`,
-                          "pointer-events": buttonsSpring() > 0.5 ? "auto" : "none",
-                        }}
-                        onClick={() => dialog.show(() => <DialogSelectModelUnpaid />)}
-                      >
-                        <Show when={local.model.current()?.provider?.id}>
-                          <ProviderIcon
-                            id={local.model.current()!.provider.id}
-                            class="size-4 shrink-0 opacity-40 group-hover:opacity-100 transition-opacity duration-150"
-                            style={{ "will-change": "opacity", transform: "translateZ(0)" }}
-                          />
-                        </Show>
-                        <span class="truncate">
-                          {local.model.current()?.name ?? language.t("dialog.model.select.title")}
-                        </span>
-                        <Icon name="chevron-down" size="small" class="shrink-0" />
-                      </Button>
-                    </TooltipKeybind>
-                  }
-                >
+                <Select
+                  size="normal"
+                  options={agentNames()}
+                  current={local.agent.current()?.name ?? ""}
+                  label={agentLabel}
+                  onSelect={local.agent.set}
+                  class="max-w-[160px]"
+                  valueClass="truncate text-13-regular"
+                  triggerStyle={{
+                    height: "28px",
+                  }}
+                  variant="ghost"
+                />
+              </TooltipKeybind>
+              <Show
+                when={providers.paid().length > 0}
+                fallback={
                   <TooltipKeybind
                     placement="top"
                     gutter={4}
                     title={language.t("command.model.choose")}
                     keybind={command.keybind("model.choose")}
                   >
-                    <ModelSelectorPopover
-                      triggerAs={Button}
-                      triggerProps={{
-                        variant: "ghost",
-                        size: "normal",
-                        style: {
-                          height: "28px",
-                          opacity: buttonsSpring(),
-                          transform: `scale(${0.95 + buttonsSpring() * 0.05})`,
-                          filter: `blur(${(1 - buttonsSpring()) * 2}px)`,
-                          "pointer-events": buttonsSpring() > 0.5 ? "auto" : "none",
-                        },
-                        class: "min-w-0 max-w-[320px] text-13-regular group",
+                    <Button
+                      as="div"
+                      variant="ghost"
+                      size="normal"
+                      class="min-w-0 max-w-[320px] text-13-regular group"
+                      style={{
+                        height: "28px",
                       }}
+                      onClick={() => dialog.show(() => <DialogSelectModelUnpaid />)}
                     >
                       <Show when={local.model.current()?.provider?.id}>
                         <ProviderIcon
@@ -1486,69 +1280,65 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
                         {local.model.current()?.name ?? language.t("dialog.model.select.title")}
                       </span>
                       <Icon name="chevron-down" size="small" class="shrink-0" />
-                    </ModelSelectorPopover>
+                    </Button>
                   </TooltipKeybind>
-                </Show>
+                }
+              >
                 <TooltipKeybind
                   placement="top"
                   gutter={4}
-                  title={language.t("command.model.variant.cycle")}
-                  keybind={command.keybind("model.variant.cycle")}
+                  title={language.t("command.model.choose")}
+                  keybind={command.keybind("model.choose")}
                 >
-                  <Select
-                    size="normal"
-                    options={variants()}
-                    current={local.model.variant.current() ?? "default"}
-                    label={(x) => (x === "default" ? language.t("common.default") : x)}
-                    onSelect={(x) => local.model.variant.set(x === "default" ? undefined : x)}
-                    class="capitalize max-w-[160px]"
-                    valueClass="truncate text-13-regular"
-                    triggerStyle={{
-                      height: "28px",
-                      opacity: buttonsSpring(),
-                      transform: `scale(${0.95 + buttonsSpring() * 0.05})`,
-                      filter: `blur(${(1 - buttonsSpring()) * 2}px)`,
-                      "pointer-events": buttonsSpring() > 0.5 ? "auto" : "none",
+                  <ModelSelectorPopover
+                    triggerAs={Button}
+                    triggerProps={{
+                      variant: "ghost",
+                      size: "normal",
+                      style: {
+                        height: "28px",
+                      },
+                      class: "min-w-0 max-w-[320px] text-13-regular group",
                     }}
-                    variant="ghost"
-                  />
-                </TooltipKeybind>
-              </div>
-            </div>
-            <div class="shrink-0">
-              <RadioGroup
-                options={["shell", "normal"] as const}
-                current={store.mode}
-                value={(mode) => mode}
-                label={(mode) => (
-                  <TooltipKeybind
-                    placement="top"
-                    gutter={4}
-                    openDelay={2000}
-                    title={language.t(mode === "shell" ? "prompt.mode.shell" : "prompt.mode.normal")}
-                    keybind={command.keybind(mode === "shell" ? "prompt.mode.shell" : "prompt.mode.normal")}
-                    class="size-full flex items-center justify-center"
                   >
-                    <Icon
-                      name={mode === "shell" ? "console" : "prompt"}
-                      class="size-[18px]"
-                      classList={{
-                        "text-icon-strong-base": store.mode === mode,
-                        "text-icon-weak": store.mode !== mode,
-                      }}
-                    />
-                  </TooltipKeybind>
-                )}
-                onSelect={(mode) => mode && setMode(mode)}
-                fill
-                pad="none"
-                class="w-[68px]"
-              />
+                    <Show when={local.model.current()?.provider?.id}>
+                      <ProviderIcon
+                        id={local.model.current()!.provider.id}
+                        class="size-4 shrink-0 opacity-40 group-hover:opacity-100 transition-opacity duration-150"
+                        style={{ "will-change": "opacity", transform: "translateZ(0)" }}
+                      />
+                    </Show>
+                    <span class="truncate">
+                      {local.model.current()?.name ?? language.t("dialog.model.select.title")}
+                    </span>
+                    <Icon name="chevron-down" size="small" class="shrink-0" />
+                  </ModelSelectorPopover>
+                </TooltipKeybind>
+              </Show>
+              <TooltipKeybind
+                placement="top"
+                gutter={4}
+                title={language.t("command.model.variant.cycle")}
+                keybind={command.keybind("model.variant.cycle")}
+              >
+                <Select
+                  size="normal"
+                  options={variants()}
+                  current={local.model.variant.current() ?? "default"}
+                  label={(x) => (x === "default" ? language.t("common.default") : x)}
+                  onSelect={(x) => local.model.variant.set(x === "default" ? undefined : x)}
+                  class="capitalize max-w-[160px]"
+                  valueClass="truncate text-13-regular"
+                  triggerStyle={{
+                    height: "28px",
+                  }}
+                  variant="ghost"
+                />
+              </TooltipKeybind>
             </div>
           </div>
         </DockTray>
-        </div>
-      </Show>
+      </div>
     </div>
   )
 }

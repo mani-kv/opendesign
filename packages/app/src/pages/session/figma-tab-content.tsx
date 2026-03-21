@@ -70,12 +70,7 @@ export function FigmaTabContent() {
         </div>
         <div class="relative flex-1 min-h-0 overflow-hidden">
           {embedSrc() ? (
-            <iframe
-              src={embedSrc()!}
-              class="size-full border-0"
-              title="Figma embed"
-              allowfullscreen
-            />
+            <iframe src={embedSrc()!} class="size-full border-0" title="Figma embed" allowfullscreen />
           ) : (
             <div class="flex h-full items-center justify-center p-6 text-center">
               <p class="text-14-regular text-text-weak">Enter a Figma design, file, prototype, or board URL above.</p>
@@ -95,7 +90,7 @@ export function FigmaTabContent() {
     sessionKey()
     return untrack(() => {
       const u = figma().url()
-      return (u && isFigmaUrl(u)) ? u : FIGMA_ORIGIN
+      return u && isFigmaUrl(u) ? u : FIGMA_ORIGIN
     })
   })
 
@@ -146,10 +141,7 @@ export function FigmaTabContent() {
         data-figma-webview
       />
       <Show when={!loaded()}>
-        <div
-          class="absolute inset-0 z-10 flex flex-col gap-4 bg-background-base p-6"
-          aria-hidden
-        >
+        <div class="absolute inset-0 z-10 flex flex-col gap-4 bg-background-base p-6" aria-hidden>
           <div class="flex gap-2">
             <div class="h-8 w-24 rounded-md bg-surface-raised-base opacity-60 animate-pulse" />
             <div class="h-8 w-32 rounded-md bg-surface-raised-base opacity-60 animate-pulse" />

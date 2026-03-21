@@ -29,9 +29,10 @@ describe("zoomAtPoint", () => {
     expect(result.x).toBeCloseTo(-200)
     expect(result.y).toBeCloseTo(-150)
   })
-  test("clamps zoom to bounds", () => {
+  test("uses the zoom value provided (caller clamps)", () => {
     const vp = { x: 0, y: 0, zoom: 2.8 }
-    const result = zoomAtPoint(vp, 5, 0, 0)
+    const clamped = clampZoom(5)
+    const result = zoomAtPoint(vp, clamped, 0, 0)
     expect(result.zoom).toBe(3)
   })
 })

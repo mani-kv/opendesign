@@ -1,5 +1,5 @@
 import { For, Show, createSignal } from "solid-js"
-import type { GraphStore } from "@opencode-ai/opendesign"
+import type { GraphStore } from "@opencode-ai/opendesign/canvas"
 import { createPanZoom } from "./use-pan-zoom"
 import { EdgePath } from "./edge-path"
 import { NodeCard } from "./node-card"
@@ -45,16 +45,15 @@ export function AgentSandboxCanvas(props: { graph: GraphStore }) {
 
   return (
     <svg
+      ref={(el) => panZoom.bindWheel(el)}
       class="size-full select-none"
       style={{
         "background-color": "var(--background-stronger)",
-        "background-image":
-          "radial-gradient(circle, var(--border-weaker-base) 1px, transparent 1px)",
+        "background-image": "radial-gradient(circle, var(--border-weaker-base) 1px, transparent 1px)",
         "background-size": `${20 * vp().zoom}px ${20 * vp().zoom}px`,
         "background-position": `${vp().x}px ${vp().y}px`,
       }}
       onPointerDown={panZoom.onPointerDown}
-      onWheel={panZoom.onWheel}
     >
       <g transform={`translate(${vp().x}, ${vp().y}) scale(${vp().zoom})`}>
         {/* Edges rendered below nodes */}
@@ -64,11 +63,7 @@ export function AgentSandboxCanvas(props: { graph: GraphStore }) {
             const target = () => props.graph.nodeById(edge.target)
             return (
               <Show when={source() && target()}>
-                <EdgePath
-                  edge={edge}
-                  sourceNode={source()!}
-                  targetNode={target()!}
-                />
+                <EdgePath edge={edge} sourceNode={source()!} targetNode={target()!} />
               </Show>
             )
           }}

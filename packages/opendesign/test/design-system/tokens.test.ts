@@ -9,7 +9,7 @@ test("tokensToCss: converts tokens to CSS vars with prefix", () => {
 })
 
 test("tokensToCss: custom prefix", () => {
-  const tokens = { "bg": "#fff" }
+  const tokens = { bg: "#fff" }
   const css = tokensToCss(tokens, "--my")
   expect(css).toContain("--my-bg: #fff;")
 })

@@ -49,8 +49,6 @@ test("latestCheckpoint: returns latest for branch", () => {
 })
 
 test("latestCheckpoint: returns undefined for missing branch", () => {
-  const checkpoints: CheckpointInfo[] = [
-    { id: "cp_1", branch: "a", commitSha: "a1", label: "x", createdAt: 100 },
-  ]
+  const checkpoints: CheckpointInfo[] = [{ id: "cp_1", branch: "a", commitSha: "a1", label: "x", createdAt: 100 }]
   expect(latestCheckpoint(checkpoints, "nonexistent")).toBeUndefined()
 })

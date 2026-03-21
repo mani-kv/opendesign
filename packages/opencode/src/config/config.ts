@@ -698,6 +698,7 @@ export namespace Config {
       prompt: z.string().optional(),
       tools: z.record(z.string(), z.boolean()).optional().describe("@deprecated Use 'permission' field instead"),
       disable: z.boolean().optional(),
+      label: z.string().optional().describe("Display name shown in the UI (defaults to agent name)"),
       description: z.string().optional().describe("Description of when to use the agent"),
       mode: z.enum(["subagent", "primary", "all"]).optional(),
       hidden: z
@@ -725,6 +726,7 @@ export namespace Config {
     .transform((agent, ctx) => {
       const knownKeys = new Set([
         "name",
+        "label",
         "model",
         "variant",
         "prompt",

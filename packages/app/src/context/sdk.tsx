@@ -10,10 +10,7 @@ type SDKEventMap = {
 
 export const { use: useSDK, provider: SDKProvider } = createSimpleContext({
   name: "SDK",
-  init: (props: {
-    directory: Accessor<string>
-    active?: Accessor<boolean>
-  }) => {
+  init: (props: { directory: Accessor<string>; active?: Accessor<boolean> }) => {
     const globalSDK = useGlobalSDK()
 
     const directory = createMemo(props.directory)

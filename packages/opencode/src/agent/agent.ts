@@ -30,6 +30,7 @@ export namespace Agent {
   export const Info = z
     .object({
       name: z.string(),
+      label: z.string().optional(),
       description: z.string().optional(),
       mode: z.enum(["subagent", "primary", "all"]),
       native: z.boolean().optional(),
@@ -80,6 +81,7 @@ export namespace Agent {
     const result: Record<string, Info> = {
       "opendesign-agent": {
         name: "opendesign-agent",
+        label: "Prototype",
         description: "The default agent. Decomposes design requests into scenarios and dispatches agents.",
         options: {},
         prompt: PROMPT_AGENT,
@@ -97,6 +99,7 @@ export namespace Agent {
       },
       "opendesign-ask": {
         name: "opendesign-ask",
+        label: "Ask",
         description: "Ask mode. Read-only brainstorming and design Q&A with full context access.",
         options: {},
         prompt: PROMPT_ASK,
@@ -323,6 +326,7 @@ export namespace Agent {
       item.color = value.color ?? item.color
       item.hidden = value.hidden ?? item.hidden
       item.name = value.name ?? item.name
+      item.label = value.label ?? item.label
       item.steps = value.steps ?? item.steps
       item.options = mergeDeep(item.options, value.options ?? {})
       item.permission = PermissionNext.merge(item.permission, PermissionNext.fromConfig(value.permission ?? {}))

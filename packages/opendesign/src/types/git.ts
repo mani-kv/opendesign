@@ -21,9 +21,13 @@ export type CheckpointInfo = z.infer<typeof CheckpointInfo>
 export const MergeResult = z.object({
   success: z.boolean(),
   resultBranch: z.string(),
-  conflicts: z.array(z.object({
-    file: z.string(),
-    type: z.enum(["visual", "code"]),
-  })).optional(),
+  conflicts: z
+    .array(
+      z.object({
+        file: z.string(),
+        type: z.enum(["visual", "code"]),
+      }),
+    )
+    .optional(),
 })
 export type MergeResult = z.infer<typeof MergeResult>

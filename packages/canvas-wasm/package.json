@@ -4,7 +4,9 @@
   "version": "0.0.0",
   "main": "pkg/canvas_wasm.js",
   "types": "pkg/canvas_wasm.d.ts",
-  "files": ["pkg/"],
+  "files": [
+    "pkg/"
+  ],
   "scripts": {
     "build": "wasm-pack build . --target web --out-dir pkg"
   }

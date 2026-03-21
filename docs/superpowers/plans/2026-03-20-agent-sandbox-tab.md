@@ -17,6 +17,7 @@
 The spec requires a `stateColor(state)` function mapping the 6 agent lifecycle states to CSS color values. This is distinct from `agentColor(name)` which maps agent names.
 
 **Files:**
+
 - Modify: `packages/opendesign/src/agent/color.ts`
 - Modify: `packages/opendesign/src/agent/index.ts`
 - Create: `packages/opendesign/test/agent/state-color.test.ts`
@@ -77,6 +78,7 @@ export function stateColor(state: string): string {
 ```
 
 Update `packages/opendesign/src/agent/index.ts` to add export:
+
 ```ts
 export { agentColor, stateColor } from "./color"
 ```
@@ -105,11 +107,13 @@ git commit -m "feat(opendesign): add stateColor() for agent lifecycle state colo
 Add `"sandbox"` as a valid pane type in the layout context, update migration, defaults, and generalize `swapPaneOrder` to `setPaneOrder`.
 
 **Files:**
+
 - Modify: `packages/app/src/context/layout.tsx`
 
 - [ ] **Step 1: Update store default (line 310-315)**
 
 Change:
+
 ```ts
 canvasPanel: {
   layout: "tabs" as "tabs" | "split",
@@ -118,7 +122,9 @@ canvasPanel: {
   paneOrder: ["canvas", "figma"] as ("canvas" | "figma")[],
 },
 ```
+
 To:
+
 ```ts
 canvasPanel: {
   layout: "tabs" as "tabs" | "split",
@@ -131,6 +137,7 @@ canvasPanel: {
 - [ ] **Step 2: Update migration logic (lines 236-248)**
 
 Change the migration to backfill `sandbox` for persisted state that lacks it:
+
 ```ts
 if (isRecord(canvasPanel) && typeof canvasPanel.layout === "string" && isRecord(canvasPanel.panes)) {
   const panes = canvasPanel.panes as Record<string, boolean>
@@ -226,6 +233,7 @@ git commit -m "feat(app): widen layout pane types to include sandbox tab"
 Wire up the sandbox pane tab in the session side panel — tab trigger, tab content placeholder, split pane support, i18n, and updated `isPaneTab` guard.
 
 **Files:**
+
 - Modify: `packages/app/src/pages/session/session-side-panel.tsx`
 - Modify: `packages/app/src/i18n/en.ts`
 - Create: `packages/app/src/pages/session/agent-sandbox-tab-content.tsx` (empty state placeholder for now)
@@ -233,11 +241,13 @@ Wire up the sandbox pane tab in the session side panel — tab trigger, tab cont
 - [ ] **Step 1: Add i18n key**
 
 In `packages/app/src/i18n/en.ts`, after `"session.tab.figma": "Figma",` (line 521), add:
+
 ```ts
 "session.tab.sandbox": "Agent Sandbox",
 ```
 
 Also add an empty state string after `"agents.panel.empty"` (line 528):
+
 ```ts
 "session.sandbox.empty": "No agent scenarios yet. Start a conversation to generate design prototypes.",
 ```
@@ -263,9 +273,7 @@ export function AgentSandboxTabContent() {
         fallback={
           <div class="h-full px-6 pb-24 flex flex-col items-center justify-center gap-6">
             <Mark class="w-14 opacity-10" />
-            <div class="text-14-regular text-text-weak max-w-56 text-center">
-              {language.t("session.sandbox.empty")}
-            </div>
+            <div class="text-14-regular text-text-weak max-w-56 text-center">{language.t("session.sandbox.empty")}</div>
           </div>
         }
       >
@@ -282,10 +290,13 @@ export function AgentSandboxTabContent() {
 - [ ] **Step 3: Update `isPaneTab` in session-side-panel.tsx (line ~492)**
 
 Change:
+
 ```ts
 const isPaneTab = (id: string) => id === "canvas" || id === "figma"
 ```
+
 To:
+
 ```ts
 const isPaneTab = (id: string) => id === "canvas" || id === "figma" || id === "sandbox"
 ```
@@ -293,6 +304,7 @@ const isPaneTab = (id: string) => id === "canvas" || id === "figma" || id === "s
 - [ ] **Step 4: Add sandbox to `SplitPaneContent` (lines ~41-83)**
 
 Add a new `<Match>` case after the figma match:
+
 ```tsx
 <Match when={props.pane === "sandbox"}>
   <Tabs value="sandbox">
@@ -315,6 +327,7 @@ Add a new `<Match>` case after the figma match:
 - [ ] **Step 5: Add sandbox pane tab trigger in main tab bar (lines ~590-600)**
 
 The `<For each={visiblePaneTabs()}>` loop already iterates over all visible pane tabs. Add a `<Match>` case inside the `<Switch>` for sandbox:
+
 ```tsx
 <Match when={pane === "sandbox"}>{language.t("session.tab.sandbox")}</Match>
 ```
@@ -322,11 +335,13 @@ The `<For each={visiblePaneTabs()}>` loop already iterates over all visible pane
 - [ ] **Step 6: Add sandbox tab content in main Tabs (after figma content, ~lines 647-659)**
 
 Add a `sandboxTab` memo alongside `canvasTab`/`figmaTab`:
+
 ```ts
 const sandboxTab = createMemo(() => isDesktop() && panes().sandbox)
 ```
 
 Then add `Tabs.Content`:
+
 ```tsx
 <Show when={sandboxTab()}>
   <Tabs.Content value="sandbox" class="relative flex flex-col h-full overflow-hidden contain-strict">
@@ -338,11 +353,13 @@ Then add `Tabs.Content`:
 - [ ] **Step 7: Update `activeTab` memo to handle sandbox**
 
 In the `activeTab` memo (~line 454), add sandbox handling after figma:
+
 ```ts
 if (active === "sandbox" && sandboxTab()) return "sandbox"
 ```
 
 And in the fallback chain at the bottom, add before `return "empty"`:
+
 ```ts
 if (sandboxTab()) return "sandbox"
 ```
@@ -350,10 +367,13 @@ if (sandboxTab()) return "sandbox"
 - [ ] **Step 8: Update `bothClosed` memo**
 
 Change:
+
 ```ts
 const bothClosed = createMemo(() => isDesktop() && !panes().canvas && !panes().figma)
 ```
+
 To:
+
 ```ts
 const bothClosed = createMemo(() => isDesktop() && !panes().canvas && !panes().figma && !panes().sandbox)
 ```
@@ -361,6 +381,7 @@ const bothClosed = createMemo(() => isDesktop() && !panes().canvas && !panes().f
 - [ ] **Step 9: Update DragOverlay to handle sandbox pane drag preview**
 
 In the `<DragOverlay>` section (~line 698-718), update the pane tab preview to handle sandbox:
+
 ```tsx
 if (tab === "canvas" || tab === "figma" || tab === "sandbox") {
   return (
@@ -380,6 +401,7 @@ if (tab === "canvas" || tab === "figma" || tab === "sandbox") {
 - [ ] **Step 10: Update DnD handleDragOver for pane reordering**
 
 Replace the 2-pane swap logic (~lines 494-506) with general reorder:
+
 ```ts
 const handleDragOver = (event: DragEvent) => {
   const { draggable, droppable } = event
@@ -412,6 +434,7 @@ const handleDragOver = (event: DragEvent) => {
 - [ ] **Step 11: Add import for AgentSandboxTabContent**
 
 At the top of `session-side-panel.tsx`, add:
+
 ```ts
 import { AgentSandboxTabContent } from "@/pages/session/agent-sandbox-tab-content"
 ```
@@ -437,6 +460,7 @@ git commit -m "feat(app): register Agent Sandbox pane tab with empty state"
 Pure logic hook — no UI, fully testable.
 
 **Files:**
+
 - Create: `packages/app/src/pages/session/agent-sandbox/use-pan-zoom.ts`
 - Create: `packages/app/src/pages/session/agent-sandbox/use-pan-zoom.test.ts`
 
@@ -520,10 +544,7 @@ export function zoomAtPoint(vp: Viewport, newZoom: number, cx: number, cy: numbe
   }
 }
 
-export function createPanZoom(opts: {
-  viewport: () => Viewport
-  setViewport: (vp: Viewport) => void
-}) {
+export function createPanZoom(opts: { viewport: () => Viewport; setViewport: (vp: Viewport) => void }) {
   const [panning, setPanning] = createSignal(false)
   let startX = 0
   let startY = 0
@@ -587,6 +608,7 @@ git commit -m "feat(app): add pan/zoom interaction hook for agent sandbox"
 SVG bezier edge rendering.
 
 **Files:**
+
 - Create: `packages/app/src/pages/session/agent-sandbox/edge-path.tsx`
 - Create: `packages/app/src/pages/session/agent-sandbox/edge-path.test.ts`
 
@@ -600,19 +622,13 @@ import { computeEdgePath, edgeStrokeStyle } from "./edge-path"
 
 describe("computeEdgePath", () => {
   test("returns a cubic bezier SVG path", () => {
-    const path = computeEdgePath(
-      { x: 0, y: 50, width: 100, height: 100 },
-      { x: 300, y: 50, width: 100, height: 100 },
-    )
+    const path = computeEdgePath({ x: 0, y: 50, width: 100, height: 100 }, { x: 300, y: 50, width: 100, height: 100 })
     expect(path).toMatch(/^M\s/)
     expect(path).toContain("C")
   })
 
   test("source exits right, target enters left", () => {
-    const path = computeEdgePath(
-      { x: 0, y: 0, width: 100, height: 100 },
-      { x: 400, y: 0, width: 100, height: 100 },
-    )
+    const path = computeEdgePath({ x: 0, y: 0, width: 100, height: 100 }, { x: 400, y: 0, width: 100, height: 100 })
     // Start at right edge of source (x=100), mid-height (y=50)
     expect(path).toStartWith("M 100 50")
   })
@@ -678,15 +694,7 @@ export function EdgePath(props: { edge: CanvasEdge; sourceNode: NodeRect; target
   const path = () => computeEdgePath(props.sourceNode, props.targetNode)
   const style = () => edgeStrokeStyle(props.edge.type)
 
-  return (
-    <path
-      d={path()}
-      fill="none"
-      stroke={style().color}
-      stroke-width="1.5"
-      stroke-dasharray={style().dasharray}
-    />
-  )
+  return <path d={path()} fill="none" stroke={style().color} stroke-width="1.5" stroke-dasharray={style().dasharray} />
 }
 ```
 
@@ -709,6 +717,7 @@ git commit -m "feat(app): add edge path SVG component for agent sandbox"
 Render each `CanvasNode.type` as a styled HTML card inside `<foreignObject>`.
 
 **Files:**
+
 - Create: `packages/app/src/pages/session/agent-sandbox/node-card.tsx`
 - Create: `packages/app/src/pages/session/agent-sandbox/agent-node-card.tsx`
 
@@ -736,9 +745,7 @@ export function NodeCard(props: {
       }}
     >
       <Switch fallback={<DefaultCard node={props.node} />}>
-        <Match when={props.node.type === "agent" && props.node}>
-          {(n) => <AgentNodeCard node={n() as any} />}
-        </Match>
+        <Match when={props.node.type === "agent" && props.node}>{(n) => <AgentNodeCard node={n() as any} />}</Match>
         <Match when={props.node.type === "frame"}>
           <SimpleCard label="Frame" name={(props.node as any).data.frame.name} icon="image" />
         </Match>
@@ -794,9 +801,7 @@ export function AgentNodeCard(props: { node: AgentNode }) {
     <div class="p-3 h-full flex flex-col gap-2">
       <div class="flex items-center gap-2">
         <div class="size-2 rounded-full shrink-0" style={{ "background-color": color() }} />
-        <div class="text-11-medium text-text-dimmer uppercase tracking-wider">
-          {props.node.data.state}
-        </div>
+        <div class="text-11-medium text-text-dimmer uppercase tracking-wider">{props.node.data.state}</div>
       </div>
       <div class="text-13-medium text-text-base line-clamp-2">{props.node.data.scenario}</div>
       <div class="mt-auto text-11-regular text-text-weak font-mono truncate">{props.node.data.branch}</div>
@@ -819,6 +824,7 @@ git commit -m "feat(app): add node card components for agent sandbox canvas"
 The main rendering component that composes pan/zoom, edges, and node cards into an interactive SVG canvas.
 
 **Files:**
+
 - Create: `packages/app/src/pages/session/agent-sandbox/canvas.tsx`
 
 - [ ] **Step 1: Implement canvas.tsx**
@@ -874,8 +880,7 @@ export function AgentSandboxCanvas(props: { graph: GraphStore }) {
       class="size-full select-none"
       style={{
         "background-color": "var(--background-stronger)",
-        "background-image":
-          "radial-gradient(circle, var(--border-weaker-base) 1px, transparent 1px)",
+        "background-image": "radial-gradient(circle, var(--border-weaker-base) 1px, transparent 1px)",
         "background-size": `${20 * vp().zoom}px ${20 * vp().zoom}px`,
         "background-position": `${vp().x}px ${vp().y}px`,
       }}
@@ -888,13 +893,7 @@ export function AgentSandboxCanvas(props: { graph: GraphStore }) {
           {(edge) => {
             const source = () => props.graph.nodeById(edge.source)
             const target = () => props.graph.nodeById(edge.target)
-            return (
-              <EdgePath
-                edge={edge}
-                sourceNode={source()!}
-                targetNode={target()!}
-              />
-            )
+            return <EdgePath edge={edge} sourceNode={source()!} targetNode={target()!} />
           }}
         </For>
 
@@ -937,6 +936,7 @@ git commit -m "feat(app): add SVG canvas renderer for agent sandbox"
 Connect `AgentSandboxCanvas` into the tab content wrapper, replacing the placeholder.
 
 **Files:**
+
 - Modify: `packages/app/src/pages/session/agent-sandbox-tab-content.tsx`
 
 - [ ] **Step 1: Update tab content to use canvas**
@@ -961,9 +961,7 @@ export function AgentSandboxTabContent() {
         fallback={
           <div class="h-full px-6 pb-24 flex flex-col items-center justify-center gap-6">
             <Mark class="w-14 opacity-10" />
-            <div class="text-14-regular text-text-weak max-w-56 text-center">
-              {language.t("session.sandbox.empty")}
-            </div>
+            <div class="text-14-regular text-text-weak max-w-56 text-center">{language.t("session.sandbox.empty")}</div>
           </div>
         }
       >
@@ -1015,6 +1013,7 @@ Expected: All packages pass
 - [ ] **Step 4: Update code insights**
 
 Add a section to `.claude/code_insights.md` documenting:
+
 - Agent Sandbox tab architecture (pane tab, inline SVG, no persistent overlay)
 - Graph store context pattern (per-session `createGraphStore()`)
 - Pan/zoom implementation (pure functions + pointer/wheel handlers)

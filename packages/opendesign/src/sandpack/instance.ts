@@ -33,10 +33,7 @@ export function createSandpackConfig(input: {
  * Merge updated files into existing Sandpack config.
  * Only replaces files that changed.
  */
-export function updateSandpackFiles(
-  config: SandpackConfig,
-  updates: SandpackFileMap,
-): SandpackConfig {
+export function updateSandpackFiles(config: SandpackConfig, updates: SandpackFileMap): SandpackConfig {
   return {
     ...config,
     files: { ...config.files, ...updates },
@@ -46,10 +43,7 @@ export function updateSandpackFiles(
 /**
  * Build a minimal Sandpack file map for a React project.
  */
-export function scaffoldReactFiles(
-  componentCode: string,
-  tokensCSS = "",
-): SandpackFileMap {
+export function scaffoldReactFiles(componentCode: string, tokensCSS = ""): SandpackFileMap {
   return {
     "/src/App.tsx": { code: componentCode },
     "/src/index.tsx": {

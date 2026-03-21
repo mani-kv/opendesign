@@ -21,6 +21,7 @@ The Agent Sandbox is a **pane tab** — same category as canvas and figma. Pane 
 - Default: `{ canvas: true, figma: true, sandbox: true }`, order: `["canvas", "figma", "sandbox"]`
 
 Specific locations requiring type/value changes:
+
 - Line ~314: store default `paneOrder` array and `panes` object — add `sandbox`
 - Line ~810: `paneOrder` memo return type cast — widen to include `"sandbox"`
 - Line ~824: `setPane` — accept `"sandbox"` as valid pane key
@@ -48,6 +49,7 @@ Specific locations requiring type/value changes:
 ### Core: `<AgentSandboxCanvas />`
 
 An `<svg>` element filling the tab content area with:
+
 - A `<g>` transform group: `transform={translate(vp.x, vp.y) scale(vp.zoom)}` driven by `GraphStore.state.viewport`
 - Edges rendered as SVG `<path>` elements with cubic bezier curves
 - Nodes rendered as `<foreignObject>` wrappers around HTML cards — `width`/`height` from `node.width ?? 320` / `node.height ?? 240` (matching defaults in `node-layout.ts`)
@@ -71,14 +73,14 @@ An `<svg>` element filling the tab content area with:
 
 Each `CanvasNode.type` maps to a card component rendered inside `<foreignObject>`:
 
-| Type | Card | Visual |
-|------|------|--------|
-| `agent` | `AgentNodeCard` | Scenario name, branch badge, state indicator (colored dot via `stateColor()`), state label (created/working/waiting/ready/approved/archived) |
-| `frame` | `FrameNodeCard` | Figma frame name, dimensions |
-| `persona` | `PersonaNodeCard` | Persona name, viewport/language info |
-| `context` | `ContextNodeCard` | Document name, type badge (figma/url/file/text) |
-| `checkpoint` | `CheckpointNodeCard` | Checkpoint hash, timestamp |
-| `merged` | `MergedNodeCard` | Merge result status, conflict count if any |
+| Type         | Card                 | Visual                                                                                                                                       |
+| ------------ | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `agent`      | `AgentNodeCard`      | Scenario name, branch badge, state indicator (colored dot via `stateColor()`), state label (created/working/waiting/ready/approved/archived) |
+| `frame`      | `FrameNodeCard`      | Figma frame name, dimensions                                                                                                                 |
+| `persona`    | `PersonaNodeCard`    | Persona name, viewport/language info                                                                                                         |
+| `context`    | `ContextNodeCard`    | Document name, type badge (figma/url/file/text)                                                                                              |
+| `checkpoint` | `CheckpointNodeCard` | Checkpoint hash, timestamp                                                                                                                   |
+| `merged`     | `MergedNodeCard`     | Merge result status, conflict count if any                                                                                                   |
 
 ### Node Interaction
 
@@ -115,6 +117,7 @@ packages/app/src/pages/session/
 ## Empty State
 
 When `store.state.nodes.length === 0`:
+
 - Hide the SVG canvas
 - Show centered placeholder with the Mark logo (same pattern as `CanvasFigmaEmpty`) and descriptive text
 

@@ -65,11 +65,13 @@ skilz install --git git@github.com:SpillwaveSolutions/project-memory.git
 #### Claude Code
 
 Install to user home (available in all projects):
+
 ```bash
 skilz install -g https://github.com/SpillwaveSolutions/project-memory
 ```
 
 Install to current project only:
+
 ```bash
 skilz install -g https://github.com/SpillwaveSolutions/project-memory --project
 ```
@@ -77,11 +79,13 @@ skilz install -g https://github.com/SpillwaveSolutions/project-memory --project
 #### OpenCode
 
 Install for [OpenCode](https://opencode.ai):
+
 ```bash
 skilz install -g https://github.com/SpillwaveSolutions/project-memory --agent opencode
 ```
 
 Project-level install:
+
 ```bash
 skilz install -g https://github.com/SpillwaveSolutions/project-memory --project --agent opencode
 ```
@@ -89,6 +93,7 @@ skilz install -g https://github.com/SpillwaveSolutions/project-memory --project 
 #### Gemini
 
 Project-level install for Gemini:
+
 ```bash
 skilz install -g https://github.com/SpillwaveSolutions/project-memory --agent gemini
 ```
@@ -96,11 +101,13 @@ skilz install -g https://github.com/SpillwaveSolutions/project-memory --agent ge
 #### OpenAI Codex
 
 Install for OpenAI Codex:
+
 ```bash
 skilz install -g https://github.com/SpillwaveSolutions/project-memory --agent codex
 ```
 
 Project-level install:
+
 ```bash
 skilz install -g https://github.com/SpillwaveSolutions/project-memory --project --agent codex
 ```
@@ -199,6 +206,7 @@ ls .claude/skills/project-memory
 **When to use:** You have multiple projects in a workspace and want to share the skill without global installation.
 
 **Example structure:**
+
 ```
 ~/workspace/
 ├── .claude/
@@ -267,8 +275,10 @@ your-project/
 ## Memory File Formats
 
 ### bugs.md - Bug Log
+
 ```markdown
 ### 2025-01-15 - Docker Architecture Mismatch
+
 - **Issue**: Container failing to start with "exec format error"
 - **Root Cause**: Built on ARM64 Mac but deploying to AMD64 Cloud Run
 - **Solution**: Added `--platform linux/amd64` to docker build
@@ -276,19 +286,24 @@ your-project/
 ```
 
 ### decisions.md - Architectural Decisions
+
 ```markdown
 ### ADR-001: Use Workload Identity Federation (2025-01-10)
 
 **Context:**
+
 - Need secure authentication from GitHub Actions to GCP
 
 **Decision:**
+
 - Use Workload Identity Federation instead of service account keys
 
 **Alternatives Considered:**
+
 - Service account JSON keys → Rejected: security risk
 
 **Consequences:**
+
 - ✅ More secure (no long-lived credentials)
 - ❌ Slightly more complex initial setup
 ```
@@ -301,20 +316,24 @@ your-project/
 ### Database Configuration
 
 **AlloyDB Cluster:**
+
 - Cluster Name: `prod-cluster`
 - Private IP: `10.0.0.5`
 - Port: `5432`
 - Database Name: `contacts`
 
 **Connection:**
+
 - Use AlloyDB Auth Proxy for local development
 - Proxy command: `./alloydb-auth-proxy "projects/..."`
 - Credentials: Stored in `.env` file (not in git)
 ```
 
 ### issues.md - Work Log
+
 ```markdown
 ### 2025-01-15 - PROJ-123: Implement Contact API
+
 - **Status**: Completed
 - **Description**: Created FastAPI endpoints for contact CRUD
 - **URL**: https://jira.company.com/browse/PROJ-123
@@ -349,6 +368,7 @@ ls ../.claude/skills/project-memory/SKILL.md  # From inside a project
 The `key_facts.md` file is designed to store **non-sensitive** project reference information only. This file is typically committed to version control and should NEVER contain:
 
 **❌ NEVER store in key_facts.md or any git-tracked file:**
+
 - Passwords or passphrases
 - API keys or authentication tokens
 - Service account JSON keys or credentials
@@ -359,6 +379,7 @@ The `key_facts.md` file is designed to store **non-sensitive** project reference
 - Any secret values from environment variables
 
 **✅ SAFE to store in key_facts.md:**
+
 - Database hostnames, ports, and cluster names
 - Client names and project identifiers
 - JIRA project keys and Confluence space names
@@ -370,6 +391,7 @@ The `key_facts.md` file is designed to store **non-sensitive** project reference
 - Environment names and deployment targets
 
 **✅ WHERE to store sensitive credentials:**
+
 - **`.env` files** - Excluded via `.gitignore`, used for local development
 - **Password managers** - 1Password, LastPass, Bitwarden, etc.
 - **Secrets managers** - AWS Secrets Manager, GCP Secret Manager, HashiCorp Vault, Azure Key Vault
@@ -377,6 +399,7 @@ The `key_facts.md` file is designed to store **non-sensitive** project reference
 - **Platform credential stores** - Kubernetes Secrets, Cloud Run Secret Manager integration
 
 **✅ VERIFICATION steps before committing:**
+
 1. Run `git status` to see what will be committed
 2. Verify `.env`, `credentials.json`, and other sensitive files are in `.gitignore`
 3. Never use `git add .` blindly - review each file being staged
@@ -419,12 +442,14 @@ The memory system works across different AI coding tools:
 ## Why Use This Skill?
 
 **Without project memory:**
+
 - Repeat the same bugs/solutions across sessions
 - Propose architectures that conflict with past decisions
 - Ask the user repeatedly for database credentials, API keys, ports
 - Lose context when switching between projects or AI tools
 
 **With project memory:**
+
 - Remember and apply known bug solutions instantly
 - Maintain architectural consistency across sessions
 - Reference documented facts instead of assumptions
@@ -435,6 +460,7 @@ The memory system works across different AI coding tools:
 ### Example 1: Bug Resolution - Infrastructure State Drift
 
 **The Scenario:**
+
 1. **Oct 20** - Claude Code encounters Pulumi state drift error during deployment
 2. **Investigation** - 45 minutes debugging, trying various solutions
 3. **Solution Found** - `pulumi refresh --yes` resolves the state inconsistency
@@ -442,6 +468,7 @@ The memory system works across different AI coding tools:
 5. **Oct 22** - Same state drift error occurs during a new deployment
 
 **Without Project Memory:**
+
 - Claude Code debugs from scratch (again)
 - 30-60 minutes of investigation
 - Risk of trying wrong solutions first
@@ -449,6 +476,7 @@ The memory system works across different AI coding tools:
 - User frustration: "Didn't we solve this already?"
 
 **With Project Memory:**
+
 ```
 Claude Code: Searching bugs.md for "state drift"...
 Found: BUG-018 - Pulumi State Drift Error
@@ -458,6 +486,7 @@ Reference: See ADR-016 for why this works.
 ```
 
 **Result:**
+
 - ✅ Instant recognition: "This is BUG-018"
 - ✅ Known solution applied immediately
 - ✅ 5 minutes instead of 45 minutes
@@ -468,12 +497,14 @@ Reference: See ADR-016 for why this works.
 ### Example 2: Architectural Consistency - Avoiding Duplicate Dependencies
 
 **The Scenario:**
+
 1. **Week 1** - Team evaluates charting libraries for scatter plots
 2. **Decision** - Selected D3.js for all visualizations (lightweight, flexible, already in dependencies)
 3. **Documentation** - Logged as ADR-012 in decisions.md with rationale
 4. **Week 4** - New feature requires a bar chart visualization
 
 **Without Project Memory:**
+
 ```
 User: "Add a bar chart to the dashboard"
 Claude Code: "I'll add Chart.js for the bar chart visualization."
@@ -482,6 +513,7 @@ Result: Bundle size +85KB, inconsistent chart styling, duplicate dependencies
 ```
 
 **With Project Memory:**
+
 ```
 User: "Add a bar chart to the dashboard"
 Claude Code: Checking decisions.md for visualization decisions...
@@ -492,6 +524,7 @@ Result: No new dependencies, consistent styling, smaller bundle
 ```
 
 **Result:**
+
 - ✅ Maintains architectural consistency
 - ✅ Avoids dependency bloat
 - ✅ Ensures consistent user experience
@@ -506,6 +539,7 @@ Result: No new dependencies, consistent styling, smaller bundle
 Many developers (and AI code assistants) encounter the same bugs months apart and completely forget the solution:
 
 **Month 1:**
+
 ```
 Error: CORS policy blocked request from localhost:3000
 [2 hours of debugging]
@@ -513,6 +547,7 @@ Solution: Add proxy configuration to package.json
 ```
 
 **Month 6:**
+
 ```
 Error: CORS policy blocked request from localhost:3000
 Developer: "This looks familiar... how did we fix this?"
@@ -521,6 +556,7 @@ Developer: "This looks familiar... how did we fix this?"
 ```
 
 **With Project Memory:**
+
 ```
 Error: CORS policy blocked request from localhost:3000
 Claude Code: Searching bugs.md for "CORS"...
@@ -532,12 +568,14 @@ Applied in 5 minutes.
 **The Code Agent Memory Problem:**
 
 AI code assistants don't remember previous sessions. Without documentation:
+
 - Each new chat session starts from zero knowledge
 - Every bug feels like the first time
 - Solutions are "rediscovered" repeatedly
 - No learning accumulates over time
 
 **With project memory, the code agent becomes progressively smarter:**
+
 - First encounter: 2 hours to solve → documented in bugs.md
 - Second encounter: 5 minutes (reads bugs.md)
 - Third encounter: 2 minutes (pattern now familiar)
@@ -579,6 +617,7 @@ claude code
 ```
 
 In Claude Code:
+
 ```
 /project-memory
 ```
@@ -631,6 +670,7 @@ This skill complements other Claude Code skills:
 ### Skill not appearing in Claude Code
 
 **Check installation location:**
+
 ```bash
 # Global installation
 ls ~/.claude/skills/project-memory/SKILL.md
@@ -641,6 +681,7 @@ ls .claude/skills/project-memory/SKILL.md
 
 **Ensure SKILL.md exists:**
 The skill must have a `SKILL.md` file with proper frontmatter:
+
 ```yaml
 ---
 name: project-memory
@@ -659,6 +700,7 @@ Ensure you have write permissions in the project directory.
 ### Claude not checking memory files
 
 **Verify CLAUDE.md was updated:**
+
 ```bash
 grep "Project Memory System" CLAUDE.md
 ```
@@ -681,6 +723,7 @@ This skill is part of the Claude Code skills ecosystem and follows standard usag
 ## Support
 
 For issues or questions:
+
 - Check the troubleshooting section above
 - Review `SKILL.md` for detailed skill instructions
 - Review `CLAUDE.md` for repository-specific guidance

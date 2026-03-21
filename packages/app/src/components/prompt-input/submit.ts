@@ -31,14 +31,12 @@ type PromptSubmitInput = {
   imageAttachments: Accessor<ImageAttachmentPart[]>
   commentCount: Accessor<number>
   autoAccept: Accessor<boolean>
-  mode: Accessor<"normal" | "shell">
   working: Accessor<boolean>
   editor: () => HTMLDivElement | undefined
   queueScroll: () => void
   promptLength: (prompt: Prompt) => number
-  addToHistory: (prompt: Prompt, mode: "normal" | "shell") => void
+  addToHistory: (prompt: Prompt) => void
   resetHistoryNavigation: () => void
-  setMode: (mode: "normal" | "shell") => void
   setPopover: (popover: "at" | "slash" | null) => void
   newSessionWorktree?: Accessor<string | undefined>
   onNewSessionWorktreeReset?: () => void
@@ -123,7 +121,6 @@ export function createPromptSubmit(input: PromptSubmitInput) {
     const currentPrompt = prompt.current()
     const text = currentPrompt.map((part) => ("content" in part ? part.content : "")).join("")
     const images = input.imageAttachments().slice()
-    const mode = input.mode()
 
     if (text.trim().length === 0 && images.length === 0 && input.commentCount() === 0) {
       if (input.working()) abort()
@@ -140,7 +137,7 @@ export function createPromptSubmit(input: PromptSubmitInput) {
       return
     }
 
-    input.addToHistory(currentPrompt, mode)
+    input.addToHistory(currentPrompt)
     input.resetHistoryNavigation()
 
     const projectDirectory = sdk.directory
@@ -206,7 +203,11 @@ export function createPromptSubmit(input: PromptSubmitInput) {
         if (shouldAutoAccept) permission.enableAutoAccept(session.id, sessionDirectory)
         const handoffKey = params.projectId ?? base64Encode(sessionDirectory)
         layout.handoff.setTabs(handoffKey, session.id)
-        navigate(params.projectId ? `/project/${params.projectId}/session/${session.id}` : `/${base64Encode(sessionDirectory)}/session/${session.id}`)
+        navigate(
+          params.projectId
+            ? `/project/${params.projectId}/session/${session.id}`
+            : `/${base64Encode(sessionDirectory)}/session/${session.id}`,
+        )
       }
     }
     if (!session) {
@@ -228,13 +229,11 @@ export function createPromptSubmit(input: PromptSubmitInput) {
 
     const clearInput = () => {
       prompt.reset()
-      input.setMode("normal")
       input.setPopover(null)
     }
 
     const restoreInput = () => {
       prompt.set(currentPrompt, input.promptLength(currentPrompt))
-      input.setMode(mode)
       input.setPopover(null)
       requestAnimationFrame(() => {
         const editor = input.editor()
@@ -243,25 +242,6 @@ export function createPromptSubmit(input: PromptSubmitInput) {
         setCursorPosition(editor, input.promptLength(currentPrompt))
         input.queueScroll()
       })
-    }
-
-    if (mode === "shell") {
-      clearInput()
-      client.session
-        .shell({
-          sessionID: session.id,
-          agent,
-          model,
-          command: text,
-        })
-        .catch((err) => {
-          showToast({
-            title: language.t("prompt.toast.shellSendFailed.title"),
-            description: errorMessage(err),
-          })
-          restoreInput()
-        })
-      return
     }
 
     if (text.startsWith("/")) {

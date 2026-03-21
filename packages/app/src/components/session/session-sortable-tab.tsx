@@ -31,9 +31,7 @@ export function SortablePaneTab(props: { pane: string; children: JSX.Element }):
   const sortable = createSortable(props.pane)
   return (
     <div use:sortable class="h-full flex items-center" classList={{ "opacity-0": sortable.isActiveDraggable }}>
-      <Tabs.Trigger value={props.pane}>
-        {props.children}
-      </Tabs.Trigger>
+      <Tabs.Trigger value={props.pane}>{props.children}</Tabs.Trigger>
     </div>
   )
 }

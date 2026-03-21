@@ -21,6 +21,7 @@
 Copy the entire `canvas-core/` directory from vello-test into the opendesign monorepo. This is a verbatim copy — no modifications needed.
 
 **Files:**
+
 - Create: `packages/canvas-core/` (entire directory tree)
 
 - [ ] **Step 1: Copy canvas-core source**
@@ -36,6 +37,7 @@ find packages/canvas-core/src -type f | sort
 ```
 
 Expected files:
+
 ```
 packages/canvas-core/src/canvas_snapshot.rs
 packages/canvas-core/src/canvas_state.rs
@@ -56,6 +58,7 @@ packages/canvas-core/src/viewport.rs
 Create the WASM entry point crate. This is adapted from `vello-test/web/` — the Rust source (`lib.rs`) is copied verbatim since it already handles WASM init, rendering, and bridge functions independently of the SolidJS chrome.
 
 **Files:**
+
 - Create: `packages/canvas-wasm/Cargo.toml`
 - Create: `packages/canvas-wasm/src/lib.rs` (copy from vello-test/web/src/lib.rs)
 
@@ -117,6 +120,7 @@ cp /Users/Mani/Desktop/SideProjects/vello-test/web/src/lib.rs packages/canvas-wa
 ```
 
 This file is used verbatim — it already handles:
+
 - WASM init (`#[wasm_bindgen(start)]`)
 - winit event loop and WebGPU rendering
 - `save_canvas_request()` / `load_canvas_request()` bridge functions
@@ -126,6 +130,7 @@ This file is used verbatim — it already handles:
 ### Task 3: Create root Cargo.toml workspace
 
 **Files:**
+
 - Create: `Cargo.toml` (at repo root)
 
 - [ ] **Step 1: Create root Cargo.toml**
@@ -176,6 +181,7 @@ wasm-pack build packages/canvas-wasm --target web --out-dir pkg
 ```
 
 Expected output in `packages/canvas-wasm/pkg/`:
+
 - `canvas_wasm.js`
 - `canvas_wasm_bg.wasm`
 - `canvas_wasm.d.ts`
@@ -200,6 +206,7 @@ Add root Cargo.toml workspace."
 ### Task 5: Create canvas-wasm package.json
 
 **Files:**
+
 - Create: `packages/canvas-wasm/package.json`
 
 - [ ] **Step 1: Create package.json**
@@ -223,6 +230,7 @@ Create `packages/canvas-wasm/package.json`:
 ### Task 6: Update turbo.json
 
 **Files:**
+
 - Modify: `turbo.json`
 
 - [ ] **Step 1: Add canvas-wasm build task and app dependency**
@@ -248,6 +256,7 @@ And add dependency to the existing `build` task or create app-specific override:
 ### Task 7: Update app dependencies and gitignore
 
 **Files:**
+
 - Modify: `packages/app/package.json`
 - Modify: `.gitignore`
 
@@ -298,11 +307,13 @@ Add app dependency on canvas-wasm."
 ### Task 8: Create canvas-bridge.ts
 
 Adapted from `vello-test/web/src/canvas-bridge.ts`. Changes:
+
 - Add `initCanvas(containerEl)` function that loads and starts the WASM module
 - Add session ID guard for save race conditions
 - Integrate with opendesign's SDK for server persistence
 
 **Files:**
+
 - Create: `packages/app/src/utils/canvas-bridge.ts`
 
 - [ ] **Step 1: Create canvas-bridge.ts**
@@ -315,8 +326,7 @@ Create `packages/app/src/utils/canvas-bridge.ts`:
  * Manages WASM lifecycle, save/load per session, in-memory cache.
  */
 
-export const EMPTY_CANVAS_JSON =
-  '{"nodes":[],"next_id":0,"viewport":{"x":-640,"y":-400,"zoom":1}}'
+export const EMPTY_CANVAS_JSON = '{"nodes":[],"next_id":0,"viewport":{"x":-640,"y":-400,"zoom":1}}'
 
 type WasmExports = {
   save_canvas_request: (callback: (json: string) => void) => void
@@ -356,10 +366,7 @@ export function setActiveSession(sessionId: string): void {
   activeSessionId = sessionId
 }
 
-export function saveCanvas(
-  sessionId: string,
-  callback: (json: string) => void,
-): void {
+export function saveCanvas(sessionId: string, callback: (json: string) => void): void {
   if (!wasm) {
     canvasCache.set(sessionId, EMPTY_CANVAS_JSON)
     callback(EMPTY_CANVAS_JSON)
@@ -400,6 +407,7 @@ export function focusCanvas(): void {
 ### Task 9: Create CanvasTabContent component
 
 **Files:**
+
 - Create: `packages/app/src/pages/session/canvas-tab-content.tsx`
 
 - [ ] **Step 1: Create canvas-tab-content.tsx**
@@ -512,17 +520,10 @@ export function CanvasTabContent() {
     <div class="relative size-full">
       {error() ? (
         <div class="h-full flex items-center justify-center p-6">
-          <div class="text-14-regular text-text-weak text-center max-w-80">
-            {error()}
-          </div>
+          <div class="text-14-regular text-text-weak text-center max-w-80">{error()}</div>
         </div>
       ) : (
-        <div
-          ref={containerRef}
-          id="canvas-container"
-          class="absolute inset-0"
-          style={{ "touch-action": "none" }}
-        />
+        <div ref={containerRef} id="canvas-container" class="absolute inset-0" style={{ "touch-action": "none" }} />
       )}
     </div>
   )
@@ -552,6 +553,7 @@ CanvasTabContent initializes WebGPU canvas and handles session switching."
 Replace the review panel content in the canvas tab with `CanvasTabContent`. Add a persistent `CanvasHost` component (mirrors `FigmaWebviewHost` pattern).
 
 **Files:**
+
 - Modify: `packages/app/src/pages/session/session-side-panel.tsx`
 
 - [ ] **Step 1: Add CanvasTabContent import**
@@ -648,20 +650,9 @@ Add `CanvasHost` alongside `FigmaWebviewHost` in the panel, right before the `Fi
 ```tsx
 <Show when={canvasTab()}>
   <CanvasHost
-    active={
-      splitMode() && panes().canvas
-        ? true
-        : activeTab() === "canvas"
-    }
-    splitOffset={
-      splitMode() && panes().canvas && panes().figma
-        ? layout.canvasPanel.splitRatio()
-        : 0
-    }
-    canvasFirst={
-      splitMode() && panes().canvas && panes().figma
-        && layout.canvasPanel.paneOrder()[0] === "canvas"
-    }
+    active={splitMode() && panes().canvas ? true : activeTab() === "canvas"}
+    splitOffset={splitMode() && panes().canvas && panes().figma ? layout.canvasPanel.splitRatio() : 0}
+    canvasFirst={splitMode() && panes().canvas && panes().figma && layout.canvasPanel.paneOrder()[0] === "canvas"}
   />
 </Show>
 ```
@@ -673,6 +664,7 @@ Remove the `reviewPanel` prop from the `SessionSidePanel` component signature. A
 Update the canvas tab trigger to remove the review count badge:
 
 Before:
+
 ```tsx
 <Match when={pane === "canvas"}>
   <div class="flex items-center gap-1.5">
@@ -685,10 +677,9 @@ Before:
 ```
 
 After:
+
 ```tsx
-<Match when={pane === "canvas"}>
-  {language.t("session.tab.canvas")}
-</Match>
+<Match when={pane === "canvas"}>{language.t("session.tab.canvas")}</Match>
 ```
 
 This applies to both the tab mode sortable pane tabs and the split mode `SplitPaneContent`.
@@ -721,6 +712,7 @@ Removed review panel props from canvas tab."
 ### Task 12: Create session_canvas database schema
 
 **Files:**
+
 - Create: `packages/opencode/src/session/session-canvas.sql.ts`
 - Modify: `packages/opencode/src/storage/schema.ts` (add export)
 
@@ -749,6 +741,7 @@ Add `SessionCanvasTable` to the schema file that registers tables with Drizzle.
 ### Task 13: Create SessionCanvas namespace module
 
 **Files:**
+
 - Create: `packages/opencode/src/session/session-canvas.ts`
 
 - [ ] **Step 1: Create the module**
@@ -788,6 +781,7 @@ export namespace SessionCanvas {
 ### Task 14: Add server routes
 
 **Files:**
+
 - Modify: `packages/opencode/src/server/server.ts`
 
 - [ ] **Step 1: Read existing route patterns**
@@ -843,6 +837,7 @@ Regenerated SDK."
 Once the SDK is regenerated with the canvas endpoints, update `canvas-tab-content.tsx` to use the typed SDK client instead of raw fetch calls.
 
 **Files:**
+
 - Modify: `packages/app/src/pages/session/canvas-tab-content.tsx`
 
 - [ ] **Step 1: Update API calls to use generated SDK types**

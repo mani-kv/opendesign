@@ -1,4 +1,4 @@
-import { For, Match, Show, Switch, createEffect, createMemo, onCleanup, createSignal, type JSX } from "solid-js"
+import { For, Match, Show, Switch, createEffect, createMemo, onCleanup, createSignal, lazy, type JSX } from "solid-js"
 import { Portal } from "solid-js/web"
 import { createStore } from "solid-js/store"
 import { createMediaQuery } from "@solid-primitives/media"
@@ -25,7 +25,9 @@ import { createFileTabListSync } from "@/pages/session/file-tab-scroll"
 import { FileTabContent } from "@/pages/session/file-tabs"
 import { FigmaTabContent } from "@/pages/session/figma-tab-content"
 import { CanvasTabContent } from "@/pages/session/canvas-tab-content"
-import { AgentSandboxTabContent } from "@/pages/session/agent-sandbox-tab-content"
+const AgentSandboxTabContent = lazy(() =>
+  import("@/pages/session/agent-sandbox-tab-content").then((m) => ({ default: m.AgentSandboxTabContent })),
+)
 import { createBodyResizing, createOpenSessionFileTab, getTabReorderIndex, type Sizing } from "@/pages/session/helpers"
 import { setSessionHandoff } from "@/pages/session/handoff"
 
@@ -39,73 +41,95 @@ function CanvasFigmaEmpty() {
   )
 }
 
-function SplitPaneContent(props: { pane: string }) {
-  const language = useLanguage()
+function PaneTabContent(props: { pane: string }) {
   const platform = usePlatform()
   return (
     <Switch>
       <Match when={props.pane === "canvas"}>
-        <Tabs value="canvas">
-          <div class="sticky top-0 z-10 shrink-0 flex items-center border-b border-border-weaker-base">
-            <Tabs.List class="min-w-0 w-fit">
-              <SortablePaneTab pane="canvas">{language.t("session.tab.canvas")}</SortablePaneTab>
-            </Tabs.List>
-          </div>
-          <Tabs.Content
-            value="canvas"
-            class="relative flex flex-col flex-1 min-h-0 overflow-hidden contain-strict pointer-events-none"
-          >
-            <div class="absolute inset-0" aria-hidden />
-          </Tabs.Content>
-        </Tabs>
+        <Tabs.Content
+          value="canvas"
+          class="relative flex flex-col flex-1 min-h-0 overflow-hidden contain-strict pointer-events-none"
+        >
+          <div class="absolute inset-0" aria-hidden />
+        </Tabs.Content>
       </Match>
       <Match when={props.pane === "figma"}>
-        <Tabs value="figma">
-          <div class="sticky top-0 z-10 shrink-0 flex items-center border-b border-border-weaker-base">
-            <Tabs.List class="min-w-0 w-fit">
-              <SortablePaneTab pane="figma">{language.t("session.tab.figma")}</SortablePaneTab>
-            </Tabs.List>
+        <Tabs.Content value="figma" class="relative flex flex-col flex-1 min-h-0 overflow-hidden contain-strict">
+          <div class="relative flex-1 min-h-0 overflow-hidden">
+            {platform.platform === "web" ? (
+              <div class="absolute inset-0">
+                <FigmaTabContent />
+              </div>
+            ) : (
+              <div class="absolute inset-0 pointer-events-none" aria-hidden />
+            )}
           </div>
-          <Tabs.Content value="figma" class="relative flex flex-col flex-1 min-h-0 overflow-hidden contain-strict">
-            <div class="relative flex-1 min-h-0 overflow-hidden">
-              {platform.platform === "web" ? (
-                <div class="absolute inset-0">
-                  <FigmaTabContent />
-                </div>
-              ) : (
-                <div class="absolute inset-0 pointer-events-none" aria-hidden />
-              )}
-            </div>
-          </Tabs.Content>
-        </Tabs>
+        </Tabs.Content>
       </Match>
       <Match when={props.pane === "sandbox"}>
-        <Tabs value="sandbox">
-          <div class="sticky top-0 z-10 shrink-0 flex items-center border-b border-border-weaker-base">
-            <Tabs.List class="min-w-0 w-fit">
-              <SortablePaneTab pane="sandbox">{language.t("session.tab.sandbox")}</SortablePaneTab>
-            </Tabs.List>
-          </div>
-          <Tabs.Content value="sandbox" class="relative flex flex-col flex-1 min-h-0 overflow-hidden contain-strict">
-            <div class="relative flex-1 min-h-0 overflow-hidden">
-              <div class="absolute inset-0">
-                <AgentSandboxTabContent />
-              </div>
+        <Tabs.Content value="sandbox" class="relative flex flex-col flex-1 min-h-0 overflow-hidden contain-strict">
+          <div class="relative flex-1 min-h-0 overflow-hidden">
+            <div class="absolute inset-0">
+              <AgentSandboxTabContent />
             </div>
-          </Tabs.Content>
-        </Tabs>
+          </div>
+        </Tabs.Content>
       </Match>
     </Switch>
   )
 }
 
-function CanvasFigmaSplit() {
+function SplitPanel(props: { panes: string[]; side: "left" | "right"; onActiveChange?: (pane: string) => void }) {
+  const language = useLanguage()
+  const [active, setActive] = createSignal(props.panes[0])
+
+  // Reset active tab when panes change
+  createEffect(() => {
+    if (!props.panes.includes(active())) setActive(props.panes[0])
+  })
+
+  // Notify parent of active tab changes
+  createEffect(() => {
+    props.onActiveChange?.(active())
+  })
+
+  const paneLabel = (p: string) =>
+    p === "canvas"
+      ? language.t("session.tab.canvas")
+      : p === "figma"
+        ? language.t("session.tab.figma")
+        : language.t("session.tab.sandbox")
+
+  return (
+    <Tabs value={active()} onChange={setActive}>
+      <div class="sticky top-0 z-10 shrink-0 flex items-center border-b border-border-weaker-base">
+        <Tabs.List class="min-w-0 w-fit">
+          <SortableProvider ids={props.panes}>
+            <For each={props.panes}>
+              {(pane) => <SortablePaneTab pane={pane}>{paneLabel(pane)}</SortablePaneTab>}
+            </For>
+          </SortableProvider>
+        </Tabs.List>
+      </div>
+      <For each={props.panes}>
+        {(pane) => <PaneTabContent pane={pane} />}
+      </For>
+    </Tabs>
+  )
+}
+
+function CanvasFigmaSplit(props: { onActiveTabs?: (left: string, right: string) => void }) {
   const layout = useLayout()
-  const paneOrder = () => layout.canvasPanel.paneOrder()
   const splitRatio = () => layout.canvasPanel.splitRatio()
   const setSplitRatio = (r: number) => layout.canvasPanel.setSplitRatio(r)
   const [containerRef, setContainerRef] = createSignal<HTMLDivElement | undefined>(undefined)
   const [width, setWidth] = createSignal(400)
+  const [leftActive, setLeftActive] = createSignal("")
+  const [rightActive, setRightActive] = createSignal("")
+
+  createEffect(() => {
+    props.onActiveTabs?.(leftActive(), rightActive())
+  })
 
   createEffect(() => {
     const el = containerRef()
@@ -116,32 +140,38 @@ function CanvasFigmaSplit() {
     return () => observer.disconnect()
   })
 
+  const enabledPanes = createMemo(() => {
+    const p = layout.canvasPanel.panes()
+    return layout.canvasPanel.paneOrder().filter((id) => p[id])
+  })
+  const splitIdx = () => layout.canvasPanel.splitIndex()
+  const leftPanes = createMemo(() => enabledPanes().slice(0, splitIdx()))
+  const rightPanes = createMemo(() => enabledPanes().slice(splitIdx()))
+
   const leftSize = () => Math.round(width() * splitRatio())
   const minPane = 120
   const maxLeft = () => Math.max(minPane, width() - minPane)
 
   return (
-    <SortableProvider ids={paneOrder()}>
-      <div ref={setContainerRef} class="relative flex-1 flex min-h-0 min-w-0">
-        <div class="relative flex flex-col min-h-0 shrink-0 overflow-hidden" style={{ width: `${leftSize()}px` }}>
-          <SplitPaneContent pane={paneOrder()[0]} />
-        </div>
-        <div class="relative w-px shrink-0 flex items-stretch">
-          <div class="pointer-events-none absolute inset-y-0 left-0 w-px bg-border-weaker-base" aria-hidden />
-          <ResizeHandle
-            direction="horizontal"
-            edge="end"
-            size={leftSize()}
-            min={minPane}
-            max={maxLeft()}
-            onResize={(px) => setSplitRatio(px / width())}
-          />
-        </div>
-        <div class="relative flex-1 flex flex-col min-h-0 min-w-0">
-          <SplitPaneContent pane={paneOrder()[1]} />
-        </div>
+    <div ref={setContainerRef} class="relative flex-1 flex min-h-0 min-w-0">
+      <div class="relative flex flex-col min-h-0 shrink-0 overflow-hidden" style={{ width: `${leftSize()}px` }}>
+        <SplitPanel panes={leftPanes()} side="left" onActiveChange={setLeftActive} />
       </div>
-    </SortableProvider>
+      <div class="relative w-px shrink-0 flex items-stretch">
+        <div class="pointer-events-none absolute inset-y-0 left-0 w-px bg-border-weaker-base" aria-hidden />
+        <ResizeHandle
+          direction="horizontal"
+          edge="end"
+          size={leftSize()}
+          min={minPane}
+          max={maxLeft()}
+          onResize={(px) => setSplitRatio(px / width())}
+        />
+      </div>
+      <div class="relative flex-1 flex flex-col min-h-0 min-w-0">
+        <SplitPanel panes={rightPanes()} side="right" onActiveChange={setRightActive} />
+      </div>
+    </div>
   )
 }
 
@@ -373,10 +403,26 @@ export function SessionSidePanel(props: {
   const open = createMemo(() => reviewOpen() || fileOpen())
   const shouldFill = createMemo(() => open() && reviewOpen() && !layout.agents.opened())
   const canvasTab = createMemo(() => isDesktop() && panes().canvas)
-  const figmaTab = createMemo(() => isDesktop() && panes().figma)
+  const figmaTab = createMemo(() => isDesktop() && panes().figma && platform.platform !== "web")
   const sandboxTab = createMemo(() => isDesktop() && panes().sandbox)
+  const enabledPanes = createMemo(() =>
+    layout.canvasPanel.paneOrder().filter((p) => {
+      if (!panes()[p]) return false
+      if (p === "figma" && platform.platform === "web") return false
+      return true
+    }),
+  )
+  const canSplit = createMemo(() => enabledPanes().length >= 2)
+  const splitIdx = () => layout.canvasPanel.splitIndex()
+  const leftSplitPanes = createMemo(() => enabledPanes().slice(0, splitIdx()))
+  const rightSplitPanes = createMemo(() => enabledPanes().slice(splitIdx()))
+  const isInLeftSplit = (pane: string) => splitMode() && canSplit() && leftSplitPanes().includes(pane as any)
+  const isInRightSplit = (pane: string) => splitMode() && canSplit() && rightSplitPanes().includes(pane as any)
+  const [splitLeftActive, setSplitLeftActive] = createSignal("")
+  const [splitRightActive, setSplitRightActive] = createSignal("")
+  const isActiveInSplit = (pane: string) => splitLeftActive() === pane || splitRightActive() === pane
   const bothClosed = createMemo(() => isDesktop() && !panes().canvas && !panes().figma && !panes().sandbox)
-  const visiblePaneTabs = createMemo(() => layout.canvasPanel.paneOrder().filter((p) => panes()[p] && isDesktop()))
+  const visiblePaneTabs = createMemo(() => isDesktop() ? enabledPanes() : [])
   const panelWidth = createMemo(() => {
     if (!open()) return "0px"
     if (shouldFill()) return undefined
@@ -526,6 +572,18 @@ export function SessionSidePanel(props: {
         order.splice(fromIdx, 1)
         order.splice(toIdx, 0, dragId as any)
         layout.canvasPanel.setPaneOrder(order)
+
+        // In split mode, check if a panel became empty → collapse to tabs
+        if (splitMode()) {
+          const pns = layout.canvasPanel.panes()
+          const enabled = order.filter((p) => pns[p])
+          const si = layout.canvasPanel.splitIndex()
+          const left = enabled.slice(0, si)
+          const right = enabled.slice(si)
+          if (left.length === 0 || right.length === 0) {
+            layout.canvasPanel.toggleLayout()
+          }
+        }
       }
       return
     }
@@ -601,8 +659,8 @@ export function SessionSidePanel(props: {
                   <ConstrainDragYAxis />
                   <div class="relative flex-1 flex min-h-0 min-w-0 flex-col">
                     <Switch>
-                      <Match when={splitMode() && panes().canvas && panes().figma}>
-                        <CanvasFigmaSplit />
+                      <Match when={splitMode() && canSplit()}>
+                        <CanvasFigmaSplit onActiveTabs={(l, r) => { setSplitLeftActive(l); setSplitRightActive(r) }} />
                       </Match>
                       <Match when={true}>
                         <Tabs value={activeTab()} onChange={openTab}>
@@ -687,7 +745,10 @@ export function SessionSidePanel(props: {
                           </Show>
 
                           <Show when={sandboxTab()}>
-                            <Tabs.Content value="sandbox" class="relative flex flex-col h-full overflow-hidden contain-strict">
+                            <Tabs.Content
+                              value="sandbox"
+                              class="relative flex flex-col h-full overflow-hidden contain-strict"
+                            >
                               <AgentSandboxTabContent />
                             </Tabs.Content>
                           </Show>
@@ -759,21 +820,33 @@ export function SessionSidePanel(props: {
               {/* Persistent canvas host — survives split↔tabbed switches. */}
               <Show when={canvasTab()}>
                 <CanvasHost
-                  active={splitMode() && panes().canvas ? true : activeTab() === "canvas"}
-                  splitOffset={splitMode() && panes().canvas && panes().figma ? layout.canvasPanel.splitRatio() : 0}
-                  canvasFirst={
-                    splitMode() && panes().canvas && panes().figma && layout.canvasPanel.paneOrder()[0] === "canvas"
+                  active={
+                    splitMode() && canSplit()
+                      ? isActiveInSplit("canvas")
+                      : activeTab() === "canvas"
                   }
+                  splitOffset={
+                    splitMode() && canSplit() && isActiveInSplit("canvas")
+                      ? layout.canvasPanel.splitRatio()
+                      : 0
+                  }
+                  canvasFirst={splitMode() && canSplit() && splitLeftActive() === "canvas"}
                 />
               </Show>
               {/* Persistent figma webview host — same pattern as CanvasHost. */}
               <Show when={figmaTab() && platform.platform !== "web"}>
                 <FigmaWebviewHost
-                  active={splitMode() && panes().figma ? true : activeTab() === "figma"}
-                  splitOffset={splitMode() && panes().canvas && panes().figma ? layout.canvasPanel.splitRatio() : 0}
-                  figmaFirst={
-                    splitMode() && panes().canvas && panes().figma && layout.canvasPanel.paneOrder()[0] === "figma"
+                  active={
+                    splitMode() && canSplit()
+                      ? isActiveInSplit("figma")
+                      : activeTab() === "figma"
                   }
+                  splitOffset={
+                    splitMode() && canSplit() && isActiveInSplit("figma")
+                      ? layout.canvasPanel.splitRatio()
+                      : 0
+                  }
+                  figmaFirst={splitMode() && canSplit() && splitLeftActive() === "figma"}
                 />
               </Show>
               <Show when={props.floatingPrompt && reviewOpen()}>

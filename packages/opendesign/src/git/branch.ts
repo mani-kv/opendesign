@@ -15,11 +15,7 @@ export function agentBranchName(scenario: string, prefix = "agent"): string {
 /**
  * Create branch info metadata.
  */
-export function createBranchInfo(input: {
-  agentNodeId: string
-  scenario: string
-  baseBranch?: string
-}): BranchInfo {
+export function createBranchInfo(input: { agentNodeId: string; scenario: string; baseBranch?: string }): BranchInfo {
   return {
     name: agentBranchName(input.scenario),
     agentNodeId: input.agentNodeId,

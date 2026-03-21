@@ -3,11 +3,7 @@ import type { CheckpointInfo } from "../types/git"
 /**
  * Create checkpoint metadata.
  */
-export function createCheckpointInfo(input: {
-  branch: string
-  commitSha: string
-  label?: string
-}): CheckpointInfo {
+export function createCheckpointInfo(input: { branch: string; commitSha: string; label?: string }): CheckpointInfo {
   return {
     id: `cp_${Date.now().toString(36)}`,
     branch: input.branch,

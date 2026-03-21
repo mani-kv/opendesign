@@ -20,30 +20,26 @@ export function ProjectShell(props: Props) {
   const active = () => props.active
   return (
     <ActiveContext.Provider value={active}>
-    <div
-      class="bg-background-base"
-      aria-hidden={!props.active}
-      inert={props.active ? undefined : true}
-      style={{
-        position: "absolute",
-        inset: 0,
-        "pointer-events": props.active ? "auto" : "none",
-        "z-index": props.active ? 1 : 0,
-        // contain:strict tells the browser this subtree is isolated for
-        // layout/paint/style — safe because all shells are fixed-size (inset:0).
-        // DO NOT use visibility:hidden, display:none, opacity:0, or
-        // content-visibility:hidden — all cause Electron webview GC/detach.
-        contain: "strict",
-      }}
-    >
-      <ProjectScopeProvider
-        projectId={props.projectId}
-        sessionId={props.sessionId}
-        sessionKey={props.sessionKey}
+      <div
+        class="bg-background-base"
+        aria-hidden={!props.active}
+        inert={props.active ? undefined : true}
+        style={{
+          position: "absolute",
+          inset: 0,
+          "pointer-events": props.active ? "auto" : "none",
+          "z-index": props.active ? 1 : 0,
+          // contain:strict tells the browser this subtree is isolated for
+          // layout/paint/style — safe because all shells are fixed-size (inset:0).
+          // DO NOT use visibility:hidden, display:none, opacity:0, or
+          // content-visibility:hidden — all cause Electron webview GC/detach.
+          contain: "strict",
+        }}
       >
-        {props.children}
-      </ProjectScopeProvider>
-    </div>
+        <ProjectScopeProvider projectId={props.projectId} sessionId={props.sessionId} sessionKey={props.sessionKey}>
+          {props.children}
+        </ProjectScopeProvider>
+      </div>
     </ActiveContext.Provider>
   )
 }

@@ -853,38 +853,6 @@ export const SessionRoutes = lazy(() =>
       },
     )
     .post(
-      "/:sessionID/shell",
-      describeRoute({
-        summary: "Run shell command",
-        description: "Execute a shell command within the session context and return the AI's response.",
-        operationId: "session.shell",
-        responses: {
-          200: {
-            description: "Created message",
-            content: {
-              "application/json": {
-                schema: resolver(MessageV2.Assistant),
-              },
-            },
-          },
-          ...errors(400, 404),
-        },
-      }),
-      validator(
-        "param",
-        z.object({
-          sessionID: Identifier.schema("session").meta({ description: "Session ID" }),
-        }),
-      ),
-      validator("json", SessionPrompt.ShellInput.omit({ sessionID: true })),
-      async (c) => {
-        const sessionID = c.req.valid("param").sessionID
-        const body = c.req.valid("json")
-        const msg = await SessionPrompt.shell({ ...body, sessionID })
-        return c.json(msg)
-      },
-    )
-    .post(
       "/:sessionID/revert",
       describeRoute({
         summary: "Revert message",

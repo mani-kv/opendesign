@@ -71,9 +71,7 @@ test("selectedScenarios filters only selected", () => {
 
 test("selectedScenarios returns empty array when none selected", () => {
   const plan = {
-    scenarios: [
-      { scenario: "A", description: "first", selected: false },
-    ],
+    scenarios: [{ scenario: "A", description: "first", selected: false }],
   }
   expect(selectedScenarios(plan)).toHaveLength(0)
 })

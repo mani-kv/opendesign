@@ -46,8 +46,7 @@ const WorkspaceTile = (props: {
 }): JSX.Element => {
   const initial = () => props.workspace.name.slice(0, 1).toUpperCase() || "W"
   const placement = () => (props.mobile ? "bottom" : "right")
-  const nameTitle = () =>
-    props.workspace.name.slice(0, 1).toUpperCase() + props.workspace.name.slice(1)
+  const nameTitle = () => props.workspace.name.slice(0, 1).toUpperCase() + props.workspace.name.slice(1)
 
   return (
     <ContextMenu
@@ -89,14 +88,10 @@ const WorkspaceTile = (props: {
           onClick={() => props.onSelect()}
           onBlur={() => {}}
         >
-        <div class="relative size-8 shrink-0 rounded overflow-clip">
-          <Avatar
-            fallback={initial()}
-            class="size-full rounded"
-            {...getAvatarColors("cyan")}
-          />
-        </div>
-      </ContextMenu.Trigger>
+          <div class="relative size-8 shrink-0 rounded overflow-clip">
+            <Avatar fallback={initial()} class="size-full rounded" {...getAvatarColors("cyan")} />
+          </div>
+        </ContextMenu.Trigger>
       </Tooltip>
       <ContextMenu.Portal>
         <ContextMenu.Content>

@@ -68,12 +68,12 @@ nix run nixpkgs#opencode           # oppure github:anomalyco/opencode per l’ul
 
 OpenCode è disponibile anche come applicazione desktop. Puoi scaricarla direttamente dalla [pagina delle release](https://github.com/anomalyco/opencode/releases) oppure da [opencode.ai/download](https://opencode.ai/download).
 
-| Piattaforma           | Download                              |
-| --------------------- | ------------------------------------- |
+| Piattaforma           | Download                             |
+| --------------------- | ------------------------------------ |
 | macOS (Apple Silicon) | `opencode-electron-darwin-arm64.dmg` |
-| macOS (Intel)         | `opencode-electron-darwin-x64.dmg`     |
+| macOS (Intel)         | `opencode-electron-darwin-x64.dmg`   |
 | Windows               | `opencode-electron-win32-x64.exe`    |
-| Linux                 | `.deb`, `.rpm`, oppure AppImage       |
+| Linux                 | `.deb`, `.rpm`, oppure AppImage      |
 
 ```bash
 # macOS (Homebrew)

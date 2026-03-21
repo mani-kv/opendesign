@@ -139,8 +139,6 @@ import type {
   SessionRevertResponses,
   SessionShareErrors,
   SessionShareResponses,
-  SessionShellErrors,
-  SessionShellResponses,
   SessionStatusErrors,
   SessionStatusResponses,
   SessionSummarizeErrors,
@@ -2133,52 +2131,6 @@ export class Session2 extends HeyApiClient {
     )
     return (options?.client ?? this.client).post<SessionCommandResponses, SessionCommandErrors, ThrowOnError>({
       url: "/session/{sessionID}/command",
-      ...options,
-      ...params,
-      headers: {
-        "Content-Type": "application/json",
-        ...options?.headers,
-        ...params.headers,
-      },
-    })
-  }
-
-  /**
-   * Run shell command
-   *
-   * Execute a shell command within the session context and return the AI's response.
-   */
-  public shell<ThrowOnError extends boolean = false>(
-    parameters: {
-      sessionID: string
-      directory?: string
-      workspace?: string
-      agent?: string
-      model?: {
-        providerID: string
-        modelID: string
-      }
-      command?: string
-    },
-    options?: Options<never, ThrowOnError>,
-  ) {
-    const params = buildClientParams(
-      [parameters],
-      [
-        {
-          args: [
-            { in: "path", key: "sessionID" },
-            { in: "query", key: "directory" },
-            { in: "query", key: "workspace" },
-            { in: "body", key: "agent" },
-            { in: "body", key: "model" },
-            { in: "body", key: "command" },
-          ],
-        },
-      ],
-    )
-    return (options?.client ?? this.client).post<SessionShellResponses, SessionShellErrors, ThrowOnError>({
-      url: "/session/{sessionID}/shell",
       ...options,
       ...params,
       headers: {

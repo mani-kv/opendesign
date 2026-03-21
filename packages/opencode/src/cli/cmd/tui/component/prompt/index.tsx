@@ -1,5 +1,5 @@
 import { BoxRenderable, TextareaRenderable, MouseEvent, PasteEvent, t, dim, fg } from "@opentui/core"
-import { createEffect, createMemo, type JSX, onMount, createSignal, onCleanup, on, Show, Switch, Match } from "solid-js"
+import { createEffect, createMemo, type JSX, onMount, createSignal, onCleanup, on, Show } from "solid-js"
 import "opentui-spinner/solid"
 import path from "path"
 import { Filesystem } from "@/util/filesystem"
@@ -57,7 +57,6 @@ export type PromptRef = {
 }
 
 const PLACEHOLDERS = ["Fix a TODO in the codebase", "What is the tech stack of this project?", "Fix broken tests"]
-const SHELL_PLACEHOLDERS = ["ls -la", "git status", "pwd"]
 
 export function Prompt(props: PromptProps) {
   let input: TextareaRenderable
@@ -123,7 +122,6 @@ export function Prompt(props: PromptProps) {
 
   const [store, setStore] = createStore<{
     prompt: PromptInfo
-    mode: "normal" | "shell"
     extmarkToPartIndex: Map<number, number>
     interrupt: number
     placeholder: number
@@ -133,7 +131,6 @@ export function Prompt(props: PromptProps) {
       input: "",
       parts: [],
     },
-    mode: "normal",
     extmarkToPartIndex: new Map(),
     interrupt: 0,
   })
@@ -221,11 +218,6 @@ export function Prompt(props: PromptProps) {
         onSelect: (dialog) => {
           if (autocomplete.visible) return
           if (!input.focused) return
-          // TODO: this should be its own command
-          if (store.mode === "shell") {
-            setStore("mode", "normal")
-            return
-          }
           if (!props.sessionID) return
 
           setStore("interrupt", store.interrupt + 1)
@@ -583,22 +575,9 @@ export function Prompt(props: PromptProps) {
     // Filter out text parts (pasted content) since they're now expanded inline
     const nonTextParts = store.prompt.parts.filter((part) => part.type !== "text")
 
-    // Capture mode before it gets reset
-    const currentMode = store.mode
     const variant = local.model.variant.current()
 
-    if (store.mode === "shell") {
-      sdk.client.session.shell({
-        sessionID,
-        agent: local.agent.current().name,
-        model: {
-          providerID: selectedModel.providerID,
-          modelID: selectedModel.modelID,
-        },
-        command: inputText,
-      })
-      setStore("mode", "normal")
-    } else if (
+    if (
       inputText.startsWith("/") &&
       iife(() => {
         const firstLine = inputText.split("\n")[0]
@@ -653,7 +632,6 @@ export function Prompt(props: PromptProps) {
     }
     history.append({
       ...store.prompt,
-      mode: currentMode,
     })
     input.extmarks.clear()
     setStore("prompt", {
@@ -754,7 +732,6 @@ export function Prompt(props: PromptProps) {
 
   const highlight = createMemo(() => {
     if (keybind.leader) return theme.border
-    if (store.mode === "shell") return theme.primary
     return local.agent.color(local.agent.current().name)
   })
 
@@ -767,10 +744,6 @@ export function Prompt(props: PromptProps) {
 
   const placeholderText = createMemo(() => {
     if (props.sessionID) return undefined
-    if (store.mode === "shell") {
-      const example = SHELL_PLACEHOLDERS[store.placeholder % SHELL_PLACEHOLDERS.length]
-      return `Run a command... "${example}"`
-    }
     return `Ask anything... "${PLACEHOLDERS[store.placeholder % PLACEHOLDERS.length]}"`
   })
 
@@ -887,20 +860,7 @@ export function Prompt(props: PromptProps) {
                     return
                   }
                 }
-                if (e.name === "!" && input.visualCursor.offset === 0) {
-                  setStore("placeholder", Math.floor(Math.random() * SHELL_PLACEHOLDERS.length))
-                  setStore("mode", "shell")
-                  e.preventDefault()
-                  return
-                }
-                if (store.mode === "shell") {
-                  if ((e.name === "backspace" && input.visualCursor.offset === 0) || e.name === "escape") {
-                    setStore("mode", "normal")
-                    e.preventDefault()
-                    return
-                  }
-                }
-                if (store.mode === "normal") autocomplete.onKeyDown(e)
+                autocomplete.onKeyDown(e)
                 if (!autocomplete.visible) {
                   if (
                     (keybind.match("history_previous", e) && input.cursorOffset === 0) ||
@@ -912,7 +872,6 @@ export function Prompt(props: PromptProps) {
                     if (item) {
                       input.setText(item.input)
                       setStore("prompt", item)
-                      setStore("mode", item.mode ?? "normal")
                       restoreExtmarksFromParts(item.parts)
                       e.preventDefault()
                       if (direction === -1) input.cursorOffset = 0
@@ -1014,22 +973,20 @@ export function Prompt(props: PromptProps) {
             />
             <box flexDirection="row" flexShrink={0} paddingTop={1} gap={1}>
               <text fg={highlight()}>
-                {store.mode === "shell" ? "Shell" : Locale.titlecase(local.agent.current().name)}{" "}
+                {local.agent.current().label ?? Locale.titlecase(local.agent.current().name)}{" "}
               </text>
-              <Show when={store.mode === "normal"}>
-                <box flexDirection="row" gap={1}>
-                  <text flexShrink={0} fg={keybind.leader ? theme.textMuted : theme.text}>
-                    {local.model.parsed().model}
+              <box flexDirection="row" gap={1}>
+                <text flexShrink={0} fg={keybind.leader ? theme.textMuted : theme.text}>
+                  {local.model.parsed().model}
+                </text>
+                <text fg={theme.textMuted}>{local.model.parsed().provider}</text>
+                <Show when={showVariant()}>
+                  <text fg={theme.textMuted}>·</text>
+                  <text>
+                    <span style={{ fg: theme.warning, bold: true }}>{local.model.variant.current()}</span>
                   </text>
-                  <text fg={theme.textMuted}>{local.model.parsed().provider}</text>
-                  <Show when={showVariant()}>
-                    <text fg={theme.textMuted}>·</text>
-                    <text>
-                      <span style={{ fg: theme.warning, bold: true }}>{local.model.variant.current()}</span>
-                    </text>
-                  </Show>
-                </box>
-              </Show>
+                </Show>
+              </box>
             </box>
           </box>
         </box>
@@ -1142,26 +1099,17 @@ export function Prompt(props: PromptProps) {
           </Show>
           <Show when={status().type !== "retry"}>
             <box gap={2} flexDirection="row">
-              <Switch>
-                <Match when={store.mode === "normal"}>
-                  <Show when={local.model.variant.list().length > 0}>
-                    <text fg={theme.text}>
-                      {keybind.print("variant_cycle")} <span style={{ fg: theme.textMuted }}>variants</span>
-                    </text>
-                  </Show>
-                  <text fg={theme.text}>
-                    {keybind.print("agent_cycle")} <span style={{ fg: theme.textMuted }}>agents</span>
-                  </text>
-                  <text fg={theme.text}>
-                    {keybind.print("command_list")} <span style={{ fg: theme.textMuted }}>commands</span>
-                  </text>
-                </Match>
-                <Match when={store.mode === "shell"}>
-                  <text fg={theme.text}>
-                    esc <span style={{ fg: theme.textMuted }}>exit shell mode</span>
-                  </text>
-                </Match>
-              </Switch>
+              <Show when={local.model.variant.list().length > 0}>
+                <text fg={theme.text}>
+                  {keybind.print("variant_cycle")} <span style={{ fg: theme.textMuted }}>variants</span>
+                </text>
+              </Show>
+              <text fg={theme.text}>
+                {keybind.print("agent_cycle")} <span style={{ fg: theme.textMuted }}>agents</span>
+              </text>
+              <text fg={theme.text}>
+                {keybind.print("command_list")} <span style={{ fg: theme.textMuted }}>commands</span>
+              </text>
             </box>
           </Show>
         </box>

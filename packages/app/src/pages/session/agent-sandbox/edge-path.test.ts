@@ -3,19 +3,13 @@ import { computeEdgePath, edgeStrokeStyle } from "./edge-path"
 
 describe("computeEdgePath", () => {
   test("returns a cubic bezier SVG path", () => {
-    const path = computeEdgePath(
-      { x: 0, y: 50, width: 100, height: 100 },
-      { x: 300, y: 50, width: 100, height: 100 },
-    )
+    const path = computeEdgePath({ x: 0, y: 50, width: 100, height: 100 }, { x: 300, y: 50, width: 100, height: 100 })
     expect(path).toMatch(/^M\s/)
     expect(path).toContain("C")
   })
 
   test("source exits right, target enters left", () => {
-    const path = computeEdgePath(
-      { x: 0, y: 0, width: 100, height: 100 },
-      { x: 400, y: 0, width: 100, height: 100 },
-    )
+    const path = computeEdgePath({ x: 0, y: 0, width: 100, height: 100 }, { x: 400, y: 0, width: 100, height: 100 })
     expect(path).toStartWith("M 100 50")
   })
 })

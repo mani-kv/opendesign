@@ -93,9 +93,6 @@ export const dict = {
   "command.model.variant.cycle": "切换思考强度",
   "command.model.variant.cycle.description": "切换到下一个强度等级",
 
-  "command.prompt.mode.shell": "Shell",
-  "command.prompt.mode.normal": "Prompt",
-
   "command.permissions.autoaccept.enable": "自动接受权限",
   "command.permissions.autoaccept.disable": "停止自动接受权限",
 
@@ -247,14 +244,10 @@ export const dict = {
   "common.default": "默认",
   "common.attachment": "附件",
 
-  "prompt.placeholder.shell": "输入 shell 命令...",
   "prompt.placeholder.normal": '随便问点什么... "{{example}}"',
   "prompt.placeholder.simple": "随便问点什么...",
   "prompt.placeholder.summarizeComments": "总结评论…",
   "prompt.placeholder.summarizeComment": "总结该评论…",
-  "prompt.mode.shell": "Shell",
-  "prompt.mode.normal": "Prompt",
-  "prompt.mode.shell.exit": "按 esc 退出",
   "prompt.example.1": "修复代码库中的一个 TODO",
   "prompt.example.2": "这个项目的技术栈是什么？",
   "prompt.example.3": "修复失败的测试",
@@ -301,7 +294,6 @@ export const dict = {
   "prompt.toast.modelAgentRequired.description": "发送提示前请先选择智能体和模型。",
   "prompt.toast.worktreeCreateFailed.title": "创建工作树失败",
   "prompt.toast.sessionCreateFailed.title": "创建会话失败",
-  "prompt.toast.shellSendFailed.title": "发送 shell 命令失败",
   "prompt.toast.commandSendFailed.title": "发送命令失败",
   "prompt.toast.promptSendFailed.title": "发送提示失败",
   "prompt.toast.promptSendFailed.description": "无法获取会话",

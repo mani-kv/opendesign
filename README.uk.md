@@ -68,12 +68,12 @@ nix run nixpkgs#opencode           # або github:anomalyco/opencode для н�
 
 OpenCode також доступний як десктопний застосунок. Завантажуйте напряму зі [сторінки релізів](https://github.com/anomalyco/opencode/releases) або [opencode.ai/download](https://opencode.ai/download).
 
-| Платформа             | Завантаження                          |
-| --------------------- | ------------------------------------- |
+| Платформа             | Завантаження                         |
+| --------------------- | ------------------------------------ |
 | macOS (Apple Silicon) | `opencode-electron-darwin-arm64.dmg` |
-| macOS (Intel)         | `opencode-electron-darwin-x64.dmg`     |
+| macOS (Intel)         | `opencode-electron-darwin-x64.dmg`   |
 | Windows               | `opencode-electron-win32-x64.exe`    |
-| Linux                 | `.deb`, `.rpm` або AppImage           |
+| Linux                 | `.deb`, `.rpm` або AppImage          |
 
 ```bash
 # macOS (Homebrew)

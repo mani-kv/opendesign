@@ -1,8 +1,7 @@
 /** Figma URL types that map to embed paths */
 type FigmaType = "design" | "file" | "proto" | "board"
 
-const FIGMA_URL =
-  /(?:https?:\/\/)?(?:www\.)?figma\.com\/(design|file|proto|board)\/([a-zA-Z0-9_-]+)/i
+const FIGMA_URL = /(?:https?:\/\/)?(?:www\.)?figma\.com\/(design|file|proto|board)\/([a-zA-Z0-9_-]+)/i
 
 /**
  * Parse a Figma URL and return the file key and embed type.

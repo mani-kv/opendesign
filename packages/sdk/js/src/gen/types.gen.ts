@@ -2771,49 +2771,6 @@ export type SessionCommandResponses = {
 
 export type SessionCommandResponse = SessionCommandResponses[keyof SessionCommandResponses]
 
-export type SessionShellData = {
-  body?: {
-    agent: string
-    model?: {
-      providerID: string
-      modelID: string
-    }
-    command: string
-  }
-  path: {
-    /**
-     * Session ID
-     */
-    id: string
-  }
-  query?: {
-    directory?: string
-  }
-  url: "/session/{id}/shell"
-}
-
-export type SessionShellErrors = {
-  /**
-   * Bad request
-   */
-  400: BadRequestError
-  /**
-   * Not found
-   */
-  404: NotFoundError
-}
-
-export type SessionShellError = SessionShellErrors[keyof SessionShellErrors]
-
-export type SessionShellResponses = {
-  /**
-   * Created message
-   */
-  200: AssistantMessage
-}
-
-export type SessionShellResponse = SessionShellResponses[keyof SessionShellResponses]
-
 export type SessionRevertData = {
   body?: {
     messageID: string

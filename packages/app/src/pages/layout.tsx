@@ -267,7 +267,9 @@ export default function Layout(props: ParentProps) {
   const [sortNow, setSortNow] = createSignal(Date.now())
   const [sizing, setSizing] = createSignal(false)
   const [contextBarExpanded, setContextBarExpanded] = createSignal(false)
-  const [isXl, setIsXl] = createSignal(typeof window !== "undefined" && window.matchMedia("(min-width: 1280px)").matches)
+  const [isXl, setIsXl] = createSignal(
+    typeof window !== "undefined" && window.matchMedia("(min-width: 1280px)").matches,
+  )
   let sizet: number | undefined
   let sortNowInterval: ReturnType<typeof setInterval> | undefined
   const sortNowTimeout = setTimeout(
@@ -641,13 +643,20 @@ export default function Layout(props: ParentProps) {
     if (!pid) return
     const ws = selectedWorkspace()
     if (!ws) return
-    const proj = workspace.projects.list(ws.id)().find((p) => p.id === pid)
+    const proj = workspace.projects
+      .list(ws.id)()
+      .find((p) => p.id === pid)
     return proj?.name
   })
 
   createEffect(
     on(
-      () => ({ ready: pageReady(), layoutReady: layoutReady(), projectId: params.projectId, list: layout.projects.list() }),
+      () => ({
+        ready: pageReady(),
+        layoutReady: layoutReady(),
+        projectId: params.projectId,
+        list: layout.projects.list(),
+      }),
       (value) => {
         if (!value.ready) return
         if (!value.layoutReady) return
@@ -2019,10 +2028,7 @@ export default function Layout(props: ParentProps) {
 
   const showDeleteSidebarWorkspaceDialog = (w: Workspace) => {
     dialog.show(() => (
-      <Dialog
-        title={language.t("sidebar.workspace.delete.title")}
-        fit
-      >
+      <Dialog title={language.t("sidebar.workspace.delete.title")} fit>
         <div class="flex flex-col gap-4 pl-6 pr-2.5 pb-3">
           <span class="text-14-regular text-text-strong">
             {language.t("sidebar.workspace.delete.confirm", { name: w.name })}
@@ -2053,10 +2059,7 @@ export default function Layout(props: ParentProps) {
 
   const showDeleteSidebarProjectDialog = (proj: { id: string; name: string; workspaceId: string }) => {
     dialog.show(() => (
-      <Dialog
-        title={language.t("sidebar.project.delete.title")}
-        fit
-      >
+      <Dialog title={language.t("sidebar.project.delete.title")} fit>
         <div class="flex flex-col gap-4 pl-6 pr-2.5 pb-3">
           <span class="text-14-regular text-text-strong">
             {language.t("sidebar.project.delete.confirm", { name: proj.name })}
@@ -2168,12 +2171,7 @@ export default function Layout(props: ParentProps) {
               <span class="text-[14px] font-medium text-white capitalize tracking-wide">
                 {language.t("sidebar.context.projects")}
               </span>
-              <Button
-                size="small"
-                variant="secondary"
-                icon="plus-small"
-                onClick={() => addProject(ws.id)}
-              >
+              <Button size="small" variant="secondary" icon="plus-small" onClick={() => addProject(ws.id)}>
                 {language.t("command.project.add")}
               </Button>
             </div>
@@ -2375,42 +2373,42 @@ export default function Layout(props: ParentProps) {
               >
                 <div class="@container w-full h-full contain-strict min-w-0">
                   <SidebarContent
-                  mobile
-                  opened={() => layout.sidebar.opened()}
-                  aimMove={aim.move}
-                  workspaces={() => workspaceList()}
-                  renderWorkspace={(w) => (
-                    <SortableWorkspaceTile
-                      workspace={w}
-                      mobile
-                      selected={() => store.activeWorkspaceId === w.id}
-                      overlay={() => !layout.sidebar.opened()}
-                      onSelect={() => selectWorkspace(w)}
-                    />
-                  )}
-                  handleDragStart={handleWorkspaceRailDragStart}
-                  handleDragEnd={handleWorkspaceRailDragEnd}
-                  handleDragOver={handleWorkspaceRailDragOver}
-                  addWorkspaceLabel={language.t("command.workspace.new")}
-                  addWorkspaceKeybind={() => command.keybind("project.open")}
-                  onAddWorkspace={addWorkspace}
-                  renderWorkspaceOverlay={() => (
-                    <WorkspaceRailDragOverlay
-                      workspaces={() => workspaceList()}
-                      activeWorkspace={() => store.activeWorkspace}
-                    />
-                  )}
-                  settingsLabel={() => language.t("sidebar.settings")}
-                  settingsKeybind={() => command.keybind("settings.open")}
-                  onOpenSettings={openSettings}
-                  helpLabel={() => language.t("sidebar.help")}
-                  onOpenHelp={() => platform.openLink("https://opencode.ai/desktop-feedback")}
-                  renderPanel={() => (
-                    <Show when={selectedWorkspace()} keyed>
-                      {(w) => <SidebarPanel workspace={w} mobile />}
-                    </Show>
-                  )}
-                />
+                    mobile
+                    opened={() => layout.sidebar.opened()}
+                    aimMove={aim.move}
+                    workspaces={() => workspaceList()}
+                    renderWorkspace={(w) => (
+                      <SortableWorkspaceTile
+                        workspace={w}
+                        mobile
+                        selected={() => store.activeWorkspaceId === w.id}
+                        overlay={() => !layout.sidebar.opened()}
+                        onSelect={() => selectWorkspace(w)}
+                      />
+                    )}
+                    handleDragStart={handleWorkspaceRailDragStart}
+                    handleDragEnd={handleWorkspaceRailDragEnd}
+                    handleDragOver={handleWorkspaceRailDragOver}
+                    addWorkspaceLabel={language.t("command.workspace.new")}
+                    addWorkspaceKeybind={() => command.keybind("project.open")}
+                    onAddWorkspace={addWorkspace}
+                    renderWorkspaceOverlay={() => (
+                      <WorkspaceRailDragOverlay
+                        workspaces={() => workspaceList()}
+                        activeWorkspace={() => store.activeWorkspace}
+                      />
+                    )}
+                    settingsLabel={() => language.t("sidebar.settings")}
+                    settingsKeybind={() => command.keybind("settings.open")}
+                    onOpenSettings={openSettings}
+                    helpLabel={() => language.t("sidebar.help")}
+                    onOpenHelp={() => platform.openLink("https://opencode.ai/desktop-feedback")}
+                    renderPanel={() => (
+                      <Show when={selectedWorkspace()} keyed>
+                        {(w) => <SidebarPanel workspace={w} mobile />}
+                      </Show>
+                    )}
+                  />
                 </div>
               </nav>
             </div>
@@ -2429,8 +2427,7 @@ export default function Layout(props: ParentProps) {
             >
               <div
                 classList={{
-                  "block shrink-0 overflow-hidden transition-[height,max-height] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none xl:rounded-tl-[12px] border-t xl:border-l border-border-weak-base":
-                    true,
+                  "block shrink-0 overflow-hidden transition-[height,max-height] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none xl:rounded-tl-[12px] border-t xl:border-l border-border-weak-base": true,
                   "h-9 max-h-9": (!isXl() || !layout.sidebar.opened()) && !contextBarExpanded(),
                   "h-[56px] max-h-[56px]": (!isXl() || !layout.sidebar.opened()) && contextBarExpanded(),
                   "h-0 max-h-0": isXl() && layout.sidebar.opened(),
@@ -2438,8 +2435,7 @@ export default function Layout(props: ParentProps) {
               >
                 <div
                   classList={{
-                    "flex min-h-9 h-9 min-w-0 w-fit flex-col items-start justify-center gap-0.5 overflow-hidden px-4 py-1.5 transition-[height] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none bg-background-base border-0 xl:rounded-tl-[12px] cursor-pointer":
-                      true,
+                    "flex min-h-9 h-9 min-w-0 w-fit flex-col items-start justify-center gap-0.5 overflow-hidden px-4 py-1.5 transition-[height] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none bg-background-base border-0 xl:rounded-tl-[12px] cursor-pointer": true,
                     "h-[56px] justify-start": contextBarExpanded(),
                   }}
                   onClick={() =>
@@ -2462,8 +2458,7 @@ export default function Layout(props: ParentProps) {
                 >
                   <div
                     classList={{
-                      "flex min-h-0 shrink-0 items-center overflow-hidden transition-[max-height] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none":
-                        true,
+                      "flex min-h-0 shrink-0 items-center overflow-hidden transition-[max-height] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none": true,
                       "max-h-0": !contextBarExpanded(),
                       "max-h-4": contextBarExpanded(),
                     }}
@@ -2496,9 +2491,7 @@ export default function Layout(props: ParentProps) {
                     fallback={
                       <div class="size-full flex flex-col items-center justify-center gap-6 px-4">
                         <div class="flex flex-col gap-2 text-center max-w-sm">
-                          <div class="text-14-medium text-text-strong">
-                            {language.t("workspace.empty.title")}
-                          </div>
+                          <div class="text-14-medium text-text-strong">{language.t("workspace.empty.title")}</div>
                           <div
                             class="text-14-regular text-text-weak"
                             style={{ "line-height": "var(--line-height-normal)" }}
@@ -2508,11 +2501,7 @@ export default function Layout(props: ParentProps) {
                         </div>
                         <Show when={selectedWorkspace()} keyed>
                           {(ws) => (
-                            <Button
-                              size="large"
-                              icon="plus-small"
-                              onClick={() => addProject(ws.id)}
-                            >
+                            <Button size="large" icon="plus-small" onClick={() => addProject(ws.id)}>
                               {language.t("command.project.add")}
                             </Button>
                           )}

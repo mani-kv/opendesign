@@ -18,9 +18,7 @@ export function tokensToMap(refs: FigmaTokenRef[]): Record<string, string> {
 export function tokensToCssVars(refs: FigmaTokenRef[], prefix = "--figma"): string {
   return refs
     .map((ref) => {
-      const name = `${prefix}-${ref.collection}-${ref.name}`
-        .replace(/[./\s]+/g, "-")
-        .toLowerCase()
+      const name = `${prefix}-${ref.collection}-${ref.name}`.replace(/[./\s]+/g, "-").toLowerCase()
       return `  ${name}: ${ref.value};`
     })
     .join("\n")

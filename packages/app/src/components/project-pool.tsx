@@ -36,12 +36,8 @@ function PoolProjectData(props: ParentProps<{ projectId: string; directory: stri
     <DataProvider
       data={sync.data}
       directory={props.directory}
-      onNavigateToSession={(sessionID: string) =>
-        navigate(`/project/${props.projectId}/session/${sessionID}`)
-      }
-      onSessionHref={(sessionID: string) =>
-        `/project/${props.projectId}/session/${sessionID}`
-      }
+      onNavigateToSession={(sessionID: string) => navigate(`/project/${props.projectId}/session/${sessionID}`)}
+      onSessionHref={(sessionID: string) => `/project/${props.projectId}/session/${sessionID}`}
     >
       <LocalProvider>{props.children}</LocalProvider>
     </DataProvider>
@@ -93,10 +89,7 @@ export function ProjectPool(props: { content: Component }) {
               sessionId={sessionId}
               active={k === activeKey()}
             >
-              <SDKProvider
-                directory={() => dir}
-                active={() => k === activeKey()}
-              >
+              <SDKProvider directory={() => dir} active={() => k === activeKey()}>
                 <SyncProvider>
                   <PoolProjectData projectId={projectId} directory={dir}>
                     <Dynamic component={props.content} />

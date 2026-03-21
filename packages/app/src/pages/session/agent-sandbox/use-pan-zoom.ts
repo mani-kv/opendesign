@@ -1,12 +1,12 @@
-import { createSignal } from "solid-js"
+import { createSignal, onCleanup } from "solid-js"
 
 type Viewport = { x: number; y: number; zoom: number }
 
 const MIN_ZOOM = 0.1
 const MAX_ZOOM = 3
 
-export function clampZoom(z: number): number {
-  return Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, z))
+export function clampZoom(z: number, min = MIN_ZOOM, max = MAX_ZOOM): number {
+  return Math.max(min, Math.min(max, z))
 }
 
 export function panBy(vp: Viewport, dx: number, dy: number): Viewport {
@@ -14,7 +14,7 @@ export function panBy(vp: Viewport, dx: number, dy: number): Viewport {
 }
 
 export function zoomAtPoint(vp: Viewport, newZoom: number, cx: number, cy: number): Viewport {
-  const z = clampZoom(newZoom)
+  const z = newZoom
   const scale = z / vp.zoom
   return {
     x: cx - (cx - vp.x) * scale,
@@ -23,10 +23,10 @@ export function zoomAtPoint(vp: Viewport, newZoom: number, cx: number, cy: numbe
   }
 }
 
-export function createPanZoom(opts: {
-  viewport: () => Viewport
-  setViewport: (vp: Viewport) => void
-}) {
+/** Tags that indicate a click is on a canvas node, not the background */
+const NODE_TAGS = new Set(["foreignobject", "div", "button", "iframe", "span", "input", "a", "p", "h1", "h2", "h3"])
+
+export function createPanZoom(opts: { viewport: () => Viewport; setViewport: (vp: Viewport) => void }) {
   const [panning, setPanning] = createSignal(false)
   let startX = 0
   let startY = 0
@@ -34,12 +34,13 @@ export function createPanZoom(opts: {
 
   const onPointerDown = (e: PointerEvent) => {
     if (e.button !== 0) return
-    const target = e.target as SVGElement
-    if (target.tagName !== "svg" && target.tagName !== "rect") return
+    const tag = (e.target as Element).tagName.toLowerCase()
+    if (NODE_TAGS.has(tag)) return
     e.preventDefault()
     startX = e.clientX
     startY = e.clientY
-    startVp = opts.viewport()
+    const vp = opts.viewport()
+    startVp = { x: vp.x, y: vp.y, zoom: vp.zoom }
     setPanning(true)
 
     const onMove = (ev: PointerEvent) => {
@@ -56,15 +57,22 @@ export function createPanZoom(opts: {
     document.addEventListener("pointerup", onUp)
   }
 
-  const onWheel = (e: WheelEvent) => {
-    e.preventDefault()
-    const rect = (e.currentTarget as Element).getBoundingClientRect()
-    const cx = e.clientX - rect.left
-    const cy = e.clientY - rect.top
-    const factor = e.deltaY > 0 ? 0.9 : 1.1
-    const vp = opts.viewport()
-    opts.setViewport(zoomAtPoint(vp, vp.zoom * factor, cx, cy))
+  /** Attach wheel listener with { passive: false } so preventDefault works */
+  const bindWheel = (el: Element) => {
+    const handler = (e: Event) => {
+      const we = e as WheelEvent
+      we.preventDefault()
+      const rect = el.getBoundingClientRect()
+      const cx = we.clientX - rect.left
+      const cy = we.clientY - rect.top
+      const factor = we.deltaY > 0 ? 0.9 : 1.1
+      const cur = opts.viewport()
+      const snap = { x: cur.x, y: cur.y, zoom: cur.zoom }
+      opts.setViewport(zoomAtPoint(snap, clampZoom(snap.zoom * factor), cx, cy))
+    }
+    el.addEventListener("wheel", handler, { passive: false })
+    onCleanup(() => el.removeEventListener("wheel", handler))
   }
 
-  return { panning, onPointerDown, onWheel }
+  return { panning, onPointerDown, bindWheel }
 }

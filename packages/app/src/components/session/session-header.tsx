@@ -587,10 +587,7 @@ export function SessionHeader() {
                 </div>
               </Show>
               <div class="flex items-center gap-1">
-                <TooltipKeybind
-                  title={language.t("command.agents.toggle")}
-                  keybind={command.keybind("agents.toggle")}
-                >
+                <TooltipKeybind title={language.t("command.agents.toggle")} keybind={command.keybind("agents.toggle")}>
                   <Button
                     variant="ghost"
                     class="group/agents-toggle titlebar-icon w-8 h-6 p-0 box-border shrink-0"
@@ -616,10 +613,7 @@ export function SessionHeader() {
                         else layout.canvasPanel.toggleLayout()
                       }}
                       aria-label={language.t("command.review.toggle")}
-                      aria-expanded={
-                        view().reviewPanel.opened() &&
-                        layout.canvasPanel.layout() === "split"
-                      }
+                      aria-expanded={view().reviewPanel.opened() && layout.canvasPanel.layout() === "split"}
                       aria-controls="canvas-panel"
                     >
                       <div class="relative flex items-center justify-center size-4">

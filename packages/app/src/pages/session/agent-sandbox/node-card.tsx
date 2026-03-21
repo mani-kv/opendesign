@@ -1,5 +1,5 @@
 import { Switch, Match } from "solid-js"
-import type { AgentNode, CanvasNode } from "@opencode-ai/opendesign"
+import type { AgentNode, CanvasNode } from "@opencode-ai/opendesign/types"
 import { AgentNodeCard } from "./agent-node-card"
 
 export function NodeCard(props: {
@@ -8,31 +8,52 @@ export function NodeCard(props: {
   onSelect: () => void
   onDragStart: (e: PointerEvent) => void
 }) {
+  const isAgent = () => props.node.type === "agent"
+
   return (
     <div
-      class="rounded-lg border bg-background-base shadow-sm overflow-hidden cursor-grab active:cursor-grabbing select-none"
-      classList={{ "border-[var(--border-info-base)] ring-1 ring-[var(--border-info-base)]": props.selected }}
+      class="rounded-lg border bg-background-base shadow-sm overflow-hidden select-none"
+      classList={{
+        "border-[var(--border-info-base)] ring-1 ring-[var(--border-info-base)]": props.selected,
+        "cursor-grab active:cursor-grabbing": !isAgent(),
+      }}
       style={{ width: `${props.node.width ?? 320}px`, height: `${props.node.height ?? 240}px` }}
       onPointerDown={(e) => {
         props.onSelect()
-        props.onDragStart(e)
+        if (!isAgent()) props.onDragStart(e)
       }}
     >
       <Switch fallback={<DefaultCard node={props.node} />}>
         <Match when={props.node.type === "agent" && props.node}>
-          {(n) => <AgentNodeCard node={n() as AgentNode} />}
+          {(n) => <AgentNodeCard node={n() as AgentNode} onDragStart={props.onDragStart} />}
         </Match>
         <Match when={props.node.type === "frame"}>
-          <SimpleCard label="Frame" name={(props.node as Extract<CanvasNode, { type: "frame" }>).data.frame.name} icon="image" />
+          <SimpleCard
+            label="Frame"
+            name={(props.node as Extract<CanvasNode, { type: "frame" }>).data.frame.name}
+            icon="image"
+          />
         </Match>
         <Match when={props.node.type === "persona"}>
-          <SimpleCard label="Persona" name={(props.node as Extract<CanvasNode, { type: "persona" }>).data.persona.name} icon="user" />
+          <SimpleCard
+            label="Persona"
+            name={(props.node as Extract<CanvasNode, { type: "persona" }>).data.persona.name}
+            icon="user"
+          />
         </Match>
         <Match when={props.node.type === "context"}>
-          <SimpleCard label="Context" name={(props.node as Extract<CanvasNode, { type: "context" }>).data.document.name} icon="file-text" />
+          <SimpleCard
+            label="Context"
+            name={(props.node as Extract<CanvasNode, { type: "context" }>).data.document.name}
+            icon="file-text"
+          />
         </Match>
         <Match when={props.node.type === "checkpoint"}>
-          <SimpleCard label="Checkpoint" name={(props.node as Extract<CanvasNode, { type: "checkpoint" }>).data.checkpoint.id} icon="git-commit" />
+          <SimpleCard
+            label="Checkpoint"
+            name={(props.node as Extract<CanvasNode, { type: "checkpoint" }>).data.checkpoint.id}
+            icon="git-commit"
+          />
         </Match>
         <Match when={props.node.type === "merged"}>
           <SimpleCard

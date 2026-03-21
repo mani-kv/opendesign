@@ -1089,6 +1089,10 @@ export type AgentConfig = {
   }
   disable?: boolean
   /**
+   * Display name shown in the UI (defaults to agent name)
+   */
+  label?: string
+  /**
    * Description of when to use the agent
    */
   description?: string
@@ -1874,6 +1878,7 @@ export type Command = {
 
 export type Agent = {
   name: string
+  label?: string
   description?: string
   mode: "subagent" | "primary" | "all"
   native?: boolean
@@ -3616,50 +3621,6 @@ export type SessionCommandResponses = {
 }
 
 export type SessionCommandResponse = SessionCommandResponses[keyof SessionCommandResponses]
-
-export type SessionShellData = {
-  body?: {
-    agent: string
-    model?: {
-      providerID: string
-      modelID: string
-    }
-    command: string
-  }
-  path: {
-    /**
-     * Session ID
-     */
-    sessionID: string
-  }
-  query?: {
-    directory?: string
-    workspace?: string
-  }
-  url: "/session/{sessionID}/shell"
-}
-
-export type SessionShellErrors = {
-  /**
-   * Bad request
-   */
-  400: BadRequestError
-  /**
-   * Not found
-   */
-  404: NotFoundError
-}
-
-export type SessionShellError = SessionShellErrors[keyof SessionShellErrors]
-
-export type SessionShellResponses = {
-  /**
-   * Created message
-   */
-  200: AssistantMessage
-}
-
-export type SessionShellResponse = SessionShellResponses[keyof SessionShellResponses]
 
 export type SessionRevertData = {
   body?: {

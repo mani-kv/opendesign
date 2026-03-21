@@ -14,8 +14,7 @@ export function canTransition(from: AgentState, to: AgentState): boolean {
 }
 
 export function transition(from: AgentState, to: AgentState): AgentState {
-  if (!canTransition(from, to))
-    throw new Error(`invalid agent state transition: ${from} → ${to}`)
+  if (!canTransition(from, to)) throw new Error(`invalid agent state transition: ${from} → ${to}`)
   return to
 }
 

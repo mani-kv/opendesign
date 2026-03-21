@@ -68,12 +68,12 @@ nix run nixpkgs#opencode           # または github:anomalyco/opencode で最�
 
 OpenCode はデスクトップアプリとしても利用できます。[releases page](https://github.com/anomalyco/opencode/releases) から直接ダウンロードするか、[opencode.ai/download](https://opencode.ai/download) を利用してください。
 
-| プラットフォーム      | ダウンロード                          |
-| --------------------- | ------------------------------------- |
+| プラットフォーム      | ダウンロード                         |
+| --------------------- | ------------------------------------ |
 | macOS (Apple Silicon) | `opencode-electron-darwin-arm64.dmg` |
-| macOS (Intel)         | `opencode-electron-darwin-x64.dmg`     |
+| macOS (Intel)         | `opencode-electron-darwin-x64.dmg`   |
 | Windows               | `opencode-electron-win32-x64.exe`    |
-| Linux                 | `.deb`、`.rpm`、または AppImage       |
+| Linux                 | `.deb`、`.rpm`、または AppImage      |
 
 ```bash
 # macOS (Homebrew)

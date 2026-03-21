@@ -20,11 +20,7 @@ export function ProjectScopeProvider(props: {
     sessionId: () => props.sessionId,
     sessionKey: () => props.sessionKey,
   }
-  return (
-    <ProjectScopeContext.Provider value={scope}>
-      {props.children}
-    </ProjectScopeContext.Provider>
-  )
+  return <ProjectScopeContext.Provider value={scope}>{props.children}</ProjectScopeContext.Provider>
 }
 
 export function useProjectScope(): ProjectScope {

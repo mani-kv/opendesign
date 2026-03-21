@@ -15,11 +15,7 @@ export function ProjectPoolProvider(props: { children: import("solid-js").JSX.El
     equals: (a, b) => a.length === b.length && a.every((v, i) => v === b[i]),
   })
 
-  return (
-    <PoolContext.Provider value={{ pool, keys, setKeys }}>
-      {props.children}
-    </PoolContext.Provider>
-  )
+  return <PoolContext.Provider value={{ pool, keys, setKeys }}>{props.children}</PoolContext.Provider>
 }
 
 export function useProjectPool() {

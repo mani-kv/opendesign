@@ -77,18 +77,19 @@ log = "0.4"
 
 ## Source Mapping (vello-test → opendesign)
 
-| vello-test source | opendesign destination | Adaptation |
-|---|---|---|
-| `canvas-core/` (entire dir) | `packages/canvas-core/` | Verbatim copy (including `palette.rs`) |
-| `web/src/lib.rs` | `packages/canvas-wasm/src/lib.rs` | Remove SolidJS app mounting; keep WASM init, rendering, bridge functions |
-| `web/src/canvas-bridge.ts` | `packages/app/src/utils/canvas-bridge.ts` | Replace project-switching UI logic with opendesign session context integration |
-| `web/Cargo.toml` | `packages/canvas-wasm/Cargo.toml` | Update paths to reference `packages/canvas-core`; add `webgpu`+`webgl` features to wgpu |
+| vello-test source           | opendesign destination                    | Adaptation                                                                              |
+| --------------------------- | ----------------------------------------- | --------------------------------------------------------------------------------------- |
+| `canvas-core/` (entire dir) | `packages/canvas-core/`                   | Verbatim copy (including `palette.rs`)                                                  |
+| `web/src/lib.rs`            | `packages/canvas-wasm/src/lib.rs`         | Remove SolidJS app mounting; keep WASM init, rendering, bridge functions                |
+| `web/src/canvas-bridge.ts`  | `packages/app/src/utils/canvas-bridge.ts` | Replace project-switching UI logic with opendesign session context integration          |
+| `web/Cargo.toml`            | `packages/canvas-wasm/Cargo.toml`         | Update paths to reference `packages/canvas-core`; add `webgpu`+`webgl` features to wgpu |
 
 ## Frontend Integration
 
 ### New Components
 
 **`packages/app/src/utils/canvas-bridge.ts`**
+
 - Manages WASM module lifecycle (`init()` from pkg)
 - Exports `saveCanvas(sessionId, callback)` and `loadCanvas(sessionId, json)`
 - Maintains in-memory cache: `Map<sessionId, canvasJSON>`
@@ -96,6 +97,7 @@ log = "0.4"
 - **Race condition guard**: Each save callback carries the session ID it was initiated for; stale callbacks (where the active session has changed since the save was requested) are discarded
 
 **`packages/app/src/pages/session/canvas-tab-content.tsx`**
+
 - Renders a container `<div>` for the WASM canvas
 - On first mount: calls `initCanvas(containerEl)` to start the WASM module
 - WASM creates an HTML `<canvas>` element inside the container and starts its winit event loop
@@ -115,6 +117,7 @@ The WASM canvas creates a persistent DOM element that must survive tab/split mod
 ### Canvas Tab Content Swap
 
 In `session-side-panel.tsx`:
+
 - The canvas `Tabs.Content` changes from rendering `props.reviewPanel()` to rendering `<CanvasTabContent />`
 - The `reviewPanel` prop is removed from `SessionSidePanel`
 - The `CanvasFigmaSplit` component's canvas pane also changes to show `CanvasTabContent`
@@ -124,6 +127,7 @@ In `session-side-panel.tsx`:
 ### Keyboard Focus
 
 The WASM canvas captures keyboard events (V for select, R for rectangle, Delete, Escape). To avoid conflicts with the app's own shortcuts:
+
 - The canvas only captures keyboard events when it has focus (winit's behavior in WASM)
 - Clicking outside the canvas (tab bar, prompt dock, etc.) returns focus to the SolidJS app
 - The canvas-bridge exposes a `focusCanvas()` function that programmatically focuses the canvas element
@@ -139,11 +143,13 @@ If native ESM WASM loading has issues during development, `vite-plugin-wasm` can
 Use the Bun workspace alias (consistent with how other packages are referenced):
 
 In `packages/app/package.json`:
+
 ```json
 { "dependencies": { "@opencode-ai/canvas-wasm": "workspace:*" } }
 ```
 
 In TypeScript:
+
 ```ts
 import init from "@opencode-ai/canvas-wasm"
 ```
@@ -167,7 +173,7 @@ New `session_canvas` table (separate from the session table to avoid bloating se
 // packages/opencode/src/session/session-canvas.sql.ts
 export const SessionCanvasTable = sqliteTable("session_canvas", {
   sessionID: text("session_id").primaryKey(),
-  state: text("state").notNull(),     // JSON canvas snapshot
+  state: text("state").notNull(), // JSON canvas snapshot
   updatedAt: integer("updated_at").notNull(),
 })
 ```
@@ -201,6 +207,7 @@ wasm-pack build packages/canvas-wasm --target web --out-dir pkg
 ```
 
 Output: `packages/canvas-wasm/pkg/` containing:
+
 - `canvas_wasm.js` — JS glue code
 - `canvas_wasm_bg.wasm` — WASM binary
 - `canvas_wasm.d.ts` — TypeScript types
@@ -208,6 +215,7 @@ Output: `packages/canvas-wasm/pkg/` containing:
 ### Turborepo Integration
 
 Add to root `turbo.json`:
+
 ```json
 {
   "tasks": {
@@ -231,6 +239,7 @@ Add to root `turbo.json`:
 ### CSP Considerations
 
 The server's proxy route sets CSP headers including `script-src 'self' 'wasm-unsafe-eval'`. WebGPU shader compilation may require `'unsafe-eval'` in some browsers. If WebGPU fails at runtime:
+
 1. Check if the dev server (Vite, port 3000) bypasses CSP (it typically does)
 2. For production, update the CSP in `server.ts` to add `'unsafe-eval'` if needed for WebGPU shader compilation
 

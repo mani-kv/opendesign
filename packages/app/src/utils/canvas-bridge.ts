@@ -7,8 +7,7 @@
  * project's container and state is saved/loaded accordingly.
  */
 
-export const EMPTY_CANVAS_JSON =
-  '{"nodes":[],"next_id":0,"viewport":{"x":-640,"y":-400,"zoom":1}}'
+export const EMPTY_CANVAS_JSON = '{"nodes":[],"next_id":0,"viewport":{"x":-640,"y":-400,"zoom":1}}'
 
 type WasmExports = {
   save_canvas_request: (callback: (json: string) => void) => void
@@ -88,10 +87,7 @@ export function setActiveSession(sessionId: string): void {
   activeSessionId = sessionId
 }
 
-export function saveCanvas(
-  sessionId: string,
-  callback: (json: string) => void,
-): void {
+export function saveCanvas(sessionId: string, callback: (json: string) => void): void {
   if (!wasm) {
     canvasCache.set(sessionId, EMPTY_CANVAS_JSON)
     callback(EMPTY_CANVAS_JSON)
