@@ -1,1 +1,5 @@
 export { createFrameNode, createAgentNode, createPersonaNode, createContextNode, createEdge } from "./node-factory"
+export { createGraphStore, type GraphStore, type GraphState } from "./graph-store"
+export { nextPosition, gridLayout, centerViewport } from "./node-layout"
+export { computeActiveNodes, isNodeVisible, sortByProximity } from "./node-visibility"
+export { createFocusMode, type FocusMode, type FocusTarget } from "./focus-mode"
