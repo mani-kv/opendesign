@@ -858,7 +858,7 @@ export function SessionSidePanel(props: {
                   figmaFirst={splitMode() && canSplit() && splitLeftActive() === "figma"}
                 />
               </Show>
-              <Show when={props.floatingPrompt && reviewOpen() && !chat.isFloat()}>
+              <Show when={props.floatingPrompt && reviewOpen() && !chat.isFloat() && !chat.isDocked()}>
                 <FloatingPromptDock boundaryRef={props.floatingDockBoundary}>
                   {props.floatingPrompt?.()}
                 </FloatingPromptDock>

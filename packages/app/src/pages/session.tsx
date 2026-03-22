@@ -46,6 +46,8 @@ import { SessionMobileTabs } from "@/pages/session/session-mobile-tabs"
 import { SessionSidePanel } from "@/pages/session/session-side-panel"
 import { TerminalPanel } from "@/pages/session/terminal-panel"
 import { useSessionCommands } from "@/pages/session/use-session-commands"
+import { ChatDock } from "@/pages/session/composer/chat-dock"
+import { useChatMode } from "@/context/chat-mode"
 import { formatServerError } from "@/utils/server-errors"
 
 function projectDir(home: string, projectId: string) {
@@ -73,6 +75,7 @@ export default function Page() {
   const comments = useComments()
   const terminal = useTerminal()
   const isActive = useProjectActive()
+  const chat = useChatMode()
   const [searchParams, setSearchParams] = useSearchParams<{ prompt?: string }>()
 
   createEffect(() => {
@@ -866,6 +869,35 @@ export default function Page() {
           reviewCount={reviewCount()}
           onCanvas={() => setStore("mobileTab", "canvas")}
           onChanges={() => setStore("mobileTab", "changes")}
+        />
+
+        {/* Chat dock */}
+        <ChatDock
+          promptInput={
+            <SessionComposerRegion
+              state={composer}
+              ready={!store.deferRender && messagesReady()}
+              centered={false}
+              inputRef={(el) => {
+                inputRef = el
+              }}
+              newSessionWorktree={newSessionWorktree()}
+              onNewSessionWorktreeReset={() => setStore("newSessionWorktree", "main")}
+              onSubmit={() => {
+                comments.clear()
+                resumeScroll()
+              }}
+              onResponseSubmit={resumeScroll}
+              setPromptDockRef={(el) => {
+                promptDock = el
+              }}
+            />
+          }
+          messageTimeline={
+            <div class="flex items-center justify-center h-full text-text-weak text-12-regular">
+              Messages will appear here
+            </div>
+          }
         />
 
         {/* Agents panel */}
