@@ -31,6 +31,8 @@ const AgentSandboxTabContent = lazy(() =>
 import { createBodyResizing, createOpenSessionFileTab, getTabReorderIndex, type Sizing } from "@/pages/session/helpers"
 import { setSessionHandoff } from "@/pages/session/handoff"
 import { ChatModeButtons } from "@/pages/session/composer/chat-mode-buttons"
+import { ChatFloat } from "@/pages/session/composer/chat-float"
+import { useChatMode } from "@/context/chat-mode"
 
 function CanvasFigmaEmpty() {
   const language = useLanguage()
@@ -396,6 +398,7 @@ export function SessionSidePanel(props: {
   const language = useLanguage()
   const command = useCommand()
   const platform = usePlatform()
+  const chat = useChatMode()
 
   const isDesktop = createMediaQuery("(min-width: 768px)")
   const sessionKey = createMemo(() => `${params.projectId}${params.id ? "/" + params.id : ""}`)
@@ -855,10 +858,20 @@ export function SessionSidePanel(props: {
                   figmaFirst={splitMode() && canSplit() && splitLeftActive() === "figma"}
                 />
               </Show>
-              <Show when={props.floatingPrompt && reviewOpen()}>
+              <Show when={props.floatingPrompt && reviewOpen() && !chat.isFloat()}>
                 <FloatingPromptDock boundaryRef={props.floatingDockBoundary}>
                   {props.floatingPrompt?.()}
                 </FloatingPromptDock>
+              </Show>
+              <Show when={props.floatingPrompt && reviewOpen()}>
+                <ChatFloat
+                  promptInput={props.floatingPrompt?.()}
+                  messageTimeline={
+                    <div class="flex items-center justify-center h-full text-text-weak text-12-regular">
+                      Messages will appear here
+                    </div>
+                  }
+                />
               </Show>
             </div>
           </div>
