@@ -24,6 +24,8 @@ import { useSettings } from "@/context/settings"
 import { useSDK } from "@/context/sdk"
 import { useSync } from "@/context/sync"
 import { parseCommentNote, readCommentMetadata } from "@/utils/comment-note"
+import { parsePreFlightPlan, type PreFlightPlan } from "@opencode-ai/opendesign/agent"
+import { PlanCard } from "@/components/plan-card"
 
 type MessageComment = {
   path: string
@@ -55,6 +57,16 @@ const messageComments = (parts: Part[]): MessageComment[] =>
       },
     ]
   })
+
+const detectPlan = (parts: Part[] | undefined): PreFlightPlan | null => {
+  if (!parts) return null
+  for (const part of parts) {
+    if (part.type !== "text") continue
+    const plan = parsePreFlightPlan((part as TextPart).text)
+    if (plan) return plan
+  }
+  return null
+}
 
 const boundaryTarget = (root: HTMLElement, target: EventTarget | null) => {
   const current = target instanceof Element ? target : undefined
@@ -818,6 +830,18 @@ export function MessageTimeline(props: {
                           container: "w-full px-4 md:px-5",
                         }}
                       />
+                      {(() => {
+                        const plan = createMemo(() => detectPlan(sync.data.part[messageID]))
+                        return (
+                          <Show when={plan()}>
+                            {(p) => (
+                              <div class="w-full px-4 md:px-5 mt-2">
+                                <PlanCard plan={p()} />
+                              </div>
+                            )}
+                          </Show>
+                        )
+                      })()}
                     </div>
                   )
                 }}
