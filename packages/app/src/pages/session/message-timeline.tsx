@@ -24,9 +24,10 @@ import { useSettings } from "@/context/settings"
 import { useSDK } from "@/context/sdk"
 import { useSync } from "@/context/sync"
 import { parseCommentNote, readCommentMetadata } from "@/utils/comment-note"
-import { parsePreFlightPlan, type PreFlightPlan, type ScenarioPlan } from "@opencode-ai/opendesign/agent"
+import { parsePreFlightPlan, scenarioBranchName, type PreFlightPlan, type ScenarioPlan } from "@opencode-ai/opendesign/agent"
 import { PlanCard } from "@/components/plan-card"
 import { useChatMode } from "@/context/chat-mode"
+import { useAgents } from "@/context/agents"
 
 type MessageComment = {
   path: string
@@ -276,16 +277,45 @@ export function MessageTimeline(props: {
     return "active"
   }
 
+  const agents = useAgents()
+
   const handlePlanDispatch = async (messageId: string, scenarios: ScenarioPlan[]) => {
     const sid = sessionID()
     if (!sid) return
-    const payload = JSON.stringify({ scenarios }, null, 2)
-    const text = `Dispatch these scenarios:\n\`\`\`json\n${payload}\n\`\`\``
+
     try {
-      await sdk.client.session.promptAsync({
-        sessionID: sid,
-        parts: [{ type: "text", text }],
-      })
+      // Create a session for each scenario and add as an agent
+      for (const scenario of scenarios) {
+        const branch = scenarioBranchName(scenario.scenario)
+        const id = `agent-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+
+        // Add agent to the panel immediately (state: created)
+        agents.addAgent({
+          id,
+          scenario: scenario.scenario,
+          branch,
+          state: "created",
+        })
+
+        // Create a server-side session for this agent
+        try {
+          const result = await sdk.client.session.create()
+          const session = result.data
+          if (session) {
+            agents.updateAgent(id, { sessionId: session.id, state: "working" })
+
+            // Send the scenario as the first prompt to the agent session
+            const prompt = `You are working on the following scenario:\n\n**${scenario.scenario}**${scenario.description ? `\n${scenario.description}` : ""}\n\nGenerate a complete prototype for this scenario.`
+            await sdk.client.session.promptAsync({
+              sessionID: session.id,
+              parts: [{ type: "text", text: prompt }],
+            })
+          }
+        } catch {
+          agents.updateAgent(id, { state: "waiting" })
+        }
+      }
+
       setPlanStates((prev) => ({ ...prev, [messageId]: "dispatched" }))
       if (chat.isFloat()) {
         chat.minimize()
