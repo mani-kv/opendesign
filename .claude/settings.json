@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "Bash(/Users/Mani/.bun/bin/bun run:*)",
-      "Bash(bunx tsc:*)"
+      "Bash(bunx tsc:*)",
+      "mcp__plugin_claude-mem_mcp-search__smart_search",
+      "mcp__plugin_claude-mem_mcp-search__search",
+      "Bash(grep -r \"@opencode-ai/ui/icon\\\\|@opencode-ai/opendesign\" /Users/Mani/Desktop/SideProjects/opendesign/packages/app/src --include=*.tsx -l)",
+      "mcp__plugin_context-mode_context-mode__ctx_execute_file"
     ]
   }
 }

@@ -408,7 +408,7 @@ function FloatingPromptDock(props: { boundaryRef?: () => HTMLElement | undefined
             {props.messageTimeline}
           </div>
         </Show>
-        <div class="shrink-0">{props.children}</div>
+        <div class="shrink-0 pb-[20px]">{props.children}</div>
       </div>
     </div>
   )
