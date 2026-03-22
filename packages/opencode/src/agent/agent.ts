@@ -16,9 +16,12 @@ import PROMPT_TITLE from "./prompt/title.txt"
 import PROMPT_AGENT from "./prompt/agent.txt"
 import PROMPT_ASK from "./prompt/ask.txt"
 import PROMPT_SCENARIO from "./prompt/scenario.txt"
+import PROMPT_SPECS from "./prompt/specs.txt"
+import PROMPT_DESIGN from "./prompt/design.txt"
 import PROMPT_RESEARCH from "./prompt/research.txt"
 import PROMPT_AUDIT from "./prompt/audit.txt"
 import PROMPT_FIGMA_WRITE from "./prompt/figma-write.txt"
+import PROMPT_TOKEN_SETUP from "./prompt/token-setup.txt"
 import { PermissionNext } from "@/permission/next"
 import { mergeDeep, pipe, sortBy, values } from "remeda"
 import { Global } from "@/global"
@@ -79,8 +82,8 @@ export namespace Agent {
     const user = PermissionNext.fromConfig(cfg.permission ?? {})
 
     const result: Record<string, Info> = {
-      "opendesign-agent": {
-        name: "opendesign-agent",
+      prototype: {
+        name: "prototype",
         label: "Prototype",
         description: "The default agent. Decomposes design requests into scenarios and dispatches agents.",
         options: {},
@@ -97,8 +100,8 @@ export namespace Agent {
         mode: "primary",
         native: true,
       },
-      "opendesign-ask": {
-        name: "opendesign-ask",
+      ask: {
+        name: "ask",
         label: "Ask",
         description: "Ask mode. Read-only brainstorming and design Q&A with full context access.",
         options: {},
@@ -119,6 +122,47 @@ export namespace Agent {
               "*": "ask",
               ...Object.fromEntries(whitelistedDirs.map((dir) => [dir, "allow"])),
             },
+          }),
+          user,
+        ),
+        mode: "primary",
+        native: true,
+      },
+      specs: {
+        name: "specs",
+        label: "Specs",
+        description: "Specs mode. Generates PRDs, design specs, and documentation from project context and requirements.",
+        options: {},
+        prompt: PROMPT_SPECS,
+        permission: PermissionNext.merge(
+          defaults,
+          PermissionNext.fromConfig({
+            question: "allow",
+            edit: "allow",
+            write: "allow",
+          }),
+          user,
+        ),
+        mode: "primary",
+        native: true,
+      },
+      design: {
+        name: "design",
+        label: "Design",
+        description: "Design mode. Works directly with Figma to create and modify components, apply design tokens, and manage design system patterns.",
+        options: {},
+        prompt: PROMPT_DESIGN,
+        permission: PermissionNext.merge(
+          defaults,
+          PermissionNext.fromConfig({
+            question: "allow",
+            edit: "deny",
+            write: "deny",
+            grep: "allow",
+            glob: "allow",
+            list: "allow",
+            read: "allow",
+            bash: "allow",
           }),
           user,
         ),
@@ -167,8 +211,8 @@ export namespace Agent {
         mode: "subagent",
         native: true,
       },
-      "opendesign-scenario": {
-        name: "opendesign-scenario",
+      scenario: {
+        name: "scenario",
         description: "Builds a working interactive prototype for a single design scenario.",
         permission: PermissionNext.merge(
           defaults,
@@ -229,6 +273,25 @@ export namespace Agent {
           user,
         ),
         prompt: PROMPT_AUDIT,
+        options: {},
+        mode: "subagent",
+        native: true,
+      },
+      "token-setup": {
+        name: "token-setup",
+        label: "Token Setup",
+        description: "Extracts design tokens from Figma and writes tokens.css",
+        permission: PermissionNext.merge(
+          defaults,
+          PermissionNext.fromConfig({
+            "*": "deny",
+            write: "allow",
+            read: "allow",
+            edit: "allow",
+          }),
+          user,
+        ),
+        prompt: PROMPT_TOKEN_SETUP,
         options: {},
         mode: "subagent",
         native: true,
@@ -360,7 +423,7 @@ export namespace Agent {
     return pipe(
       await state(),
       values(),
-      sortBy([(x) => (cfg.default_agent ? x.name === cfg.default_agent : x.name === "opendesign-agent"), "desc"]),
+      sortBy([(x) => (cfg.default_agent ? x.name === cfg.default_agent : x.name === "prototype"), "desc"]),
     )
   }
 
