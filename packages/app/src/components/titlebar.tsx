@@ -1,4 +1,4 @@
-import { createEffect, createMemo, Show, untrack } from "solid-js"
+import { createEffect, createMemo, createSignal, onCleanup, onMount, Show, untrack } from "solid-js"
 import { createStore } from "solid-js/store"
 import { useLocation, useNavigate, useParams } from "@solidjs/router"
 import { IconButton } from "@opencode-ai/ui/icon-button"
@@ -102,6 +102,29 @@ export function Titlebar() {
       onSelect: forward,
     },
   ])
+
+  const [figmaAuthed, setFigmaAuthed] = createSignal(false)
+
+  const checkFigmaAuth = async () => {
+    if (platform.platform !== "desktop") return
+    const api = (window as unknown as { api?: { figmaAuthStatus?: () => Promise<boolean> } }).api
+    if (!api?.figmaAuthStatus) return
+    const status = await api.figmaAuthStatus().catch(() => false)
+    setFigmaAuthed(status)
+  }
+
+  onMount(() => {
+    void checkFigmaAuth()
+    const interval = setInterval(() => void checkFigmaAuth(), 30_000)
+    onCleanup(() => clearInterval(interval))
+  })
+
+  const startFigmaAuth = () => {
+    if (platform.platform !== "desktop") return
+    const api = (window as unknown as { api?: { figmaStartAuth?: () => Promise<boolean> } }).api
+    if (!api?.figmaStartAuth) return
+    void api.figmaStartAuth().then(() => checkFigmaAuth()).catch(() => undefined)
+  }
 
   const getWin = () => {
     if (platform.platform !== "desktop") return
@@ -221,6 +244,47 @@ export function Titlebar() {
               </div>
             </Button>
           </TooltipKeybind>
+          <Tooltip class="hidden xl:flex shrink-0" placement="bottom" value="Toggle chat">
+            <Button
+              variant="ghost"
+              class="titlebar-icon w-8 h-6 p-0 box-border"
+              onClick={layout.session.toggle}
+              aria-label="Toggle chat"
+              aria-expanded={layout.session.opened()}
+            >
+              <Icon
+                size="small"
+                name="speech-bubble"
+                classList={{
+                  "text-icon-strong": layout.session.opened(),
+                  "text-icon-weak": !layout.session.opened(),
+                }}
+              />
+            </Button>
+          </Tooltip>
+          <Show when={platform.platform === "desktop"}>
+            <Tooltip
+              class="hidden xl:flex shrink-0"
+              placement="bottom"
+              value={figmaAuthed() ? "Figma connected" : "Connect Figma"}
+            >
+              <button
+                class="titlebar-icon w-8 h-6 p-0 box-border flex items-center justify-center rounded-md hover:bg-background-hover transition-colors"
+                onClick={figmaAuthed() ? undefined : startFigmaAuth}
+                aria-label={figmaAuthed() ? "Figma connected" : "Connect Figma — click to authenticate"}
+                aria-pressed={figmaAuthed()}
+                type="button"
+              >
+                <span
+                  class="block w-2 h-2 rounded-full"
+                  classList={{
+                    "bg-green-500": figmaAuthed(),
+                    "bg-red-500": !figmaAuthed(),
+                  }}
+                />
+              </button>
+            </Tooltip>
+          </Show>
           <div class="hidden xl:flex items-center shrink-0">
             <div class="flex items-center gap-0">
               <Tooltip placement="bottom" value={language.t("common.goBack")} openDelay={2000}>
