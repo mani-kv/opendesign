@@ -1,4 +1,5 @@
 import { For, Match, Show, Switch, createEffect, createMemo, onCleanup, createSignal, lazy, type JSX } from "solid-js"
+import { ChatMessages } from "@/components/chat-messages"
 import { Portal } from "solid-js/web"
 import { createStore } from "solid-js/store"
 import { createMediaQuery } from "@solid-primitives/media"
@@ -31,7 +32,6 @@ const AgentSandboxTabContent = lazy(() =>
 import { createBodyResizing, createOpenSessionFileTab, getTabReorderIndex, type Sizing } from "@/pages/session/helpers"
 import { setSessionHandoff } from "@/pages/session/handoff"
 import { ChatModeButtons } from "@/pages/session/composer/chat-mode-buttons"
-import { ChatFloat } from "@/pages/session/composer/chat-float"
 import { useChatMode } from "@/context/chat-mode"
 
 function CanvasFigmaEmpty() {
@@ -259,7 +259,8 @@ function FigmaWebviewHost(props: { active: boolean; splitOffset?: number; figmaF
   )
 }
 
-function FloatingPromptDock(props: { boundaryRef?: () => HTMLElement | undefined; children: JSX.Element }) {
+function FloatingPromptDock(props: { boundaryRef?: () => HTMLElement | undefined; children: JSX.Element; messageTimeline?: JSX.Element }) {
+  const chat = useChatMode()
   const language = useLanguage()
   const [pos, setPos] = createSignal<{ x: number; y: number } | null>(null)
   const [dragging, setDragging] = createSignal(false)
@@ -330,19 +331,29 @@ function FloatingPromptDock(props: { boundaryRef?: () => HTMLElement | undefined
     >
       <div
         ref={setPrompt}
-        class="pointer-events-auto w-full max-w-[600px] h-fit px-2 pb-5 rounded-lg overflow-hidden flex flex-col group"
+        class="pointer-events-auto w-full max-w-[600px] px-2 rounded-lg overflow-hidden flex flex-col group"
+        classList={{
+          "h-fit pb-5": !chat.isFloat(),
+          "pb-2": chat.isFloat(),
+        }}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         onFocusIn={() => setFocused(true)}
         onFocusOut={() => setFocused(false)}
         style={
           pos()
-            ? { position: "absolute" as const, left: `${pos()!.x}px`, top: `${pos()!.y}px` }
+            ? {
+                position: "absolute" as const,
+                left: `${pos()!.x}px`,
+                top: `${pos()!.y}px`,
+                ...(chat.isFloat() ? { height: "min(500px, calc(100% - 32px))" } : {}),
+              }
             : {
                 position: "absolute" as const,
                 left: "50%",
                 bottom: "1rem",
                 transform: "translateX(-50%)",
+                ...(chat.isFloat() ? { height: "min(500px, calc(100% - 32px))" } : {}),
               }
         }
       >
@@ -350,9 +361,12 @@ function FloatingPromptDock(props: { boundaryRef?: () => HTMLElement | undefined
           role="button"
           tabIndex={0}
           aria-label={language.t("prompt.dock.dragLabel")}
-          class="flex items-center justify-center w-full px-0 pt-3 pb-[18px] rounded-t-[20px] mb-[-10px] cursor-grab active:cursor-grabbing touch-none select-none transition-opacity bg-[linear-gradient(25deg,rgba(123,234,203,0.1)_0%,rgba(66,185,209,0.2)_25%,rgba(213,209,93,0.1)_100%)] backdrop-blur-[12px]"
+          class="flex items-center justify-center w-full px-0 pt-3 cursor-grab active:cursor-grabbing touch-none select-none transition-opacity bg-[linear-gradient(25deg,rgba(123,234,203,0.1)_0%,rgba(66,185,209,0.2)_25%,rgba(213,209,93,0.1)_100%)] backdrop-blur-[12px]"
           classList={{
-            "opacity-0": !dragging() && !hovered() && !focused(),
+            "pb-[18px] rounded-t-[20px] mb-[-10px]": !chat.isFloat(),
+            "pb-2 rounded-t-lg": chat.isFloat(),
+            "opacity-0": !chat.isFloat() && !dragging() && !hovered() && !focused(),
+            "opacity-100": chat.isFloat() && !dragging(),
             "opacity-100 cursor-grabbing": dragging(),
           }}
           onMouseDown={onHandleDown}
@@ -363,7 +377,7 @@ function FloatingPromptDock(props: { boundaryRef?: () => HTMLElement | undefined
           <div class="flex items-center justify-between w-full px-3">
             <div class="flex items-center gap-1 text-[#6b6b6b]">
               <Icon name="grip-vertical" size="small" class="size-4" />
-              <span class="text-12-regular">{language.t("prompt.dock.dragMe")}</span>
+              <span class="text-12-regular">{chat.isFloat() ? "Chat" : language.t("prompt.dock.dragMe")}</span>
               <Icon name="grip-vertical" size="small" class="size-4" />
             </div>
             <div onMouseDown={(e) => e.stopPropagation()}>
@@ -371,7 +385,12 @@ function FloatingPromptDock(props: { boundaryRef?: () => HTMLElement | undefined
             </div>
           </div>
         </div>
-        <div class="flex-1">{props.children}</div>
+        <Show when={chat.isFloat() && props.messageTimeline}>
+          <div class="flex-1 w-full overflow-y-auto min-h-0 border border-border-base rounded-lg bg-background-base">
+            {props.messageTimeline}
+          </div>
+        </Show>
+        <div class="shrink-0">{props.children}</div>
       </div>
     </div>
   )
@@ -858,20 +877,13 @@ export function SessionSidePanel(props: {
                   figmaFirst={splitMode() && canSplit() && splitLeftActive() === "figma"}
                 />
               </Show>
-              <Show when={props.floatingPrompt && reviewOpen() && !chat.isFloat() && !chat.isDocked()}>
-                <FloatingPromptDock boundaryRef={props.floatingDockBoundary}>
+              <Show when={props.floatingPrompt && reviewOpen() && !chat.isDocked()}>
+                <FloatingPromptDock
+                  boundaryRef={props.floatingDockBoundary}
+                  messageTimeline={<ChatMessages />}
+                >
                   {props.floatingPrompt?.()}
                 </FloatingPromptDock>
-              </Show>
-              <Show when={props.floatingPrompt && reviewOpen()}>
-                <ChatFloat
-                  promptInput={props.floatingPrompt?.()}
-                  messageTimeline={
-                    <div class="flex items-center justify-center h-full text-text-weak text-12-regular">
-                      Messages will appear here
-                    </div>
-                  }
-                />
               </Show>
             </div>
           </div>

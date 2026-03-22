@@ -37,6 +37,7 @@ import { usePrompt } from "@/context/prompt"
 import { useSDK } from "@/context/sdk"
 import { useSync } from "@/context/sync"
 import { useTerminal } from "@/context/terminal"
+import { ChatMessages } from "@/components/chat-messages"
 import { createSessionComposerState, SessionComposerRegion } from "@/pages/session/composer"
 import { createOpenReviewFile, createSizing, focusTerminalById } from "@/pages/session/helpers"
 import { AgentsPanel } from "@/pages/session/agents-panel"
@@ -893,11 +894,7 @@ export default function Page() {
               }}
             />
           }
-          messageTimeline={
-            <div class="flex items-center justify-center h-full text-text-weak text-12-regular">
-              Messages will appear here
-            </div>
-          }
+          messageTimeline={<ChatMessages />}
         />
 
         {/* Agents panel */}
