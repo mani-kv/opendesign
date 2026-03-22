@@ -30,6 +30,7 @@ const AgentSandboxTabContent = lazy(() =>
 )
 import { createBodyResizing, createOpenSessionFileTab, getTabReorderIndex, type Sizing } from "@/pages/session/helpers"
 import { setSessionHandoff } from "@/pages/session/handoff"
+import { ChatModeButtons } from "@/pages/session/composer/chat-mode-buttons"
 
 function CanvasFigmaEmpty() {
   const language = useLanguage()
@@ -357,10 +358,15 @@ function FloatingPromptDock(props: { boundaryRef?: () => HTMLElement | undefined
             if (e.key === "Enter" || e.key === " ") e.preventDefault()
           }}
         >
-          <div class="flex items-center justify-center gap-1 text-[#6b6b6b]">
-            <Icon name="grip-vertical" size="small" class="size-4" />
-            <span class="text-12-regular">{language.t("prompt.dock.dragMe")}</span>
-            <Icon name="grip-vertical" size="small" class="size-4" />
+          <div class="flex items-center justify-between w-full px-3">
+            <div class="flex items-center gap-1 text-[#6b6b6b]">
+              <Icon name="grip-vertical" size="small" class="size-4" />
+              <span class="text-12-regular">{language.t("prompt.dock.dragMe")}</span>
+              <Icon name="grip-vertical" size="small" class="size-4" />
+            </div>
+            <div onMouseDown={(e) => e.stopPropagation()}>
+              <ChatModeButtons />
+            </div>
           </div>
         </div>
         <div class="flex-1">{props.children}</div>
