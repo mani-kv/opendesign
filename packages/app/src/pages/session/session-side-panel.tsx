@@ -33,6 +33,8 @@ import { createBodyResizing, createOpenSessionFileTab, getTabReorderIndex, type 
 import { setSessionHandoff } from "@/pages/session/handoff"
 import { ChatModeButtons } from "@/pages/session/composer/chat-mode-buttons"
 import { useChatMode } from "@/context/chat-mode"
+import { useAgents } from "@/context/agents"
+import { stateColor } from "@opencode-ai/opendesign/agent"
 
 function CanvasFigmaEmpty() {
   const language = useLanguage()
@@ -262,6 +264,9 @@ function FigmaWebviewHost(props: { active: boolean; splitOffset?: number; figmaF
 function FloatingPromptDock(props: { boundaryRef?: () => HTMLElement | undefined; children: JSX.Element; messageTimeline?: JSX.Element }) {
   const chat = useChatMode()
   const language = useLanguage()
+  const agentsCtx = useAgents()
+  const focusedAgent = () => agentsCtx.selected()
+  const agentColor = () => focusedAgent() ? stateColor(focusedAgent()!.state) : undefined
   const [pos, setPos] = createSignal<{ x: number; y: number } | null>(null)
   const [dragging, setDragging] = createSignal(false)
   const [hovered, setHovered] = createSignal(false)
@@ -331,10 +336,11 @@ function FloatingPromptDock(props: { boundaryRef?: () => HTMLElement | undefined
     >
       <div
         ref={setPrompt}
-        class="pointer-events-auto w-full max-w-[600px] px-2 rounded-lg overflow-hidden flex flex-col group"
+        class="pointer-events-auto w-full max-w-[600px] px-2 rounded-lg overflow-hidden flex flex-col group transition-shadow duration-300"
         classList={{
           "h-fit pb-5": !chat.isFloat(),
           "pb-2": chat.isFloat(),
+          "shadow-[0_0_20px_rgba(66,185,209,0.3)]": chat.isFloat() && !!focusedAgent(),
         }}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
@@ -377,7 +383,19 @@ function FloatingPromptDock(props: { boundaryRef?: () => HTMLElement | undefined
           <div class="flex items-center justify-between w-full px-3">
             <div class="flex items-center gap-1 text-[#6b6b6b]">
               <Icon name="grip-vertical" size="small" class="size-4" />
-              <span class="text-12-regular">{chat.isFloat() ? "Chat" : language.t("prompt.dock.dragMe")}</span>
+              <Show
+                when={focusedAgent()}
+                fallback={
+                  <span class="text-12-regular">{chat.isFloat() ? "Chat" : language.t("prompt.dock.dragMe")}</span>
+                }
+              >
+                {(agent) => (
+                  <div class="flex items-center gap-1.5">
+                    <div class="size-2 rounded-full shrink-0" style={{ "background-color": agentColor() }} />
+                    <span class="text-12-medium text-text-base truncate max-w-40">{agent().scenario}</span>
+                  </div>
+                )}
+              </Show>
               <Icon name="grip-vertical" size="small" class="size-4" />
             </div>
             <div onMouseDown={(e) => e.stopPropagation()}>
@@ -386,7 +404,7 @@ function FloatingPromptDock(props: { boundaryRef?: () => HTMLElement | undefined
           </div>
         </div>
         <Show when={chat.isFloat() && props.messageTimeline}>
-          <div class="flex-1 w-full overflow-y-auto min-h-0 border border-border-base rounded-lg bg-background-base">
+          <div class="flex-1 w-full overflow-y-auto min-h-0 border border-border-base rounded-none bg-background-base mt-[-8px] mb-[-8px]">
             {props.messageTimeline}
           </div>
         </Show>
