@@ -11,6 +11,15 @@ export type WslConfig = { enabled: boolean }
 
 export type LinuxDisplayBackend = "wayland" | "auto"
 
+export type FigmaSelectionData = {
+  fileKey: string | null
+  nodeId: string | null
+  nodeName: string | null
+  nodeType: string | null
+  fileName: string | null
+  url: string | null
+}
+
 export type ElectronAPI = {
   killSidecar: () => Promise<void>
   installCli: () => Promise<string>
@@ -63,4 +72,6 @@ export type ElectronAPI = {
   installUpdate: () => Promise<void>
   figmaAuthStatus: () => Promise<boolean>
   figmaStartAuth: () => Promise<boolean>
+  onFigmaSelection: (cb: (selection: FigmaSelectionData) => void) => () => void
+  onFigmaThumbnail: (cb: (data: { nodeId: string; thumbnail: string }) => void) => () => void
 }

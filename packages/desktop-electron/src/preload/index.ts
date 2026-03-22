@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from "electron"
-import type { ElectronAPI, InitStep, SqliteMigrationProgress } from "./types"
+import type { ElectronAPI, FigmaSelectionData, InitStep, SqliteMigrationProgress } from "./types"
 
 const api: ElectronAPI = {
   killSidecar: () => ipcRenderer.invoke("kill-sidecar"),
@@ -63,6 +63,16 @@ const api: ElectronAPI = {
   installUpdate: () => ipcRenderer.invoke("install-update"),
   figmaAuthStatus: () => ipcRenderer.invoke("figma-auth-status"),
   figmaStartAuth: () => ipcRenderer.invoke("figma-start-auth"),
+  onFigmaSelection: (cb) => {
+    const handler = (_: unknown, selection: FigmaSelectionData) => cb(selection)
+    ipcRenderer.on("figma:selection-updated", handler)
+    return () => ipcRenderer.removeListener("figma:selection-updated", handler)
+  },
+  onFigmaThumbnail: (cb) => {
+    const handler = (_: unknown, data: { nodeId: string; thumbnail: string }) => cb(data)
+    ipcRenderer.on("figma:selection-thumbnail", handler)
+    return () => ipcRenderer.removeListener("figma:selection-thumbnail", handler)
+  },
 }
 
 contextBridge.exposeInMainWorld("api", api)
