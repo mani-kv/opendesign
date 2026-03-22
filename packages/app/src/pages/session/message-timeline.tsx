@@ -1,4 +1,4 @@
-import { For, createEffect, createMemo, on, onCleanup, Show, Index, type JSX } from "solid-js"
+import { For, createEffect, createMemo, createSignal, on, onCleanup, Show, Index, type JSX } from "solid-js"
 import { createStore, produce } from "solid-js/store"
 import { useNavigate } from "@solidjs/router"
 import { useProjectParams } from "@/context/project-scope"
@@ -24,8 +24,9 @@ import { useSettings } from "@/context/settings"
 import { useSDK } from "@/context/sdk"
 import { useSync } from "@/context/sync"
 import { parseCommentNote, readCommentMetadata } from "@/utils/comment-note"
-import { parsePreFlightPlan, type PreFlightPlan } from "@opencode-ai/opendesign/agent"
+import { parsePreFlightPlan, type PreFlightPlan, type ScenarioPlan } from "@opencode-ai/opendesign/agent"
 import { PlanCard } from "@/components/plan-card"
+import { useChatMode } from "@/context/chat-mode"
 
 type MessageComment = {
   path: string
@@ -247,6 +248,52 @@ export function MessageTimeline(props: {
     return sync.data.session_status[id] ?? idle
   })
   const working = createMemo(() => !!pending() || sessionStatus().type !== "idle")
+
+  const chat = useChatMode()
+  const [planStates, setPlanStates] = createSignal<Record<string, "dispatched">>({})
+
+  const lastPlanMessageId = createMemo(() => {
+    const msgs = sessionMessages()
+    for (let i = msgs.length - 1; i >= 0; i--) {
+      const msg = msgs[i]
+      if (msg.role === "assistant" && detectPlan(sync.data.part[msg.id])) {
+        return msg.id
+      }
+    }
+    return null
+  })
+
+  const planState = (msgId: string): "active" | "dispatched" | "stale" => {
+    if (planStates()[msgId] === "dispatched") return "dispatched"
+    if (lastPlanMessageId() !== msgId) return "stale"
+    return "active"
+  }
+
+  const handlePlanDispatch = async (messageId: string, scenarios: ScenarioPlan[]) => {
+    const sid = sessionID()
+    if (!sid) return
+    const payload = JSON.stringify({ scenarios }, null, 2)
+    const text = `Dispatch these scenarios:\n\`\`\`json\n${payload}\n\`\`\``
+    try {
+      await sdk.client.session.promptAsync({
+        sessionID: sid,
+        parts: [{ type: "text", text }],
+      })
+      setPlanStates((prev) => ({ ...prev, [messageId]: "dispatched" }))
+      if (chat.isFloat()) {
+        chat.minimize()
+      }
+    } catch {
+      // Leave plan in active state on error
+    }
+  }
+
+  createEffect(() => {
+    const id = lastPlanMessageId()
+    if (id && chat.isMinimized() && planState(id) === "active") {
+      chat.maximize()
+    }
+  })
 
   const [slot, setSlot] = createStore({
     open: false,
@@ -836,7 +883,11 @@ export function MessageTimeline(props: {
                           <Show when={plan()}>
                             {(p) => (
                               <div class="w-full px-4 md:px-5 mt-2">
-                                <PlanCard plan={p()} />
+                                <PlanCard
+                                  plan={p()}
+                                  state={planState(messageID)}
+                                  onDispatch={(scenarios) => handlePlanDispatch(messageID, scenarios)}
+                                />
                               </div>
                             )}
                           </Show>
