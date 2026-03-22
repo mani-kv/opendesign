@@ -331,6 +331,10 @@ registerIpcHandlers({
   figmaStartAuth: () => startOAuthFlow(),
 })
 
+ipcMain.handle("figma-bridge-preload", () => {
+  return join(__dirname, "../preload/figma-bridge.mjs")
+})
+
 ipcMain.on("figma:selection-changed", (_event, url: string) => {
   const parsed = parseSelectionFromUrl(url)
   if (!parsed) return

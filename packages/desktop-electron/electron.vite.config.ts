@@ -21,7 +21,10 @@ export default defineConfig({
   preload: {
     build: {
       rollupOptions: {
-        input: { index: "src/preload/index.ts" },
+        input: {
+          index: "src/preload/index.ts",
+          "figma-bridge": "src/preload/figma-bridge.ts",
+        },
       },
     },
   },

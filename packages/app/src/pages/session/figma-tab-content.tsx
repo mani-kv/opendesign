@@ -98,6 +98,14 @@ export function FigmaTabContent() {
   // never show the skeleton again — in-page navigation and visibility toggles
   // should not flash a loading state.
   const [loaded, setLoaded] = createSignal(false)
+  const [figmaPreload, setFigmaPreload] = createSignal<string | undefined>()
+
+  onMount(() => {
+    const api = (window as unknown as { api?: { figmaBridgePreload?: () => Promise<string> } }).api
+    if (api?.figmaBridgePreload) {
+      void api.figmaBridgePreload().then((p) => setFigmaPreload(p)).catch(() => undefined)
+    }
+  })
 
   const saveUrl = (u: string) => {
     if (u && isFigmaUrl(u)) figma().setUrl(u)
@@ -135,6 +143,7 @@ export function FigmaTabContent() {
           })
         }}
         src={src()}
+        preload={figmaPreload() ? `file://${figmaPreload()}` : undefined}
         partition="persist:figma"
         class="size-full border-0"
         allowpopups

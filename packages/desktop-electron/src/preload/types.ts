@@ -72,6 +72,7 @@ export type ElectronAPI = {
   installUpdate: () => Promise<void>
   figmaAuthStatus: () => Promise<boolean>
   figmaStartAuth: () => Promise<boolean>
+  figmaBridgePreload: () => Promise<string>
   onFigmaSelection: (cb: (selection: FigmaSelectionData) => void) => () => void
   onFigmaThumbnail: (cb: (data: { nodeId: string; thumbnail: string }) => void) => () => void
 }
