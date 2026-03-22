@@ -1,9 +1,23 @@
 import { randomUUID } from "node:crypto"
 import { EventEmitter } from "node:events"
-import { existsSync, mkdirSync, writeFileSync } from "node:fs"
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import { createServer } from "node:net"
 import { homedir } from "node:os"
-import { join } from "node:path"
+import { dirname, join } from "node:path"
+
+// Load .env from the package root (two levels up from dist/main/)
+const envPath = join(dirname(dirname(__dirname)), ".env")
+if (existsSync(envPath)) {
+  for (const line of readFileSync(envPath, "utf-8").split("\n")) {
+    const trimmed = line.trim()
+    if (!trimmed || trimmed.startsWith("#")) continue
+    const eq = trimmed.indexOf("=")
+    if (eq < 0) continue
+    const key = trimmed.slice(0, eq).trim()
+    const val = trimmed.slice(eq + 1).trim().replace(/^["']|["']$/g, "")
+    if (!process.env[key]) process.env[key] = val
+  }
+}
 import type { Event } from "electron"
 import { app, type BrowserWindow, dialog, ipcMain } from "electron"
 import pkg from "electron-updater"
@@ -41,8 +55,9 @@ import {
   setWslConfig,
   spawnLocalServer,
 } from "./server"
-import { isAuthenticated, startOAuthFlow } from "./figma-oauth"
-import { parseSelectionFromUrl, updateSelection } from "./figma-selection"
+import { getAccessToken, isAuthenticated, startOAuthFlow } from "./figma-oauth"
+import { FigmaRestClient } from "./figma-rest-client"
+import { initSelectionBridge, parseSelectionFromUrl, updateSelection } from "./figma-selection"
 import { createLoadingWindow, createMainWindow, setDockIcon } from "./windows"
 
 type ServerConnection =
@@ -244,6 +259,8 @@ async function initialize() {
 
 function wireMenu() {
   if (!mainWindow) return
+  const figmaClient = new FigmaRestClient({ getToken: () => getAccessToken().catch(() => null) })
+  initSelectionBridge(mainWindow, figmaClient)
   createMenu({
     trigger: (id) => mainWindow && sendMenuCommand(mainWindow, id),
     installCli: () => {
