@@ -19,9 +19,23 @@ type ContextFile = {
   preview?: string
 }
 
+type ContextFigma = {
+  key: string
+  type: "figma"
+  fileKey: string
+  nodeId: string | null
+  nodeName: string | null
+  nodeType: string | null
+  fileName: string | null
+  url: string | null
+  thumbnail?: string
+}
+
+type ContextEntry = ContextFile | ContextFigma
+
 type BuildRequestPartsInput = {
   prompt: Prompt
-  context: ContextFile[]
+  context: ContextEntry[]
   images: ImageAttachmentPart[]
   text: string
   messageID: string
@@ -122,6 +136,38 @@ export function buildRequestParts(input: BuildRequestPartsInput) {
 
   const used = new Set(files.map((part) => part.url))
   const context = input.context.flatMap((item) => {
+    if (item.type === "figma") {
+      const nodeName = item.nodeName ?? item.nodeId ?? "unknown"
+      const nodeType = item.nodeType ? ` (${item.nodeType})` : ""
+      const text = [
+        `[Figma Selection]`,
+        `Node: "${nodeName}"${nodeType}`,
+        item.fileKey ? `File: ${item.fileKey}` : null,
+        item.nodeId ? `Node ID: ${item.nodeId}` : null,
+        item.url ? `URL: ${item.url}` : null,
+      ].filter(Boolean).join("\n")
+
+      const parts: PromptRequestPart[] = [{
+        id: Identifier.ascending("part"),
+        type: "text",
+        text,
+        synthetic: true,
+      }]
+
+      if (item.thumbnail) {
+        parts.push({
+          id: Identifier.ascending("part"),
+          type: "file",
+          mime: "image/png",
+          url: item.thumbnail,
+          filename: `figma-${item.nodeId ?? "selection"}.png`,
+        } satisfies PromptRequestPart)
+      }
+
+      return parts
+    }
+
+    // Existing file handling (unchanged)
     const path = absolute(input.sessionDirectory, item.path)
     const url = `file://${encodeFilePath(path)}${fileQuery(item.selection)}`
     const comment = item.comment?.trim()
