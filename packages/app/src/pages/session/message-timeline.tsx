@@ -251,6 +251,13 @@ export function MessageTimeline(props: {
 
   const chat = useChatMode()
   const [planStates, setPlanStates] = createSignal<Record<string, "dispatched">>({})
+  const [planDismissed, setPlanDismissed] = createSignal(false)
+
+  // Reset plan states when switching sessions
+  createEffect(on(sessionKey, () => {
+    setPlanStates({})
+    setPlanDismissed(false)
+  }, { defer: true }))
 
   const lastPlanMessageId = createMemo(() => {
     const msgs = sessionMessages()
@@ -288,11 +295,14 @@ export function MessageTimeline(props: {
     }
   }
 
+  // Auto-maximize only on NEW plan arrival (track previous to avoid re-triggering)
+  let prevPlanId: string | null = null
   createEffect(() => {
     const id = lastPlanMessageId()
-    if (id && chat.isMinimized() && planState(id) === "active") {
+    if (id && id !== prevPlanId && chat.isMinimized() && planState(id) === "active" && !planDismissed()) {
       chat.maximize()
     }
+    prevPlanId = id
   })
 
   const [slot, setSlot] = createStore({
@@ -817,6 +827,7 @@ export function MessageTimeline(props: {
                     equals: (a, b) => JSON.stringify(a) === JSON.stringify(b),
                   })
                   const commentCount = createMemo(() => comments().length)
+                  const planForMessage = createMemo(() => detectPlan(sync.data.part[messageID]))
                   return (
                     <div
                       id={props.anchor(messageID)}
@@ -877,22 +888,17 @@ export function MessageTimeline(props: {
                           container: "w-full px-4 md:px-5",
                         }}
                       />
-                      {(() => {
-                        const plan = createMemo(() => detectPlan(sync.data.part[messageID]))
-                        return (
-                          <Show when={plan()}>
-                            {(p) => (
-                              <div class="w-full px-4 md:px-5 mt-2">
-                                <PlanCard
-                                  plan={p()}
-                                  state={planState(messageID)}
-                                  onDispatch={(scenarios) => handlePlanDispatch(messageID, scenarios)}
-                                />
-                              </div>
-                            )}
-                          </Show>
-                        )
-                      })()}
+                      <Show when={planForMessage()}>
+                        {(p) => (
+                          <div class="w-full px-4 md:px-5 mt-2">
+                            <PlanCard
+                              plan={p()}
+                              state={planState(messageID)}
+                              onDispatch={(scenarios) => handlePlanDispatch(messageID, scenarios)}
+                            />
+                          </div>
+                        )}
+                      </Show>
                     </div>
                   )
                 }}
