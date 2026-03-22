@@ -61,6 +61,8 @@ const api: ElectronAPI = {
   runUpdater: (alertOnFail) => ipcRenderer.invoke("run-updater", alertOnFail),
   checkUpdate: () => ipcRenderer.invoke("check-update"),
   installUpdate: () => ipcRenderer.invoke("install-update"),
+  figmaAuthStatus: () => ipcRenderer.invoke("figma-auth-status"),
+  figmaStartAuth: () => ipcRenderer.invoke("figma-start-auth"),
 }
 
 contextBridge.exposeInMainWorld("api", api)

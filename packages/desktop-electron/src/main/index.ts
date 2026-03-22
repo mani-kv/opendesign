@@ -1,11 +1,11 @@
 import { randomUUID } from "node:crypto"
 import { EventEmitter } from "node:events"
-import { existsSync } from "node:fs"
+import { existsSync, mkdirSync, writeFileSync } from "node:fs"
 import { createServer } from "node:net"
 import { homedir } from "node:os"
 import { join } from "node:path"
 import type { Event } from "electron"
-import { app, type BrowserWindow, dialog } from "electron"
+import { app, type BrowserWindow, dialog, ipcMain } from "electron"
 import pkg from "electron-updater"
 
 const APP_NAMES: Record<string, string> = {
@@ -41,6 +41,8 @@ import {
   setWslConfig,
   spawnLocalServer,
 } from "./server"
+import { isAuthenticated, startOAuthFlow } from "./figma-oauth"
+import { parseSelectionFromUrl, updateSelection } from "./figma-selection"
 import { createLoadingWindow, createMainWindow, setDockIcon } from "./windows"
 
 type ServerConnection =
@@ -225,6 +227,7 @@ async function initialize() {
   })()
 
   await loadingTask
+  writeMcpConfig()
   setInitStep({ phase: "done" })
 
   if (loadingWindow) {
@@ -258,6 +261,25 @@ function wireMenu() {
   })
 }
 
+function writeMcpConfig() {
+  try {
+    const dir = join(homedir(), ".opendesign")
+    mkdirSync(dir, { recursive: true })
+    const mcpServerPath = join(__dirname, "figma-mcp-server.js")
+    const config = {
+      "figma-bridge": {
+        type: "stdio",
+        command: process.execPath,
+        args: [mcpServerPath, "--stdio"],
+      },
+    }
+    writeFileSync(join(dir, ".mcp-figma.json"), JSON.stringify(config, null, 2), "utf-8")
+    logger.log("figma mcp config written", { dir })
+  } catch (err) {
+    logger.error("failed to write figma mcp config", err)
+  }
+}
+
 registerIpcHandlers({
   killSidecar: () => killSidecar(),
   installCli: async () => installCli(),
@@ -288,6 +310,19 @@ registerIpcHandlers({
   runUpdater: async (alertOnFail) => checkForUpdates(alertOnFail),
   checkUpdate: async () => checkUpdate(),
   installUpdate: async () => installUpdate(),
+  figmaAuthStatus: () => isAuthenticated(),
+  figmaStartAuth: () => startOAuthFlow(),
+})
+
+ipcMain.on("figma:selection-changed", (_event, url: string) => {
+  const parsed = parseSelectionFromUrl(url)
+  if (!parsed) return
+  updateSelection({
+    fileKey: parsed.fileKey,
+    nodeId: parsed.nodeId,
+    url,
+    fileName: parsed.fileName,
+  })
 })
 
 function killSidecar() {

@@ -61,4 +61,6 @@ export type ElectronAPI = {
   runUpdater: (alertOnFail: boolean) => Promise<void>
   checkUpdate: () => Promise<{ updateAvailable: boolean; version?: string }>
   installUpdate: () => Promise<void>
+  figmaAuthStatus: () => Promise<boolean>
+  figmaStartAuth: () => Promise<boolean>
 }

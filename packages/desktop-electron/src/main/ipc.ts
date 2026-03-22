@@ -23,6 +23,8 @@ type Deps = {
   runUpdater: (alertOnFail: boolean) => Promise<void> | void
   checkUpdate: () => Promise<{ updateAvailable: boolean; version?: string }>
   installUpdate: () => Promise<void> | void
+  figmaAuthStatus: () => boolean
+  figmaStartAuth: () => Promise<void>
 }
 
 export function registerIpcHandlers(deps: Deps) {
@@ -161,6 +163,8 @@ export function registerIpcHandlers(deps: Deps) {
 
   ipcMain.handle("get-zoom-factor", (event: IpcMainInvokeEvent) => event.sender.getZoomFactor())
   ipcMain.handle("set-zoom-factor", (event: IpcMainInvokeEvent, factor: number) => event.sender.setZoomFactor(factor))
+  ipcMain.handle("figma-auth-status", () => deps.figmaAuthStatus())
+  ipcMain.handle("figma-start-auth", () => deps.figmaStartAuth())
 }
 
 export function sendSqliteMigrationProgress(win: BrowserWindow, progress: SqliteMigrationProgress) {
