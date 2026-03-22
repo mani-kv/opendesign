@@ -961,6 +961,12 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
     return permission.isAutoAccepting(id, sdk.directory)
   })
 
+  const handleContextRemove = (item: ContextItem & { key: string }) => {
+    if (item.type === "figma") setDismissedFigmaNode(item.nodeId ?? item.fileKey)
+    if (item.type === "file" && item.commentID) comments.remove(item.path, item.commentID)
+    prompt.context.remove(item.key)
+  }
+
   const { abort, handleSubmit } = createPromptSubmit({
     info,
     imageAttachments,
@@ -1150,15 +1156,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
             if (item.type !== "file") return
             openComment(item)
           }}
-          remove={(item) => {
-            if (item.type === "figma") {
-              setDismissedFigmaNode(item.nodeId ?? item.fileKey)
-            }
-            if (item.type === "file" && item.commentID) {
-              comments.remove(item.path, item.commentID)
-            }
-            prompt.context.remove(item.key)
-          }}
+          remove={handleContextRemove}
           t={(key) => language.t(key as Parameters<typeof language.t>[0])}
         />
         <PromptImageAttachments
