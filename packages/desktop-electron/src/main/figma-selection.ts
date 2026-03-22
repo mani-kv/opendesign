@@ -4,8 +4,13 @@
  * Tracks the current Figma selection (file + node) received from the webview
  * preload bridge via IPC. Exposes state to MCP tools via getSelection().
  *
- * No Electron imports — pure TypeScript module.
+ * When initialised with a BrowserWindow + FigmaRestClient, selection changes
+ * are debounced, enriched with node metadata, and forwarded to the renderer
+ * via IPC ("figma:selection-updated" and "figma:selection-thumbnail").
  */
+
+import type { BrowserWindow } from "electron"
+import type { FigmaRestClient } from "./figma-rest-client.js"
 
 export interface FigmaSelection {
   fileKey: string | null
@@ -79,6 +84,75 @@ let _selection: FigmaSelection = {
 
 const _listeners = new Set<SelectionListener>()
 
+let _win: BrowserWindow | null = null
+let _client: FigmaRestClient | null = null
+let _debounceTimer: ReturnType<typeof setTimeout> | null = null
+const DEBOUNCE_MS = 500
+const THUMBNAIL_TIMEOUT_MS = 3000
+
+// ─── IPC bridge ──────────────────────────────────────────────────────────────
+
+export function initSelectionBridge(win: BrowserWindow, client: FigmaRestClient) {
+  _win = win
+  _client = client
+}
+
+function emitSelection(selection: FigmaSelection) {
+  if (_debounceTimer) clearTimeout(_debounceTimer)
+  _debounceTimer = setTimeout(async () => {
+    if (!_win || _win.isDestroyed()) return
+
+    let nodeName: string | null = null
+    let nodeType: string | null = null
+
+    if (_client && selection.fileKey && selection.nodeId) {
+      try {
+        const res = await _client.getFileNodes(selection.fileKey, [selection.nodeId])
+        const node = res.nodes[selection.nodeId]?.document
+        if (node) {
+          nodeName = node.name
+          nodeType = node.type
+        }
+      } catch {
+        // Fallback: send without name/type
+      }
+    }
+
+    const payload = {
+      fileKey: selection.fileKey,
+      nodeId: selection.nodeId,
+      nodeName,
+      nodeType,
+      fileName: selection.fileName,
+      url: selection.url,
+    }
+    _win.webContents.send("figma:selection-updated", payload)
+
+    // Background thumbnail fetch
+    if (_client && selection.fileKey && selection.nodeId) {
+      const nodeId = selection.nodeId
+      fetchThumbnail(selection.fileKey, nodeId)
+    }
+  }, DEBOUNCE_MS)
+}
+
+async function fetchThumbnail(fileKey: string, nodeId: string) {
+  if (!_client || !_win || _win.isDestroyed()) return
+  try {
+    const res = await _client.getImage(fileKey, nodeId, { scale: 0.5, format: "png" })
+    const imageUrl = res.images[nodeId]
+    if (!imageUrl || !_win || _win.isDestroyed()) return
+
+    // Fetch the actual image with a timeout and convert to base64
+    const imgRes = await fetch(imageUrl, { signal: AbortSignal.timeout(THUMBNAIL_TIMEOUT_MS) })
+    const buffer = await imgRes.arrayBuffer()
+    const base64 = `data:image/png;base64,${Buffer.from(buffer).toString("base64")}`
+    _win.webContents.send("figma:selection-thumbnail", { nodeId, thumbnail: base64 })
+  } catch {
+    // Thumbnail is best-effort, skip on failure
+  }
+}
+
 // ─── Public API ──────────────────────────────────────────────────────────────
 
 /** Returns a shallow copy of the current selection state. */
@@ -90,6 +164,7 @@ export function getSelection(): FigmaSelection {
 export function updateSelection(partial: Partial<FigmaSelection>): void {
   _selection = { ..._selection, ...partial }
   for (const cb of _listeners) cb(getSelection())
+  emitSelection(_selection)
 }
 
 /**
