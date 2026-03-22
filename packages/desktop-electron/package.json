@@ -24,6 +24,8 @@
   },
   "main": "./out/main/index.js",
   "dependencies": {
+    "@modelcontextprotocol/sdk": "1.27.1",
+    "zod": "catalog:",
     "@opencode-ai/app": "workspace:*",
     "@opencode-ai/ui": "workspace:*",
     "@solid-primitives/i18n": "2.2.1",
