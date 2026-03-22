@@ -48,7 +48,18 @@ export type FileContextItem = {
   preview?: string
 }
 
-export type ContextItem = FileContextItem
+export type FigmaContextItem = {
+  type: "figma"
+  fileKey: string
+  nodeId: string | null
+  nodeName: string | null
+  nodeType: string | null
+  fileName: string | null
+  url: string | null
+  thumbnail?: string
+}
+
+export type ContextItem = FileContextItem | FigmaContextItem
 
 export const DEFAULT_PROMPT: Prompt = [{ type: "text", content: "", start: 0, end: 0 }]
 
@@ -101,7 +112,9 @@ function clonePrompt(prompt: Prompt): Prompt {
 }
 
 function contextItemKey(item: ContextItem) {
-  if (item.type !== "file") return item.type
+  if (item.type === "figma") {
+    return item.nodeId ? `figma:${item.fileKey}:${item.nodeId}` : `figma:${item.fileKey}`
+  }
   const start = item.selection?.startLine
   const end = item.selection?.endLine
   const key = `${item.type}:${item.path}:${start}:${end}`
