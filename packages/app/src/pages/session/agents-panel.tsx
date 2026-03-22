@@ -1,8 +1,8 @@
-import { For } from "solid-js"
+import { For, Show } from "solid-js"
 import { Icon } from "@opencode-ai/ui/icon"
 import { Spinner } from "@opencode-ai/ui/spinner"
 import { useLanguage } from "@/context/language"
-import { useAgents, type DemoAgent } from "@/context/agents"
+import { useAgents, type Agent } from "@/context/agents"
 import type { AgentState } from "@opencode-ai/opendesign/types"
 
 function isComplete(state: AgentState) {
@@ -13,13 +13,13 @@ function isApproved(state: AgentState) {
   return state === "approved"
 }
 
-function AgentRow(props: { agent: DemoAgent; selected: boolean; onSelect: () => void }) {
+function AgentRow(props: { agent: Agent; selected: boolean; onSelect: () => void }) {
   return (
     <button
-      class="w-full px-3 py-2 flex items-start gap-2.5 text-left rounded-md transition-colors"
+      class="w-full px-3 py-1 flex items-start gap-2.5 text-left rounded-md border transition-colors duration-120"
       classList={{
-        "bg-background-base": props.selected,
-        "hover:bg-background-base/60": !props.selected,
+        "bg-[var(--surface-base-active)] border-[var(--border-weak-base)] text-text-strong": props.selected,
+        "bg-transparent border-transparent hover:bg-[var(--surface-base-hover)] text-text-base": !props.selected,
       }}
       onClick={props.onSelect}
     >
@@ -58,16 +58,25 @@ export function AgentsPanel() {
       <div class="shrink-0 px-3 py-2.5">
         <div class="text-13-medium text-text-dimmer">{language.t("agents.panel.title")}</div>
       </div>
-      <div class="flex-1 min-h-0 overflow-y-auto px-1.5 pb-2 flex flex-col">
-        <For each={agents.agents}>
-          {(agent) => (
-            <AgentRow
-              agent={agent}
-              selected={agents.selectedId() === agent.id}
-              onSelect={() => agents.select(agent.id)}
-            />
-          )}
-        </For>
+      <div class="flex-1 min-h-0 overflow-y-auto px-1.5 pb-2 flex flex-col gap-2">
+        <Show
+          when={agents.agents.length > 0}
+          fallback={
+            <div class="px-3 py-8 text-center text-12-regular text-text-weak">
+              No agents yet. Send a prompt to create scenarios.
+            </div>
+          }
+        >
+          <For each={agents.agents}>
+            {(agent) => (
+              <AgentRow
+                agent={agent}
+                selected={agents.selectedId() === agent.id}
+                onSelect={() => agents.select(agent.id)}
+              />
+            )}
+          </For>
+        </Show>
       </div>
     </div>
   )
