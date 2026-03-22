@@ -1,5 +1,5 @@
 import { useFilteredList } from "@opencode-ai/ui/hooks"
-import { createEffect, on, Component, Show, onCleanup, Switch, Match, createMemo, createSignal } from "solid-js"
+import { createEffect, on, Component, Show, onCleanup, onMount, Switch, Match, createMemo, createSignal } from "solid-js"
 import { createStore } from "solid-js/store"
 import { createFocusSignal } from "@solid-primitives/active-element"
 import { useLocal } from "@/context/local"
@@ -13,6 +13,8 @@ import {
   ImageAttachmentPart,
   AgentPart,
   FileAttachmentPart,
+  type FigmaContextItem,
+  type ContextItem,
 } from "@/context/prompt"
 import { useLayout } from "@/context/layout"
 import { useSDK } from "@/context/sdk"
@@ -250,7 +252,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
     applyingHistory: false,
   })
 
-  const commentCount = createMemo(() => prompt.context.items().filter((item) => !!item.comment?.trim()).length)
+  const commentCount = createMemo(() => prompt.context.items().filter((item) => item.type === "file" && !!item.comment?.trim()).length)
 
   const contextItems = createMemo(() => prompt.context.items())
 
@@ -372,6 +374,61 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
   const [trayExpanded, setTrayExpanded] = createSignal(false)
   let promptContainerRef: HTMLDivElement | undefined
   const escBlur = () => platform.platform === "desktop" && platform.os === "macos"
+
+  const [dismissedFigmaNode, setDismissedFigmaNode] = createSignal<string | null>(null)
+
+  onMount(() => {
+    if (platform.platform !== "desktop") return
+    const api = (window as unknown as { api?: {
+      onFigmaSelection?: (cb: (sel: any) => void) => () => void
+      onFigmaThumbnail?: (cb: (data: { nodeId: string; thumbnail: string }) => void) => () => void
+    } }).api
+    if (!api?.onFigmaSelection) return
+
+    const unsub1 = api.onFigmaSelection((sel) => {
+      const existing = prompt.context.items().filter((i) => i.type === "figma")
+      for (const item of existing) prompt.context.remove(item.key)
+
+      const nodeKey = sel.nodeId ?? sel.fileKey
+      if (nodeKey && nodeKey === dismissedFigmaNode()) return
+      setDismissedFigmaNode(null)
+
+      if (!sel.fileKey) return
+
+      prompt.context.add({
+        type: "figma",
+        fileKey: sel.fileKey,
+        nodeId: sel.nodeId,
+        nodeName: sel.nodeName,
+        nodeType: sel.nodeType,
+        fileName: sel.fileName,
+        url: sel.url,
+      } satisfies FigmaContextItem)
+    })
+
+    const unsub2 = api.onFigmaThumbnail?.((data) => {
+      const items = prompt.context.items()
+      const figmaItem = items.find((i): i is FigmaContextItem & { key: string } => i.type === "figma" && i.nodeId === data.nodeId)
+      if (!figmaItem) return
+
+      prompt.context.remove(figmaItem.key)
+      prompt.context.add({
+        type: "figma",
+        fileKey: figmaItem.fileKey,
+        nodeId: figmaItem.nodeId,
+        nodeName: figmaItem.nodeName,
+        nodeType: figmaItem.nodeType,
+        fileName: figmaItem.fileName,
+        url: figmaItem.url,
+        thumbnail: data.thumbnail,
+      })
+    })
+
+    onCleanup(() => {
+      unsub1()
+      unsub2?.()
+    })
+  })
 
   const pick = () => fileInputRef?.click()
 
@@ -1085,12 +1142,21 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
         <PromptContextItems
           items={contextItems()}
           active={(item) => {
+            if (item.type !== "file") return false
             const active = comments.active()
             return !!item.commentID && item.commentID === active?.id && item.path === active?.file
           }}
-          openComment={openComment}
+          openComment={(item) => {
+            if (item.type !== "file") return
+            openComment(item)
+          }}
           remove={(item) => {
-            if (item.commentID) comments.remove(item.path, item.commentID)
+            if (item.type === "figma") {
+              setDismissedFigmaNode(item.nodeId ?? item.fileKey)
+            }
+            if (item.type === "file" && item.commentID) {
+              comments.remove(item.path, item.commentID)
+            }
             prompt.context.remove(item.key)
           }}
           t={(key) => language.t(key as Parameters<typeof language.t>[0])}
@@ -1225,7 +1291,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
       </DockShellForm>
       <div
         class="-mt-3.5 overflow-hidden transition-[max-height] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]"
-        style={{ "max-height": trayExpanded() ? "calc(80px + 0.875rem)" : "0px" }}
+        style={{ "max-height": "calc(80px + 0.875rem)" }}
       >
         <DockTray attach="top">
           <div class="pt-10 pb-3 px-3 flex items-center gap-2 min-w-0">
