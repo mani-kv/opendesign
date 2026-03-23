@@ -7,13 +7,14 @@
   "exports": {
     ".": "./dist/index.js",
     "./websocket-server": "./dist/websocket-server.js",
-    "./websocket-connector": "./dist/websocket-connector.js"
+    "./websocket-connector": "./dist/websocket-connector.js",
+    "./rest-client": "./dist/rest-client.js"
   },
   "bin": {
     "opendesign-figma-mcp": "./dist/index.js"
   },
   "scripts": {
-    "build": "bun build src/index.ts src/websocket-server.ts src/websocket-connector.ts --outdir dist --target node",
+    "build": "bun build src/index.ts src/websocket-server.ts src/websocket-connector.ts src/rest-client.ts --outdir dist --target node",
     "dev": "bun run src/index.ts",
     "typecheck": "tsgo --noEmit"
   },
