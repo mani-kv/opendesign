@@ -6,7 +6,7 @@ import { getStore } from "./store"
 const STORE_NAME = "figma-auth"
 const TOKEN_KEY = "token"
 const REDIRECT_URI = "http://localhost:19523/figma/callback"
-const SCOPES = "files:read,file_variables:read,file_dev_resources:read"
+const SCOPES = "file_content:read,file_metadata:read,file_comments:read,file_comments:write,file_dev_resources:read"
 const TOKEN_URL = "https://api.figma.com/v1/oauth/token"
 const REFRESH_URL = "https://api.figma.com/v1/oauth/refresh"
 
