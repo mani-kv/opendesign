@@ -378,14 +378,30 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
   const [dismissedFigmaNode, setDismissedFigmaNode] = createSignal<string | null>(null)
 
   onMount(() => {
+    console.log("[prompt-input] onMount, platform:", platform.platform)
     if (platform.platform !== "desktop") return
     const api = (window as unknown as { api?: {
       onFigmaSelection?: (cb: (sel: any) => void) => () => void
-      onFigmaThumbnail?: (cb: (data: { nodeId: string; thumbnail: string }) => void) => () => void
     } }).api
+    console.log("[prompt-input] api.onFigmaSelection exists:", !!api?.onFigmaSelection)
     if (!api?.onFigmaSelection) return
 
     const unsub1 = api.onFigmaSelection((sel) => {
+      // If this is a background name-resolution update (has nodeName, matches existing chip)
+      if (sel.nodeName) {
+        const existing = prompt.context.items().find((i) => i.type === "figma" && i.nodeId === sel.nodeId)
+        if (existing) {
+          prompt.context.remove(existing.key)
+          prompt.context.add({
+            ...(existing as FigmaContextItem),
+            nodeName: sel.nodeName,
+            nodeType: sel.nodeType,
+          })
+          return
+        }
+      }
+
+      // New selection — remove previous figma chip
       const existing = prompt.context.items().filter((i) => i.type === "figma")
       for (const item of existing) prompt.context.remove(item.key)
 
@@ -406,27 +422,8 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
       } satisfies FigmaContextItem)
     })
 
-    const unsub2 = api.onFigmaThumbnail?.((data) => {
-      const items = prompt.context.items()
-      const figmaItem = items.find((i): i is FigmaContextItem & { key: string } => i.type === "figma" && i.nodeId === data.nodeId)
-      if (!figmaItem) return
-
-      prompt.context.remove(figmaItem.key)
-      prompt.context.add({
-        type: "figma",
-        fileKey: figmaItem.fileKey,
-        nodeId: figmaItem.nodeId,
-        nodeName: figmaItem.nodeName,
-        nodeType: figmaItem.nodeType,
-        fileName: figmaItem.fileName,
-        url: figmaItem.url,
-        thumbnail: data.thumbnail,
-      })
-    })
-
     onCleanup(() => {
       unsub1()
-      unsub2?.()
     })
   })
 

@@ -55,10 +55,8 @@ import {
   setWslConfig,
   spawnLocalServer,
 } from "./server"
-import { getAccessToken, isAuthenticated, startOAuthFlow } from "./figma-oauth"
+import { isAuthenticated, startOAuthFlow } from "./figma-oauth"
 import { startFigmaWS, stopFigmaWS, isFigmaPluginConnected } from "./figma-ws"
-import { FigmaRestClient } from "./figma-rest-client"
-import { initSelectionBridge, parseSelectionFromUrl, updateSelection } from "./figma-selection"
 import { createLoadingWindow, createMainWindow, setDockIcon } from "./windows"
 
 type ServerConnection =
@@ -270,8 +268,6 @@ async function initialize() {
 
 function wireMenu() {
   if (!mainWindow) return
-  const figmaClient = new FigmaRestClient({ getToken: () => getAccessToken().catch(() => null), maxRetries: 0 })
-  initSelectionBridge(mainWindow, figmaClient)
   createMenu({
     trigger: (id) => mainWindow && sendMenuCommand(mainWindow, id),
     installCli: () => {
@@ -364,27 +360,7 @@ registerIpcHandlers({
   figmaStartAuth: () => startOAuthFlow(),
 })
 
-ipcMain.handle("figma-bridge-preload", () => {
-  return join(__dirname, "../preload/figma-bridge.mjs")
-})
-
 ipcMain.handle("figma-plugin-status", () => isFigmaPluginConnected())
-
-ipcMain.on("figma:selection-changed", (_event, url: string) => {
-  logger.log("[figma] selection-changed IPC received", { url })
-  const parsed = parseSelectionFromUrl(url)
-  if (!parsed) {
-    logger.log("[figma] URL did not match figma pattern")
-    return
-  }
-  logger.log("[figma] parsed selection", { fileKey: parsed.fileKey, nodeId: parsed.nodeId, fileName: parsed.fileName })
-  updateSelection({
-    fileKey: parsed.fileKey,
-    nodeId: parsed.nodeId,
-    url,
-    fileName: parsed.fileName,
-  })
-})
 
 function killSidecar() {
   if (!sidecar) return

@@ -177,4 +177,51 @@ Accumulated knowledge about this codebase. Read before starting any task. Update
 - **`stateColor()` vs `agentColor()`**: `agentColor(name)` maps agent names to CSS vars. `stateColor(state)` maps lifecycle states (created/working/waiting/ready/approved/archived) to CSS vars.
 - **Dot grid background**: SVG background-image radial gradient, scales with viewport zoom.
 
-_Last updated: 2026-03-20 — Agent Sandbox tab implementation_
+## Sandpack srcdoc runtime (`packages/app/src/pages/session/agent-sandbox/sandpack-srcdoc.ts`)
+
+- Exports `createSandpackSrcdoc(files, entry?)` returning an HTML srcdoc string.
+- Runtime loads React 18 + ReactDOM + Babel standalone from unpkg CDN; the `window.load` event guards boot so scripts are ready before `boot()` runs.
+- Module system: `loadModule(path)` → Babel-transforms JS/JSX/TS/TSX → `new Function(…)` CommonJS execution; CSS files are injected as `<style id="css-*">` tags.
+- Path resolution: exact match first, then tries 8 extension suffixes (.js/.jsx/.ts/.tsx + /index.* variants).
+- CSS files are pre-injected in key-order before entry module loads, so `tokens.css` custom properties are available to components.
+- `sandpack:update-files` postMessage clears module cache + removes injected CSS tags, then re-boots — full hot-reload.
+- `SANDPACK_SRCDOC` constant kept for backward compat = `createSandpackSrcdoc({})`.
+- Two consumers: `agent-sandbox-tab-content.tsx` and `agent-node-card.tsx` — both use `srcdoc={SANDPACK_SRCDOC}` today; they should eventually pass real files via `createSandpackSrcdoc(files)`.
+- **iframe sandbox attr**: currently `allow-scripts` only — no `allow-same-origin`. This prevents postMessage from reaching `window` inside the iframe on some browsers; if hot-reload stops working, add `allow-same-origin` cautiously (security trade-off).
+
+---
+
+## New Session Optimistic Message Race Condition (`packages/app/src/context/sync.tsx`)
+
+- **Bug**: When creating a new session, `sync.session.sync(id)` is triggered by a `createEffect` in `session.tsx:559`. The `loadMessages()` call inside races with `promptAsync()`. If `loadMessages` resolves first (server has no messages yet), `reconcile([])` wipes the optimistic message → blank chat.
+- **Fix**: `loadMessages` now preserves optimistic messages. If server returns empty but store has messages, keep them. Otherwise, merge server results with unconfirmed optimistic messages (by ID).
+- **Key sequence**: `navigate()` → `addOptimisticMessage()` → effects flush → `sync.session.sync()` → `loadMessages()` (async GET) races `promptAsync()` (async POST). GET almost always wins.
+- **SSE handles convergence**: Once the server processes the prompt, `message.updated` SSE events reconcile the optimistic entry with the real one (same message ID).
+
+---
+
+## `packages/opendesign-figma-mcp` — Figma MCP Server Package (added 2026-03-23)
+
+- **Architecture**: WebSocket server (Electron main process) + MCP server (stdio child process) + Figma plugin (WebSocket client).
+- **Protocol**: JSON-RPC style — `{ id, method, params }` requests, `{ id, result }` / `{ id, error }` responses. Events (no `id`): `FILE_INFO`, `SELECTION_CHANGE`.
+- **`FigmaWSServer`** (`websocket-server.ts`): Tries ports 9333-9342, tracks clients by `fileKey`, heartbeat every 30s, implements `CommandSender` interface.
+- **`FigmaConnector`** (`websocket-connector.ts`): ~40 typed methods wrapping `CommandSender.sendCommand(METHOD, params)` — selection, components, variables, creation, mutation, parity, execute.
+- **`FigmaRestClient`** (`rest-client.ts`): Forked from `packages/desktop-electron/src/main/figma-rest-client.ts`. Token from `FIGMA_OAUTH_TOKEN` env var or `~/.config/opencode/opencode.json` config. Max retries: 1. Added `postRequest`/`deleteRequest` + comment endpoints (get/post/delete).
+- **`CommandSender`** interface (`types.ts`): Shared between WSServer and Connector.
+- **tsconfig**: Uses `@tsconfig/bun` (not `@tsconfig/node22` which isn't installed in this monorepo).
+- **Typecheck**: `bun run typecheck` (uses `tsgo --noEmit`).
+
+- **MCP Server** (`mcp-server.ts`): `createMcpServer(connector, restClient)` returns an `McpServer` from `@modelcontextprotocol/sdk`. Registers tools via 7 category modules.
+- **Tool categories** (`tools/`): `selection.ts` (6), `components.ts` (8), `variables.ts` (9), `creation.ts` (14), `comments.ts` (3), `parity.ts` (2), `execute.ts` (1) — 43 tools total.
+- **Pattern**: Each tool file exports `register*Tools(server, connector[, restClient])`. Tools use `server.tool(name, description, zodSchema, handler)`. Handlers call connector/restClient methods and return `{ content: [{ type: "text", text: JSON.stringify(result) }] }`.
+- **Comments tools** use `FigmaRestClient` (REST API), all others use `FigmaConnector` (WebSocket plugin commands).
+- **`z.any()` usage**: Variable values, fill/stroke arrays, and instance properties use `z.any()` since Figma's types are deeply nested and vary by context.
+
+- **Electron integration** (`figma-ws.ts`): `startFigmaWS(win)` starts WS server, forwards `selection`/`connected`/`disconnected` events to renderer via IPC. `stopFigmaWS()` called in `before-quit`.
+- **MCP config**: Written to `~/.config/opencode/opencode.json` under `config.mcp["opendesign-figma"]` with `OPENDESIGN_FIGMA_PORT` env var pointing to the WS server port. `updateMcpToken()` helper patches the token in-place.
+- **OAuth scopes**: `file_comments:write` added alongside existing read scopes for comment tool support.
+- **`initialize()` flow**: WS server starts after `loadingTask` completes and `mainWindow` is guaranteed to exist (either created in loadingTask's else branch or in the first `if (!mainWindow)` guard). Port returned by `startFigmaWS` is passed to `writeMcpConfig`.
+
+- **Task 10 cleanup** (2026-03-23): Removed old REST API selection tracking code. Deleted `figma-bridge.ts` preload (webview URL tracking via IPC), `figma-mcp-server.ts` (standalone MCP server, replaced by `packages/opendesign-figma-mcp`). Simplified `figma-selection.ts` to pure state + listeners (no REST client, debounce, thumbnail fetching, or BrowserWindow dependency). Removed `FigmaRestClient` import from `main/index.ts` (the one in `packages/desktop-electron` is now orphaned — can be deleted if no other consumer). Cleaned `preload/types.ts` and `preload/index.ts` of `figmaBridgePreload`, `figmaNotifyUrl`, `onFigmaThumbnail`. Simplified `figma-tab-content.tsx` to use a single `handleNav` for both `did-navigate` and `did-navigate-in-page`.
+
+_Last updated: 2026-03-23 — Task 10: Remove old REST API selection tracking and figma-bridge preload_

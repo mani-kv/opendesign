@@ -64,17 +64,10 @@ const api: ElectronAPI = {
   figmaAuthStatus: () => ipcRenderer.invoke("figma-auth-status"),
   figmaStartAuth: () => ipcRenderer.invoke("figma-start-auth"),
   figmaPluginStatus: () => ipcRenderer.invoke("figma-plugin-status"),
-  figmaBridgePreload: () => ipcRenderer.invoke("figma-bridge-preload"),
-  figmaNotifyUrl: (url) => ipcRenderer.send("figma:selection-changed", url),
   onFigmaSelection: (cb) => {
     const handler = (_: unknown, selection: FigmaSelectionData) => cb(selection)
     ipcRenderer.on("figma:selection-updated", handler)
     return () => ipcRenderer.removeListener("figma:selection-updated", handler)
-  },
-  onFigmaThumbnail: (cb) => {
-    const handler = (_: unknown, data: { nodeId: string; thumbnail: string }) => cb(data)
-    ipcRenderer.on("figma:selection-thumbnail", handler)
-    return () => ipcRenderer.removeListener("figma:selection-thumbnail", handler)
   },
 }
 
