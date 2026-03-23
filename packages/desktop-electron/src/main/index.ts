@@ -297,10 +297,11 @@ function writeMcpConfig(port: number) {
     }
 
     config.mcp = config.mcp ?? {}
-    const mcpBin = join(__dirname, "../../opendesign-figma-mcp/dist/index.js")
+    // __dirname is out/main/ in dev; go up 3 levels to reach packages/
+    const mcpBin = join(__dirname, "../../../opendesign-figma-mcp/dist/index.js")
     config.mcp["opendesign-figma"] = {
       type: "local",
-      command: [process.execPath, mcpBin, "--stdio"],
+      command: ["bun", mcpBin, "--stdio"],
       env: {
         OPENDESIGN_FIGMA_PORT: String(port),
         FIGMA_OAUTH_TOKEN: "",
