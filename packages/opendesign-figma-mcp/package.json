@@ -1,0 +1,28 @@
+{
+  "name": "@opencode-ai/opendesign-figma-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "exports": {
+    ".": "./dist/index.js",
+    "./websocket-server": "./dist/websocket-server.js",
+    "./websocket-connector": "./dist/websocket-connector.js"
+  },
+  "bin": {
+    "opendesign-figma-mcp": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "bun build src/index.ts src/websocket-server.ts src/websocket-connector.ts --outdir dist --target node",
+    "dev": "bun run src/index.ts",
+    "typecheck": "tsgo --noEmit"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.26.0",
+    "ws": "^8.19.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.5.0"
+  }
+}
