@@ -26,6 +26,7 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.27.1",
     "zod": "catalog:",
+    "@opencode-ai/opendesign-figma-mcp": "workspace:*",
     "@opencode-ai/app": "workspace:*",
     "@opencode-ai/ui": "workspace:*",
     "@solid-primitives/i18n": "2.2.1",

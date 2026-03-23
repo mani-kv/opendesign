@@ -63,7 +63,9 @@ const api: ElectronAPI = {
   installUpdate: () => ipcRenderer.invoke("install-update"),
   figmaAuthStatus: () => ipcRenderer.invoke("figma-auth-status"),
   figmaStartAuth: () => ipcRenderer.invoke("figma-start-auth"),
+  figmaPluginStatus: () => ipcRenderer.invoke("figma-plugin-status"),
   figmaBridgePreload: () => ipcRenderer.invoke("figma-bridge-preload"),
+  figmaNotifyUrl: (url) => ipcRenderer.send("figma:selection-changed", url),
   onFigmaSelection: (cb) => {
     const handler = (_: unknown, selection: FigmaSelectionData) => cb(selection)
     ipcRenderer.on("figma:selection-updated", handler)

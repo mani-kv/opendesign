@@ -56,6 +56,7 @@ import {
   spawnLocalServer,
 } from "./server"
 import { getAccessToken, isAuthenticated, startOAuthFlow } from "./figma-oauth"
+import { startFigmaWS, stopFigmaWS, isFigmaPluginConnected } from "./figma-ws"
 import { FigmaRestClient } from "./figma-rest-client"
 import { initSelectionBridge, parseSelectionFromUrl, updateSelection } from "./figma-selection"
 import { createLoadingWindow, createMainWindow, setDockIcon } from "./windows"
@@ -117,6 +118,7 @@ function setupApp() {
   })
 
   app.on("before-quit", () => {
+    stopFigmaWS()
     killSidecar()
   })
 
@@ -242,7 +244,16 @@ async function initialize() {
   })()
 
   await loadingTask
-  writeMcpConfig()
+
+  if (!mainWindow) {
+    mainWindow = createMainWindow(globals)
+    wireMenu()
+  }
+
+  if (mainWindow) {
+    const figmaPort = await startFigmaWS(mainWindow)
+    writeMcpConfig(figmaPort)
+  }
   setInitStep({ phase: "done" })
 
   if (loadingWindow) {
@@ -259,7 +270,7 @@ async function initialize() {
 
 function wireMenu() {
   if (!mainWindow) return
-  const figmaClient = new FigmaRestClient({ getToken: () => getAccessToken().catch(() => null) })
+  const figmaClient = new FigmaRestClient({ getToken: () => getAccessToken().catch(() => null), maxRetries: 0 })
   initSelectionBridge(mainWindow, figmaClient)
   createMenu({
     trigger: (id) => mainWindow && sendMenuCommand(mainWindow, id),
@@ -278,23 +289,45 @@ function wireMenu() {
   })
 }
 
-function writeMcpConfig() {
+function writeMcpConfig(port: number) {
   try {
-    const dir = join(homedir(), ".opendesign")
-    mkdirSync(dir, { recursive: true })
-    const mcpServerPath = join(__dirname, "figma-mcp-server.js")
-    const config = {
-      "figma-bridge": {
-        type: "stdio",
-        command: process.execPath,
-        args: [mcpServerPath, "--stdio"],
+    const configDir = join(homedir(), ".config", "opencode")
+    mkdirSync(configDir, { recursive: true })
+    const configPath = join(configDir, "opencode.json")
+
+    let config: Record<string, any> = {}
+    if (existsSync(configPath)) {
+      config = JSON.parse(readFileSync(configPath, "utf-8"))
+    }
+
+    config.mcp = config.mcp ?? {}
+    const mcpBin = join(__dirname, "../../opendesign-figma-mcp/dist/index.js")
+    config.mcp["opendesign-figma"] = {
+      type: "local",
+      command: [process.execPath, mcpBin, "--stdio"],
+      env: {
+        OPENDESIGN_FIGMA_PORT: String(port),
+        FIGMA_OAUTH_TOKEN: "",
       },
     }
-    writeFileSync(join(dir, ".mcp-figma.json"), JSON.stringify(config, null, 2), "utf-8")
-    logger.log("figma mcp config written", { dir })
+
+    writeFileSync(configPath, JSON.stringify(config, null, 2), "utf-8")
+    logger.log("figma mcp config written", { configPath, port })
   } catch (err) {
     logger.error("failed to write figma mcp config", err)
   }
+}
+
+function updateMcpToken(token: string) {
+  try {
+    const configPath = join(homedir(), ".config", "opencode", "opencode.json")
+    if (!existsSync(configPath)) return
+    const config = JSON.parse(readFileSync(configPath, "utf-8"))
+    if (config.mcp?.["opendesign-figma"]?.env) {
+      config.mcp["opendesign-figma"].env.FIGMA_OAUTH_TOKEN = token
+      writeFileSync(configPath, JSON.stringify(config, null, 2), "utf-8")
+    }
+  } catch { /* ignore */ }
 }
 
 registerIpcHandlers({
@@ -335,9 +368,16 @@ ipcMain.handle("figma-bridge-preload", () => {
   return join(__dirname, "../preload/figma-bridge.mjs")
 })
 
+ipcMain.handle("figma-plugin-status", () => isFigmaPluginConnected())
+
 ipcMain.on("figma:selection-changed", (_event, url: string) => {
+  logger.log("[figma] selection-changed IPC received", { url })
   const parsed = parseSelectionFromUrl(url)
-  if (!parsed) return
+  if (!parsed) {
+    logger.log("[figma] URL did not match figma pattern")
+    return
+  }
+  logger.log("[figma] parsed selection", { fileKey: parsed.fileKey, nodeId: parsed.nodeId, fileName: parsed.fileName })
   updateSelection({
     fileKey: parsed.fileKey,
     nodeId: parsed.nodeId,
