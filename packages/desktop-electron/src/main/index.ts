@@ -302,7 +302,7 @@ function writeMcpConfig(port: number) {
     config.mcp["opendesign-figma"] = {
       type: "local",
       command: ["bun", mcpBin, "--stdio"],
-      env: {
+      environment: {
         OPENDESIGN_FIGMA_PORT: String(port),
         FIGMA_OAUTH_TOKEN: "",
       },
@@ -320,8 +320,8 @@ function updateMcpToken(token: string) {
     const configPath = join(homedir(), ".config", "opencode", "opencode.json")
     if (!existsSync(configPath)) return
     const config = JSON.parse(readFileSync(configPath, "utf-8"))
-    if (config.mcp?.["opendesign-figma"]?.env) {
-      config.mcp["opendesign-figma"].env.FIGMA_OAUTH_TOKEN = token
+    if (config.mcp?.["opendesign-figma"]?.environment) {
+      config.mcp["opendesign-figma"].environment.FIGMA_OAUTH_TOKEN = token
       writeFileSync(configPath, JSON.stringify(config, null, 2), "utf-8")
     }
   } catch { /* ignore */ }
