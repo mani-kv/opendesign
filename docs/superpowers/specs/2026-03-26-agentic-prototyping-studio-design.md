@@ -179,7 +179,7 @@ After import, an AI agent generates the initial Sandpack prototype:
 |--------|----------|-------|
 | Design system registry | `packages/opendesign/src/design-system/` | Store imported components + tokens |
 | Token CSS generation | `packages/opendesign/src/design-system/tokens.ts` | `tokensToStylesheet()` for Sandpack injection |
-| Sandpack scaffolding | `packages/opendesign/src/sandpack/` | `scaffoldReactFiles()`, `updateSandpackFiles()` |
+| Sandpack scaffolding | `packages/opendesign/src/sandpack/instance.ts` | `scaffoldReactFiles()`, `updateSandpackFiles()` |
 | Agent orchestrator | `packages/opendesign/src/agent/orchestrator.ts` | Dispatch and manage exploration agents |
 | Agent lifecycle | `packages/opendesign/src/agent/lifecycle.ts` | State machine for agent status |
 | Figma types | `packages/opendesign/src/types/figma.ts` | `FigmaFrame`, `FigmaSelection`, `FigmaTokenRef` |
