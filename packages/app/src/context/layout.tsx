@@ -300,6 +300,7 @@ export const { use: useLayout, provider: LayoutProvider } = createSimpleContext(
         },
         session: {
           width: DEFAULT_SESSION_WIDTH,
+          opened: true,
         },
         agents: {
           width: AGENTS_PANEL_WIDTH,
@@ -802,6 +803,29 @@ export const { use: useLayout, provider: LayoutProvider } = createSimpleContext(
       },
       session: {
         width: createMemo(() => store.session?.width ?? DEFAULT_SESSION_WIDTH),
+        opened: createMemo(() => store.session?.opened ?? true),
+        open() {
+          if (!store.session) {
+            setStore("session", { width: DEFAULT_SESSION_WIDTH, opened: true })
+            return
+          }
+          setStore("session", "opened", true)
+        },
+        close() {
+          if (!store.session) {
+            setStore("session", { width: DEFAULT_SESSION_WIDTH, opened: false })
+            return
+          }
+          setStore("session", "opened", false)
+        },
+        toggle() {
+          const next = !(store.session?.opened ?? true)
+          if (!store.session) {
+            setStore("session", { width: DEFAULT_SESSION_WIDTH, opened: next })
+            return
+          }
+          setStore("session", "opened", next)
+        },
         resize(width: number) {
           if (!store.session) {
             setStore("session", { width })

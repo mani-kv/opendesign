@@ -135,7 +135,7 @@ export function SessionComposerRegion(props: {
     <div
       ref={props.setPromptDockRef}
       data-component="session-prompt-dock"
-      class="shrink-0 w-full pb-0 flex flex-col justify-center items-center pointer-events-none"
+      class="shrink-0 w-full px-1 pb-0 flex flex-col justify-center items-center pointer-events-none"
     >
       <div
         classList={{

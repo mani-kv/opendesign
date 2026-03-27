@@ -26,7 +26,7 @@ import { PromptProvider } from "@/context/prompt"
 import { type ServerConnection, ServerProvider, useServer } from "@/context/server"
 import { SettingsProvider } from "@/context/settings"
 import { AgentsProvider } from "@/context/agents"
-import { ChatModeProvider } from "@/context/chat-mode"
+
 import { TerminalProvider } from "@/context/terminal"
 import ProjectLayout from "@/pages/project-layout"
 import Layout from "@/pages/layout"
@@ -80,17 +80,15 @@ function AppShellProviders(props: ParentProps) {
         <WorkspaceProvider>
           <LayoutProvider>
             <AgentsProvider>
-              <ChatModeProvider>
-                <NotificationProvider>
-                  <ModelsProvider>
-                    <CommandProvider>
-                      <HighlightsProvider>
-                        <Layout>{props.children}</Layout>
-                      </HighlightsProvider>
-                    </CommandProvider>
-                  </ModelsProvider>
-                </NotificationProvider>
-              </ChatModeProvider>
+              <NotificationProvider>
+                <ModelsProvider>
+                  <CommandProvider>
+                    <HighlightsProvider>
+                      <Layout>{props.children}</Layout>
+                    </HighlightsProvider>
+                  </CommandProvider>
+                </ModelsProvider>
+              </NotificationProvider>
             </AgentsProvider>
           </LayoutProvider>
         </WorkspaceProvider>

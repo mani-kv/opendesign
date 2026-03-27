@@ -11,9 +11,9 @@ import {
   on,
   onMount,
   untrack,
-  createSignal,
 } from "solid-js"
 import { createMediaQuery } from "@solid-primitives/media"
+import { createResizeObserver } from "@solid-primitives/resize-observer"
 import { useLocal } from "@/context/local"
 import { selectionFromLines, useFile, type FileSelection, type SelectedLineRange } from "@/context/file"
 import { createStore } from "solid-js/store"
@@ -23,23 +23,23 @@ import { createAutoScroll } from "@opencode-ai/ui/hooks"
 import { Button } from "@opencode-ai/ui/button"
 import { showToast } from "@opencode-ai/ui/toast"
 import { base64Encode, checksum } from "@opencode-ai/util/encode"
-import { useLocation, useNavigate, useSearchParams } from "@solidjs/router"
+import { useNavigate, useSearchParams } from "@solidjs/router"
 import { useProjectScope } from "@/context/project-scope"
 import { useProjectActive } from "@/components/project-shell"
-import { SessionHeader } from "@/components/session"
+import { NewSessionView, SessionHeader } from "@/components/session"
 import { useComments } from "@/context/comments"
 import { useGlobalSync } from "@/context/global-sync"
 import { decode64 } from "@/utils/base64"
 import { useLanguage } from "@/context/language"
 import { useLayout } from "@/context/layout"
-import { usePlatform } from "@/context/platform"
+
 import { usePrompt } from "@/context/prompt"
 import { useSDK } from "@/context/sdk"
 import { useSync } from "@/context/sync"
 import { useTerminal } from "@/context/terminal"
-import { ChatMessages } from "@/components/chat-messages"
 import { createSessionComposerState, SessionComposerRegion } from "@/pages/session/composer"
 import { createOpenReviewFile, createSizing, focusTerminalById } from "@/pages/session/helpers"
+import { MessageTimeline } from "@/pages/session/message-timeline"
 import { AgentsPanel } from "@/pages/session/agents-panel"
 import { type DiffStyle, SessionReviewTab, type SessionReviewTabProps } from "@/pages/session/review-tab"
 import { resetSessionModel, syncSessionModel } from "@/pages/session/session-model-helpers"
@@ -47,9 +47,11 @@ import { SessionMobileTabs } from "@/pages/session/session-mobile-tabs"
 import { SessionSidePanel } from "@/pages/session/session-side-panel"
 import { TerminalPanel } from "@/pages/session/terminal-panel"
 import { useSessionCommands } from "@/pages/session/use-session-commands"
-import { ChatDock } from "@/pages/session/composer/chat-dock"
-import { useChatMode } from "@/context/chat-mode"
+import { useSessionHashScroll } from "@/pages/session/use-session-hash-scroll"
+import { same } from "@/utils/same"
 import { formatServerError } from "@/utils/server-errors"
+
+const emptyUserMessages: UserMessage[] = []
 
 function projectDir(home: string, projectId: string) {
   const base = home.replace(/[/\\]+$/, "")
@@ -60,10 +62,169 @@ function resolveProjectDirectory(projectId: string, home: string) {
   return decode64(projectId) ?? projectDir(home, projectId)
 }
 
+type SessionHistoryWindowInput = {
+  sessionID: () => string | undefined
+  messagesReady: () => boolean
+  visibleUserMessages: () => UserMessage[]
+  historyMore: () => boolean
+  historyLoading: () => boolean
+  loadMore: (sessionID: string) => Promise<void>
+  userScrolled: () => boolean
+  scroller: () => HTMLDivElement | undefined
+}
+
+function createSessionHistoryWindow(input: SessionHistoryWindowInput) {
+  const turnInit = 10
+  const turnBatch = 8
+  const turnScrollThreshold = 200
+  const turnPrefetchBuffer = 16
+  const prefetchCooldownMs = 400
+  const prefetchNoGrowthLimit = 2
+
+  const [state, setState] = createStore({
+    turnID: undefined as string | undefined,
+    turnStart: 0,
+    prefetchUntil: 0,
+    prefetchNoGrowth: 0,
+  })
+
+  const initialTurnStart = (len: number) => (len > turnInit ? len - turnInit : 0)
+
+  const turnStart = createMemo(() => {
+    const id = input.sessionID()
+    const len = input.visibleUserMessages().length
+    if (!id || len <= 0) return 0
+    if (state.turnID !== id) return initialTurnStart(len)
+    if (state.turnStart <= 0) return 0
+    if (state.turnStart >= len) return initialTurnStart(len)
+    return state.turnStart
+  })
+
+  const setTurnStart = (start: number) => {
+    const id = input.sessionID()
+    const next = start > 0 ? start : 0
+    if (!id) {
+      setState({ turnID: undefined, turnStart: next })
+      return
+    }
+    setState({ turnID: id, turnStart: next })
+  }
+
+  const renderedUserMessages = createMemo(
+    () => {
+      const msgs = input.visibleUserMessages()
+      const start = turnStart()
+      if (start <= 0) return msgs
+      return msgs.slice(start)
+    },
+    emptyUserMessages,
+    { equals: same },
+  )
+
+  const preserveScroll = (fn: () => void) => {
+    const el = input.scroller()
+    if (!el) { fn(); return }
+    const beforeTop = el.scrollTop
+    const beforeHeight = el.scrollHeight
+    fn()
+    requestAnimationFrame(() => {
+      const delta = el.scrollHeight - beforeHeight
+      if (!delta) return
+      el.scrollTop = beforeTop + delta
+    })
+  }
+
+  const backfillTurns = () => {
+    const start = turnStart()
+    if (start <= 0) return
+    const next = start - turnBatch
+    preserveScroll(() => setTurnStart(next > 0 ? next : 0))
+  }
+
+  const loadAndReveal = async () => {
+    const id = input.sessionID()
+    if (!id) return
+    const start = turnStart()
+    const beforeVisible = input.visibleUserMessages().length
+    if (start > 0) setTurnStart(0)
+    if (!input.historyMore() || input.historyLoading()) return
+    await input.loadMore(id)
+    if (input.sessionID() !== id) return
+    const afterVisible = input.visibleUserMessages().length
+    const growth = afterVisible - beforeVisible
+    if (state.prefetchNoGrowth) setState("prefetchNoGrowth", 0)
+    if (growth <= 0) return
+    if (turnStart() !== 0) return
+    const target = Math.min(afterVisible, Math.max(beforeVisible, renderedUserMessages().length) + turnBatch)
+    const nextStart = Math.max(0, afterVisible - target)
+    preserveScroll(() => setTurnStart(nextStart))
+  }
+
+  const fetchOlderMessages = async (opts?: { prefetch?: boolean }) => {
+    const id = input.sessionID()
+    if (!id) return
+    if (!input.historyMore() || input.historyLoading()) return
+    if (opts?.prefetch) {
+      const now = Date.now()
+      if (state.prefetchUntil > now) return
+      if (state.prefetchNoGrowth >= prefetchNoGrowthLimit) return
+      setState("prefetchUntil", now + prefetchCooldownMs)
+    }
+    const start = turnStart()
+    const beforeVisible = input.visibleUserMessages().length
+    const beforeRendered = start <= 0 ? beforeVisible : renderedUserMessages().length
+    await input.loadMore(id)
+    if (input.sessionID() !== id) return
+    const afterVisible = input.visibleUserMessages().length
+    const growth = afterVisible - beforeVisible
+    if (opts?.prefetch) {
+      setState("prefetchNoGrowth", growth > 0 ? 0 : state.prefetchNoGrowth + 1)
+    } else if (growth > 0 && state.prefetchNoGrowth) {
+      setState("prefetchNoGrowth", 0)
+    }
+    if (growth <= 0) return
+    if (turnStart() !== start) return
+    const reveal = !opts?.prefetch
+    const currentRendered = renderedUserMessages().length
+    const base = Math.max(beforeRendered, currentRendered)
+    const target = reveal ? Math.min(afterVisible, base + turnBatch) : base
+    const nextStart = Math.max(0, afterVisible - target)
+    preserveScroll(() => setTurnStart(nextStart))
+  }
+
+  const onScrollerScroll = () => {
+    if (!input.userScrolled()) return
+    const el = input.scroller()
+    if (!el) return
+    if (el.scrollTop >= turnScrollThreshold) return
+    const start = turnStart()
+    if (start > 0) {
+      if (start <= turnPrefetchBuffer) void fetchOlderMessages({ prefetch: true })
+      backfillTurns()
+      return
+    }
+    void fetchOlderMessages()
+  }
+
+  createEffect(on(input.sessionID, () => { setState({ prefetchUntil: 0, prefetchNoGrowth: 0 }) }, { defer: true }))
+
+  createEffect(
+    on(
+      () => [input.sessionID(), input.messagesReady()] as const,
+      ([id, ready]) => {
+        if (!id || !ready) return
+        setTurnStart(initialTurnStart(input.visibleUserMessages().length))
+      },
+      { defer: true },
+    ),
+  )
+
+  return { turnStart, setTurnStart, renderedUserMessages, loadAndReveal, onScrollerScroll }
+}
+
 export default function Page() {
   const globalSync = useGlobalSync()
   const layout = useLayout()
-  const platform = usePlatform()
   const local = useLocal()
   const file = useFile()
   const sync = useSync()
@@ -76,7 +237,6 @@ export default function Page() {
   const comments = useComments()
   const terminal = useTerminal()
   const isActive = useProjectActive()
-  const chat = useChatMode()
   const [searchParams, setSearchParams] = useSearchParams<{ prompt?: string }>()
 
   createEffect(() => {
@@ -96,10 +256,7 @@ export default function Page() {
     pendingMessage: undefined as string | undefined,
     reviewSnap: false,
     scrollGesture: 0,
-    scroll: {
-      overflow: false,
-      bottom: true,
-    },
+    scroll: { overflow: false, bottom: true },
   })
 
   const composer = createSessionComposerState()
@@ -116,29 +273,20 @@ export default function Page() {
       (id, prev) => {
         if (!id) return
         if (prev) return
-
         const pending = layout.handoff.tabs()
         if (!pending) return
-        if (Date.now() - pending.at > 60_000) {
-          layout.handoff.clearTabs()
-          return
-        }
-
+        if (Date.now() - pending.at > 60_000) { layout.handoff.clearTabs(); return }
         if (pending.id !== id) return
         layout.handoff.clearTabs()
         if (pending.dir !== (scope.projectId() ?? "")) return
-
         const from = workspaceTabs().tabs()
         if (from.all.length === 0 && !from.active) return
-
         const current = tabs().tabs()
         if (current.all.length > 0 || current.active) return
-
         const all = normalizeTabs(from.all)
         const active = from.active ? normalizeTab(from.active) : undefined
         tabs().setAll(all)
         tabs().setActive(active && all.includes(active) ? active : all[0])
-
         workspaceTabs().setAll([])
         workspaceTabs().setActive(undefined)
       },
@@ -151,6 +299,13 @@ export default function Page() {
   const desktopReviewOpen = createMemo(() => isDesktop() && view().reviewPanel.opened())
   const desktopFileTreeOpen = createMemo(() => isDesktop() && layout.fileTree.opened())
   const desktopSidePanelOpen = createMemo(() => desktopReviewOpen() || desktopFileTreeOpen())
+  const sessionPanelWidth = createMemo(() => {
+    if (!desktopSidePanelOpen() && !layout.agents.opened()) return "100%"
+    if (desktopSidePanelOpen() || layout.agents.opened()) return `${layout.session.width()}px`
+    return `calc(100% - ${layout.fileTree.width()}px)`
+  })
+  const centered = createMemo(() => isDesktop() && !desktopReviewOpen())
+
   const agentsPanelOpen = createMemo(() => !isDesktop() || layout.agents.opened())
   const agentsShouldFill = createMemo(() => layout.agents.opened() && !desktopSidePanelOpen())
   const agentsPanelWidth = createMemo(() => {
@@ -188,7 +343,6 @@ export default function Page() {
   createEffect(() => {
     const active = tabs().active()
     if (!active) return
-
     const path = file.pathFromTab(active)
     if (path) file.load(path)
   })
@@ -199,17 +353,43 @@ export default function Page() {
   const hasReview = createMemo(() => reviewCount() > 0)
   const revertMessageID = createMemo(() => info()?.revert?.messageID)
   const messages = createMemo(() => (scope.sessionId() ? (sync.data.message[scope.sessionId()!] ?? []) : []))
-  const lastUserMessage = createMemo(() => {
-    const msgs = messages().filter((m) => m.role === "user")
-    const revert = revertMessageID()
-    const filtered = revert ? msgs.filter((m) => m.id < revert) : msgs
-    return filtered.at(-1)
-  })
   const messagesReady = createMemo(() => {
     const id = scope.sessionId()
     if (!id) return true
     return sync.data.message[id] !== undefined
   })
+  const historyMore = createMemo(() => {
+    const id = scope.sessionId()
+    if (!id) return false
+    return sync.session.history.more(id)
+  })
+  const historyLoading = createMemo(() => {
+    const id = scope.sessionId()
+    if (!id) return false
+    return sync.session.history.loading(id)
+  })
+
+  const userMessages = createMemo(
+    () => messages().filter((m) => m.role === "user") as UserMessage[],
+    emptyUserMessages,
+    { equals: same },
+  )
+  const visibleUserMessages = createMemo(
+    () => {
+      const revert = revertMessageID()
+      if (!revert) return userMessages()
+      return userMessages().filter((m) => m.id < revert)
+    },
+    emptyUserMessages,
+    { equals: same },
+  )
+  const lastUserMessage = createMemo(() => visibleUserMessages().at(-1))
+
+  createEffect(on(() => lastUserMessage()?.id, () => {
+    const msg = lastUserMessage()
+    if (!msg) return
+    syncSessionModel(local, msg)
+  }))
 
   createEffect(
     on(
@@ -217,12 +397,9 @@ export default function Page() {
       (next, prev) => {
         if (!prev) return
         if (next.dir === prev.dir && next.id === prev.id) return
-
         const prevKey = `${prev.dir ?? ""}${prev.id ? "/" + prev.id : ""}`
         const nextKey = `${next.dir ?? ""}${next.id ? "/" + next.id : ""}`
-
         layout.projectCache.touch(nextKey)
-
         if (prev.id && prev.dir && !layout.projectCache.has(prevKey)) {
           const home = globalSync.data.path.home ?? "/"
           const dir = resolveProjectDirectory(prev.dir, home)
@@ -246,9 +423,7 @@ export default function Page() {
     const key = sessionKey()
     if (key !== prev) {
       setStore("deferRender", true)
-      requestAnimationFrame(() => {
-        setTimeout(() => setStore("deferRender", false), 0)
-      })
+      requestAnimationFrame(() => { setTimeout(() => setStore("deferRender", false), 0) })
     }
     return key
   }, sessionKey())
@@ -258,13 +433,9 @@ export default function Page() {
   createComputed((prev) => {
     const open = desktopReviewOpen()
     if (prev === undefined || prev === open) return open
-
     if (reviewFrame !== undefined) cancelAnimationFrame(reviewFrame)
     setUi("reviewSnap", true)
-    reviewFrame = requestAnimationFrame(() => {
-      reviewFrame = undefined
-      setUi("reviewSnap", false)
-    })
+    reviewFrame = requestAnimationFrame(() => { reviewFrame = undefined; setUi("reviewSnap", false) })
     return open
   }, desktopReviewOpen())
 
@@ -277,6 +448,52 @@ export default function Page() {
     if (project && sdk.directory !== project.worktree) return sdk.directory
     return "main"
   })
+
+  const setActiveMessage = (message: UserMessage | undefined) => {
+    messageMark = scrollMark
+    setStore("messageId", message?.id)
+  }
+
+  const anchor = (id: string) => `message-${id}`
+
+  const cursor = () => {
+    const root = scroller
+    if (!root) return store.messageId
+    const box = root.getBoundingClientRect()
+    const line = box.top + 100
+    const list = [...root.querySelectorAll<HTMLElement>("[data-message-id]")]
+      .map((el) => {
+        const id = el.dataset.messageId
+        if (!id) return
+        const rect = el.getBoundingClientRect()
+        return { id, top: rect.top, bottom: rect.bottom }
+      })
+      .filter((item): item is { id: string; top: number; bottom: number } => !!item)
+    const shown = list.filter((item) => item.bottom > box.top && item.top < box.bottom)
+    const hit = shown.find((item) => item.top <= line && item.bottom >= line)
+    if (hit) return hit.id
+    const near = [...shown].sort((a, b) => {
+      const da = Math.abs(a.top - line)
+      const db = Math.abs(b.top - line)
+      if (da !== db) return da - db
+      return a.top - b.top
+    })[0]
+    if (near) return near.id
+    return list.filter((item) => item.top <= line).at(-1)?.id ?? list[0]?.id ?? store.messageId
+  }
+
+  function navigateMessageByOffset(offset: number) {
+    const msgs = visibleUserMessages()
+    if (msgs.length === 0) return
+    const current = store.messageId && messageMark === scrollMark ? store.messageId : cursor()
+    const base = current ? msgs.findIndex((m) => m.id === current) : msgs.length
+    const currentIndex = base === -1 ? msgs.length : base
+    const targetIndex = currentIndex + offset
+    if (targetIndex < 0 || targetIndex > msgs.length) return
+    if (targetIndex === msgs.length) { resumeScroll(); return }
+    autoScroll.pause()
+    scrollToMessage(msgs[targetIndex], "auto")
+  }
 
   const diffsReady = createMemo(() => {
     const id = scope.sessionId()
@@ -296,10 +513,7 @@ export default function Page() {
     sync.set("project", next.id)
     const idx = list.findIndex((item) => item.id === next.id)
     if (idx >= 0) {
-      globalSync.set(
-        "project",
-        list.map((item, i) => (i === idx ? { ...item, ...next } : item)),
-      )
+      globalSync.set("project", list.map((item, i) => (i === idx ? { ...item, ...next } : item)))
       return
     }
     const at = list.findIndex((item) => item.id > next.id)
@@ -315,64 +529,56 @@ export default function Page() {
     setUi("git", true)
     void sdk.client.project
       .initGit()
-      .then((x) => {
-        if (!x.data) return
-        upsert(x.data)
-      })
+      .then((x) => { if (!x.data) return; upsert(x.data) })
       .catch((err) => {
-        showToast({
-          variant: "error",
-          title: language.t("common.requestFailed"),
-          description: formatServerError(err, language.t),
-        })
+        showToast({ variant: "error", title: language.t("common.requestFailed"), description: formatServerError(err, language.t) })
       })
-      .finally(() => {
-        setUi("git", false)
-      })
+      .finally(() => { setUi("git", false) })
   }
 
   let inputRef!: HTMLDivElement
   let promptDock: HTMLDivElement | undefined
+  let dockHeight = 0
+  let scroller: HTMLDivElement | undefined
+  let content: HTMLDivElement | undefined
+  let scrollMark = 0
+  let messageMark = 0
+  const scrollGestureWindowMs = 250
 
-  const location = useLocation()
-  const clearMessageHash = () => {
-    if (!location.hash) return
-    navigate(location.pathname + location.search, { replace: true })
+  const markScrollGesture = (target?: EventTarget | null) => {
+    const root = scroller
+    if (!root) return
+    const el = target instanceof Element ? target : undefined
+    const nested = el?.closest("[data-scrollable]")
+    if (nested && nested !== root) return
+    setUi("scrollGesture", Date.now())
   }
-  const resumeScroll = () => clearMessageHash()
+
+  const hasScrollGesture = () => Date.now() - ui.scrollGesture < scrollGestureWindowMs
 
   createEffect(
     on([() => sdk.directory, scope.sessionId] as const, ([, id]) => {
       if (!id) return
-      untrack(() => {
-        void sync.session.sync(id)
-        void sync.session.todo(id)
-      })
+      untrack(() => { void sync.session.sync(id); void sync.session.todo(id) })
     }),
   )
 
   createEffect(
-    on(
-      sessionKey,
-      (key) => {
-        if (key) layout.projectCache.touch(key)
-        setStore("changes", "session")
-        setUi("pendingMessage", undefined)
-      },
-      { defer: true },
-    ),
+    on(() => visibleUserMessages().at(-1)?.id, (lastId, prevLastId) => {
+      if (lastId && prevLastId && lastId > prevLastId) setStore("messageId", undefined)
+    }, { defer: true }),
   )
 
-  createEffect(
-    on(
-      () => scope.projectId(),
-      (pid) => {
-        if (!pid) return
-        setStore("newSessionWorktree", "main")
-      },
-      { defer: true },
-    ),
-  )
+  createEffect(on(sessionKey, () => {
+    setStore("messageId", undefined)
+    setStore("changes", "session")
+    setUi("pendingMessage", undefined)
+  }, { defer: true }))
+
+  createEffect(on(() => scope.projectId(), (pid) => {
+    if (!pid) return
+    setStore("newSessionWorktree", "main")
+  }, { defer: true }))
 
   const selectionPreview = (path: string, selection: FileSelection) => {
     const content = file.get(path)?.content?.content
@@ -393,34 +599,13 @@ export default function Page() {
   }) => {
     const selection = selectionFromLines(input.selection)
     const preview = input.preview ?? selectionPreview(input.file, selection)
-    const saved = comments.add({
-      file: input.file,
-      selection: input.selection,
-      comment: input.comment,
-    })
-    prompt.context.add({
-      type: "file",
-      path: input.file,
-      selection,
-      comment: input.comment,
-      commentID: saved.id,
-      commentOrigin: input.origin,
-      preview,
-    })
+    const saved = comments.add({ file: input.file, selection: input.selection, comment: input.comment })
+    prompt.context.add({ type: "file", path: input.file, selection, comment: input.comment, commentID: saved.id, commentOrigin: input.origin, preview })
   }
 
-  const updateCommentInContext = (input: {
-    id: string
-    file: string
-    selection: SelectedLineRange
-    comment: string
-    preview?: string
-  }) => {
+  const updateCommentInContext = (input: { id: string; file: string; selection: SelectedLineRange; comment: string; preview?: string }) => {
     comments.update(input.file, input.id, input.comment)
-    prompt.context.updateComment(input.file, input.id, {
-      comment: input.comment,
-      ...(input.preview ? { preview: input.preview } : {}),
-    })
+    prompt.context.updateComment(input.file, input.id, { comment: input.comment, ...(input.preview ? { preview: input.preview } : {}) })
   }
 
   const removeCommentFromContext = (input: { id: string; file: string }) => {
@@ -442,9 +627,7 @@ export default function Page() {
 
   const deepActiveElement = () => {
     let current: Element | null = document.activeElement
-    while (current instanceof HTMLElement && current.shadowRoot?.activeElement) {
-      current = current.shadowRoot.activeElement
-    }
+    while (current instanceof HTMLElement && current.shadowRoot?.activeElement) current = current.shadowRoot.activeElement
     return current instanceof HTMLElement ? current : undefined
   }
 
@@ -453,35 +636,17 @@ export default function Page() {
     const path = event.composedPath()
     const target = path.find((item): item is HTMLElement => item instanceof HTMLElement)
     const activeElement = deepActiveElement()
-
-    const protectedTarget = path.some(
-      (item) => item instanceof HTMLElement && item.closest("[data-prevent-autofocus]") !== null,
-    )
+    const protectedTarget = path.some((item) => item instanceof HTMLElement && item.closest("[data-prevent-autofocus]") !== null)
     if (protectedTarget || isEditableTarget(target)) return
-
     if (activeElement) {
       const isProtected = activeElement.closest("[data-prevent-autofocus]")
       const isInput = isEditableTarget(activeElement)
       if (isProtected || isInput) return
     }
     if (dialog.active) return
-
-    if (activeElement === inputRef) {
-      if (event.key === "Escape") inputRef?.blur()
-      return
-    }
-
-    // Prefer the open terminal over the composer when it can take focus
-    if (view().terminal.opened()) {
-      const id = terminal.active()
-      if (id && focusTerminalById(id)) return
-    }
-
-    // Only treat explicit scroll keys as potential "user scroll" gestures.
-    if (event.key === "PageUp" || event.key === "PageDown" || event.key === "Home" || event.key === "End") {
-      return
-    }
-
+    if (activeElement === inputRef) { if (event.key === "Escape") inputRef?.blur(); return }
+    if (view().terminal.opened()) { const id = terminal.active(); if (id && focusTerminalById(id)) return }
+    if (event.key === "PageUp" || event.key === "PageDown" || event.key === "Home" || event.key === "End") { markScrollGesture(); return }
     if (event.key.length === 1 && event.key !== "Unidentified" && !(event.ctrlKey || event.metaKey)) {
       if (composer.blocked()) return
       inputRef?.focus()
@@ -489,14 +654,10 @@ export default function Page() {
   }
 
   const contextOpen = createMemo(() => tabs().active() === "context" || tabs().all().includes("context"))
-  const openedTabs = createMemo(() =>
-    tabs()
-      .all()
-      .filter((tab) => tab !== "context" && tab !== "canvas" && tab !== "figma"),
-  )
-
+  const openedTabs = createMemo(() => tabs().all().filter((tab) => tab !== "context" && tab !== "canvas" && tab !== "figma"))
   const canvasTab = createMemo(() => isDesktop())
   const figmaTab = createMemo(() => isDesktop())
+  const mobileChanges = createMemo(() => !isDesktop() && store.mobileTab === "changes")
 
   const fileTreeTab = () => layout.fileTree.tab()
   const setFileTreeTab = (value: "changes" | "all") => layout.fileTree.setTab(value)
@@ -507,32 +668,14 @@ export default function Page() {
     activeDiff: undefined as string | undefined,
   })
 
-  createEffect(
-    on(
-      sessionKey,
-      () => {
-        setTree({
-          reviewScroll: undefined,
-          pendingDiff: undefined,
-          activeDiff: undefined,
-        })
-      },
-      { defer: true },
-    ),
-  )
+  createEffect(on(sessionKey, () => {
+    setTree({ reviewScroll: undefined, pendingDiff: undefined, activeDiff: undefined })
+  }, { defer: true }))
 
-  const showAllFiles = () => {
-    if (fileTreeTab() !== "changes") return
-    setFileTreeTab("all")
-  }
-
+  const showAllFiles = () => { if (fileTreeTab() !== "changes") return; setFileTreeTab("all") }
   const focusInput = () => inputRef?.focus()
 
-  useSessionCommands({
-    navigateMessageByOffset: () => {},
-    setActiveMessage: () => {},
-    focusInput,
-  })
+  useSessionCommands({ navigateMessageByOffset, setActiveMessage, focusInput })
 
   const openReviewFile = createOpenReviewFile({
     showAllFiles,
@@ -546,17 +689,12 @@ export default function Page() {
   const changesOptionsList = [...changesOptions]
 
   const changesTitle = () => {
-    if (!hasReview()) {
-      return null
-    }
-
+    if (!hasReview()) return null
     return (
       <Select
         options={changesOptionsList}
         current={store.changes}
-        label={(option) =>
-          option === "session" ? language.t("ui.sessionReview.title") : language.t("ui.sessionReview.title.lastTurn")
-        }
+        label={(option) => option === "session" ? language.t("ui.sessionReview.title") : language.t("ui.sessionReview.title.lastTurn")}
         onSelect={(option) => option && setStore("changes", option)}
         variant="ghost"
         size="small"
@@ -581,71 +719,24 @@ export default function Page() {
     <Show when={!store.deferRender}>
       <Switch>
         <Match when={store.changes === "turn" && !!scope.sessionId()}>
-          <SessionReviewTab
-            title={changesTitle()}
-            empty={emptyTurn()}
-            diffs={reviewDiffs}
-            view={view}
-            diffStyle={input.diffStyle}
-            onDiffStyleChange={input.onDiffStyleChange}
-            onScrollRef={(el) => setTree("reviewScroll", el)}
-            focusedFile={tree.activeDiff}
-            onLineComment={(comment) => addCommentToContext({ ...comment, origin: "review" })}
-            onLineCommentUpdate={updateCommentInContext}
-            onLineCommentDelete={removeCommentFromContext}
-            lineCommentActions={reviewCommentActions()}
-            comments={comments.all()}
-            focusedComment={comments.focus()}
-            onFocusedCommentChange={comments.setFocus}
-            onViewFile={openReviewFile}
-            classes={input.classes}
-          />
+          <SessionReviewTab title={changesTitle()} empty={emptyTurn()} diffs={reviewDiffs} view={view} diffStyle={input.diffStyle} onDiffStyleChange={input.onDiffStyleChange} onScrollRef={(el) => setTree("reviewScroll", el)} focusedFile={tree.activeDiff} onLineComment={(comment) => addCommentToContext({ ...comment, origin: "review" })} onLineCommentUpdate={updateCommentInContext} onLineCommentDelete={removeCommentFromContext} lineCommentActions={reviewCommentActions()} comments={comments.all()} focusedComment={comments.focus()} onFocusedCommentChange={comments.setFocus} onViewFile={openReviewFile} classes={input.classes} />
         </Match>
         <Match when={hasReview()}>
-          <Show
-            when={diffsReady()}
-            fallback={<div class={input.loadingClass}>{language.t("session.review.loadingChanges")}</div>}
-          >
-            <SessionReviewTab
-              title={changesTitle()}
-              diffs={reviewDiffs}
-              view={view}
-              diffStyle={input.diffStyle}
-              onDiffStyleChange={input.onDiffStyleChange}
-              onScrollRef={(el) => setTree("reviewScroll", el)}
-              focusedFile={tree.activeDiff}
-              onLineComment={(comment) => addCommentToContext({ ...comment, origin: "review" })}
-              onLineCommentUpdate={updateCommentInContext}
-              onLineCommentDelete={removeCommentFromContext}
-              lineCommentActions={reviewCommentActions()}
-              comments={comments.all()}
-              focusedComment={comments.focus()}
-              onFocusedCommentChange={comments.setFocus}
-              onViewFile={openReviewFile}
-              classes={input.classes}
-            />
+          <Show when={diffsReady()} fallback={<div class={input.loadingClass}>{language.t("session.review.loadingChanges")}</div>}>
+            <SessionReviewTab title={changesTitle()} diffs={reviewDiffs} view={view} diffStyle={input.diffStyle} onDiffStyleChange={input.onDiffStyleChange} onScrollRef={(el) => setTree("reviewScroll", el)} focusedFile={tree.activeDiff} onLineComment={(comment) => addCommentToContext({ ...comment, origin: "review" })} onLineCommentUpdate={updateCommentInContext} onLineCommentDelete={removeCommentFromContext} lineCommentActions={reviewCommentActions()} comments={comments.all()} focusedComment={comments.focus()} onFocusedCommentChange={comments.setFocus} onViewFile={openReviewFile} classes={input.classes} />
           </Show>
         </Match>
         <Match when={true}>
           <SessionReviewTab
             title={changesTitle()}
             empty={
-              store.changes === "turn" ? (
-                emptyTurn()
-              ) : reviewEmptyKey() === "session.review.noVcs" ? (
+              store.changes === "turn" ? emptyTurn() : reviewEmptyKey() === "session.review.noVcs" ? (
                 <div class={input.emptyClass}>
                   <div class="flex flex-col gap-3">
                     <div class="text-14-medium text-text-strong">Create a Git repository</div>
-                    <div
-                      class="text-14-regular text-text-base max-w-md"
-                      style={{ "line-height": "var(--line-height-normal)" }}
-                    >
-                      Track, review, and undo changes in this project
-                    </div>
+                    <div class="text-14-regular text-text-base max-w-md" style={{ "line-height": "var(--line-height-normal)" }}>Track, review, and undo changes in this project</div>
                   </div>
-                  <Button size="large" disabled={ui.git} onClick={initGit}>
-                    {ui.git ? "Creating Git repository..." : "Create Git repository"}
-                  </Button>
+                  <Button size="large" disabled={ui.git} onClick={initGit}>{ui.git ? "Creating Git repository..." : "Create Git repository"}</Button>
                 </div>
               ) : (
                 <div class={input.emptyClass}>
@@ -653,21 +744,7 @@ export default function Page() {
                 </div>
               )
             }
-            diffs={reviewDiffs}
-            view={view}
-            diffStyle={input.diffStyle}
-            onDiffStyleChange={input.onDiffStyleChange}
-            onScrollRef={(el) => setTree("reviewScroll", el)}
-            focusedFile={tree.activeDiff}
-            onLineComment={(comment) => addCommentToContext({ ...comment, origin: "review" })}
-            onLineCommentUpdate={updateCommentInContext}
-            onLineCommentDelete={removeCommentFromContext}
-            lineCommentActions={reviewCommentActions()}
-            comments={comments.all()}
-            focusedComment={comments.focus()}
-            onFocusedCommentChange={comments.setFocus}
-            onViewFile={openReviewFile}
-            classes={input.classes}
+            diffs={reviewDiffs} view={view} diffStyle={input.diffStyle} onDiffStyleChange={input.onDiffStyleChange} onScrollRef={(el) => setTree("reviewScroll", el)} focusedFile={tree.activeDiff} onLineComment={(comment) => addCommentToContext({ ...comment, origin: "review" })} onLineCommentUpdate={updateCommentInContext} onLineCommentDelete={removeCommentFromContext} lineCommentActions={reviewCommentActions()} comments={comments.all()} focusedComment={comments.focus()} onFocusedCommentChange={comments.setFocus} onViewFile={openReviewFile} classes={input.classes}
           />
         </Match>
       </Switch>
@@ -677,46 +754,28 @@ export default function Page() {
   const reviewPanel = () => (
     <div class="flex flex-col h-full overflow-hidden bg-background-stronger contain-strict">
       <div class="relative pt-2 flex-1 min-h-0 overflow-hidden">
-        {reviewContent({
-          diffStyle: layout.review.diffStyle(),
-          onDiffStyleChange: layout.review.setDiffStyle,
-          loadingClass: "px-6 py-4 text-text-weak",
-          emptyClass: "h-full pb-64 -mt-4 flex flex-col items-center justify-center text-center gap-6",
-        })}
+        {reviewContent({ diffStyle: layout.review.diffStyle(), onDiffStyleChange: layout.review.setDiffStyle, loadingClass: "px-6 py-4 text-text-weak", emptyClass: "h-full pb-64 -mt-4 flex flex-col items-center justify-center text-center gap-6" })}
       </div>
     </div>
   )
 
-  createEffect(
-    on(
-      () => tabs().active(),
-      (active) => {
-        if (!active) return
-        if (fileTreeTab() !== "changes") return
-        if (!file.pathFromTab(active)) return
-        showAllFiles()
-      },
-      { defer: true },
-    ),
-  )
+  createEffect(on(() => tabs().active(), (active) => {
+    if (!active) return
+    if (fileTreeTab() !== "changes") return
+    if (!file.pathFromTab(active)) return
+    showAllFiles()
+  }, { defer: true }))
 
-  const reviewDiffId = (path: string) => {
-    const sum = checksum(path)
-    if (!sum) return
-    return `session-review-diff-${sum}`
-  }
+  const reviewDiffId = (path: string) => { const sum = checksum(path); if (!sum) return; return `session-review-diff-${sum}` }
 
   const reviewDiffTop = (path: string) => {
     const root = tree.reviewScroll
     if (!root) return
-
     const id = reviewDiffId(path)
     if (!id) return
-
     const el = document.getElementById(id)
     if (!(el instanceof HTMLElement)) return
     if (!root.contains(el)) return
-
     const a = el.getBoundingClientRect()
     const b = root.getBoundingClientRect()
     return a.top - b.top + root.scrollTop
@@ -725,10 +784,8 @@ export default function Page() {
   const scrollToReviewDiff = (path: string) => {
     const root = tree.reviewScroll
     if (!root) return false
-
     const top = reviewDiffTop(path)
     if (top === undefined) return false
-
     view().setScroll("review", { x: root.scrollLeft, y: top })
     root.scrollTo({ top, behavior: "auto" })
     return true
@@ -746,39 +803,17 @@ export default function Page() {
     if (!pending) return
     if (!tree.reviewScroll) return
     if (!diffsReady()) return
-
     const attempt = (count: number) => {
       if (tree.pendingDiff !== pending) return
-      if (count > 60) {
-        setTree("pendingDiff", undefined)
-        return
-      }
-
+      if (count > 60) { setTree("pendingDiff", undefined); return }
       const root = tree.reviewScroll
-      if (!root) {
-        requestAnimationFrame(() => attempt(count + 1))
-        return
-      }
-
-      if (!scrollToReviewDiff(pending)) {
-        requestAnimationFrame(() => attempt(count + 1))
-        return
-      }
-
+      if (!root) { requestAnimationFrame(() => attempt(count + 1)); return }
+      if (!scrollToReviewDiff(pending)) { requestAnimationFrame(() => attempt(count + 1)); return }
       const top = reviewDiffTop(pending)
-      if (top === undefined) {
-        requestAnimationFrame(() => attempt(count + 1))
-        return
-      }
-
-      if (Math.abs(root.scrollTop - top) <= 1) {
-        setTree("pendingDiff", undefined)
-        return
-      }
-
+      if (top === undefined) { requestAnimationFrame(() => attempt(count + 1)); return }
+      if (Math.abs(root.scrollTop - top) <= 1) { setTree("pendingDiff", undefined); return }
       requestAnimationFrame(() => attempt(count + 1))
     }
-
     requestAnimationFrame(() => attempt(0))
   })
 
@@ -788,7 +823,6 @@ export default function Page() {
     if (active === "canvas" && canvasTab()) return "canvas"
     if (active === "figma" && figmaTab()) return "figma"
     if (active && file.pathFromTab(active)) return normalizeTab(active)
-
     const first = openedTabs()[0]
     if (first) return first
     if (contextOpen()) return "context"
@@ -801,7 +835,6 @@ export default function Page() {
     if (!layout.ready()) return
     if (tabs().active()) return
     if (openedTabs().length === 0 && !contextOpen() && !(canvasTab() && hasReview()) && !figmaTab()) return
-
     const next = activeTab()
     if (next === "empty") return
     tabs().setActive(next)
@@ -810,12 +843,10 @@ export default function Page() {
   createEffect(() => {
     const id = scope.sessionId()
     if (!id) return
-
     const wants = isDesktop() ? desktopFileTreeOpen() || (desktopReviewOpen() && activeTab() === "canvas") : true
     if (!wants) return
     if (sync.data.session_diff[id] !== undefined) return
     if (sync.status === "loading") return
-
     void sync.session.diff(id)
   })
 
@@ -825,44 +856,125 @@ export default function Page() {
     if (!isDesktop()) return
     if (!layout.fileTree.opened()) return
     if (sync.status === "loading") return
-
     fileTreeTab()
     const refresh = treeDir !== dir
     treeDir = dir
     void (refresh ? file.tree.refresh("") : file.tree.list(""))
   })
 
-  createEffect(
-    on(
-      () => sdk.directory,
-      () => {
-        void file.tree.list("")
+  createEffect(on(() => sdk.directory, () => {
+    void file.tree.list("")
+    const active = tabs().active()
+    if (!active) return
+    const path = file.pathFromTab(active)
+    if (!path) return
+    void file.load(path, { force: true })
+  }, { defer: true }))
 
-        const active = tabs().active()
-        if (!active) return
-        const path = file.pathFromTab(active)
-        if (!path) return
-        void file.load(path, { force: true })
-      },
-      { defer: true },
-    ),
+  const autoScroll = createAutoScroll({ working: () => true, overflowAnchor: "dynamic" })
+
+  let scrollStateFrame: number | undefined
+  let scrollStateTarget: HTMLDivElement | undefined
+
+  const updateScrollState = (el: HTMLDivElement) => {
+    const max = el.scrollHeight - el.clientHeight
+    const overflow = max > 1
+    const bottom = !overflow || el.scrollTop >= max - 2
+    if (ui.scroll.overflow === overflow && ui.scroll.bottom === bottom) return
+    setUi("scroll", { overflow, bottom })
+  }
+
+  const scheduleScrollState = (el: HTMLDivElement) => {
+    scrollStateTarget = el
+    if (scrollStateFrame !== undefined) return
+    scrollStateFrame = requestAnimationFrame(() => {
+      scrollStateFrame = undefined
+      const target = scrollStateTarget
+      scrollStateTarget = undefined
+      if (!target) return
+      updateScrollState(target)
+    })
+  }
+
+  const resumeScroll = () => {
+    setStore("messageId", undefined)
+    autoScroll.forceScrollToBottom()
+    clearMessageHash()
+    const el = scroller
+    if (el) scheduleScrollState(el)
+  }
+
+  createEffect(on(autoScroll.userScrolled, (scrolled) => {
+    if (scrolled) return
+    setStore("messageId", undefined)
+    clearMessageHash()
+  }, { defer: true }))
+
+  const setScrollRef = (el: HTMLDivElement | undefined) => {
+    scroller = el
+    autoScroll.scrollRef(el)
+    if (el) scheduleScrollState(el)
+  }
+
+  const markUserScroll = () => { scrollMark += 1 }
+
+  createResizeObserver(() => content, () => { const el = scroller; if (el) scheduleScrollState(el) })
+
+  const historyWindow = createSessionHistoryWindow({
+    sessionID: scope.sessionId,
+    messagesReady,
+    visibleUserMessages,
+    historyMore,
+    historyLoading,
+    loadMore: (sessionID) => sync.session.history.loadMore(sessionID),
+    userScrolled: autoScroll.userScrolled,
+    scroller: () => scroller,
+  })
+
+  createResizeObserver(
+    () => promptDock,
+    ({ height }) => {
+      const next = Math.ceil(height)
+      if (next === dockHeight) return
+      const el = scroller
+      const delta = next - dockHeight
+      const stick = el ? !autoScroll.userScrolled() || el.scrollHeight - el.clientHeight - el.scrollTop < 10 + Math.max(0, delta) : false
+      dockHeight = next
+      if (stick) autoScroll.forceScrollToBottom()
+      if (el) scheduleScrollState(el)
+    },
   )
 
-  onMount(() => {
-    document.addEventListener("keydown", handleKeyDown)
+  const { clearMessageHash, scrollToMessage } = useSessionHashScroll({
+    sessionKey,
+    sessionID: scope.sessionId,
+    messagesReady,
+    visibleUserMessages,
+    turnStart: historyWindow.turnStart,
+    currentMessageId: () => store.messageId,
+    pendingMessage: () => ui.pendingMessage,
+    setPendingMessage: (value) => setUi("pendingMessage", value),
+    setActiveMessage,
+    setTurnStart: historyWindow.setTurnStart,
+    autoScroll,
+    scroller: () => scroller,
+    anchor,
+    scheduleScrollState,
+    consumePendingMessage: layout.pendingMessage.consume,
   })
+
+  onMount(() => { document.addEventListener("keydown", handleKeyDown) })
 
   onCleanup(() => {
     document.removeEventListener("keydown", handleKeyDown)
     if (reviewFrame !== undefined) cancelAnimationFrame(reviewFrame)
+    if (scrollStateFrame !== undefined) cancelAnimationFrame(scrollStateFrame)
   })
-
-  const [workspaceRef, setWorkspaceRef] = createSignal<HTMLDivElement | undefined>(undefined)
 
   return (
     <div class="relative bg-background-base size-full overflow-hidden flex flex-col">
       <SessionHeader />
-      <div ref={setWorkspaceRef} class="relative flex-1 min-h-0 flex flex-col md:flex-row">
+      <div class="relative flex-1 min-h-0 flex flex-col md:flex-row overflow-hidden">
         <SessionMobileTabs
           open={!isDesktop() && !!scope.sessionId()}
           mobileTab={store.mobileTab}
@@ -872,44 +984,108 @@ export default function Page() {
           onChanges={() => setStore("mobileTab", "changes")}
         />
 
-        {/* Chat dock */}
-        <ChatDock
-          promptInput={
-            <SessionComposerRegion
-              state={composer}
-              ready={!store.deferRender && messagesReady()}
-              centered={false}
-              inputRef={(el) => {
-                inputRef = el
-              }}
-              newSessionWorktree={newSessionWorktree()}
-              onNewSessionWorktreeReset={() => setStore("newSessionWorktree", "main")}
-              onSubmit={() => {
-                comments.clear()
-                resumeScroll()
-              }}
-              onResponseSubmit={resumeScroll}
-              setPromptDockRef={(el) => {
-                promptDock = el
-              }}
-            />
-          }
-          messageTimeline={<ChatMessages />}
-        />
+        {/* Session panel - main content */}
+        <Show when={layout.session.opened()}>
+        <div
+          classList={{
+            "@container relative flex flex-col min-h-0 h-full bg-background-stronger flex-1 md:flex-none min-w-[280px]": true,
+            "transition-[width] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-[width] motion-reduce:transition-none":
+              !size.active() && !ui.reviewSnap,
+          }}
+          style={{ width: sessionPanelWidth() }}
+        >
+          <div class="flex-1 min-h-0 overflow-hidden">
+            <Switch>
+              <Match when={scope.sessionId()}>
+                <Show when={lastUserMessage()}>
+                  <MessageTimeline
+                    mobileChanges={mobileChanges()}
+                    mobileFallback={reviewContent({
+                      diffStyle: "unified",
+                      classes: { root: "pb-8", header: "px-4", container: "px-4" },
+                      loadingClass: "px-4 py-4 text-text-weak",
+                      emptyClass: "h-full pb-64 -mt-4 flex flex-col items-center justify-center text-center gap-6",
+                    })}
+                    scroll={ui.scroll}
+                    onResumeScroll={resumeScroll}
+                    setScrollRef={setScrollRef}
+                    onScheduleScrollState={scheduleScrollState}
+                    onAutoScrollHandleScroll={autoScroll.handleScroll}
+                    onMarkScrollGesture={markScrollGesture}
+                    hasScrollGesture={hasScrollGesture}
+                    onUserScroll={markUserScroll}
+                    onTurnBackfillScroll={historyWindow.onScrollerScroll}
+                    onAutoScrollInteraction={autoScroll.handleInteraction}
+                    centered={centered()}
+                    setContentRef={(el) => {
+                      content = el
+                      autoScroll.contentRef(el)
+                      const root = scroller
+                      if (root) scheduleScrollState(root)
+                    }}
+                    turnStart={historyWindow.turnStart()}
+                    historyMore={historyMore()}
+                    historyLoading={historyLoading()}
+                    onLoadEarlier={() => { void historyWindow.loadAndReveal() }}
+                    renderedUserMessages={historyWindow.renderedUserMessages()}
+                    anchor={anchor}
+                  />
+                </Show>
+              </Match>
+              <Match when={true}>
+                <NewSessionView
+                  worktree={newSessionWorktree()}
+                  onWorktreeChange={(value) => {
+                    if (value === "create") { setStore("newSessionWorktree", value); return }
+                    setStore("newSessionWorktree", "main")
+                    const target = value === "main" ? sync.project?.worktree : value
+                    if (!target) return
+                    if (target === sdk.directory) return
+                    layout.projects.open(target)
+                    navigate(`/${base64Encode(target)}/session`)
+                  }}
+                />
+              </Match>
+            </Switch>
+          </div>
+
+          <SessionComposerRegion
+            state={composer}
+            ready={!store.deferRender && messagesReady()}
+            centered={centered()}
+            inputRef={(el) => { inputRef = el }}
+            newSessionWorktree={newSessionWorktree()}
+            onNewSessionWorktreeReset={() => setStore("newSessionWorktree", "main")}
+            onSubmit={() => { comments.clear(); resumeScroll() }}
+            onResponseSubmit={resumeScroll}
+            setPromptDockRef={(el) => { promptDock = el }}
+          />
+
+          <Show when={desktopSidePanelOpen() || layout.agents.opened()}>
+            <div onPointerDown={() => size.start()}>
+              <ResizeHandle
+                direction="horizontal"
+                size={layout.session.width()}
+                min={350}
+                max={typeof window === "undefined" ? 1000 : window.innerWidth * 0.6}
+                onResize={(width) => { size.touch(); layout.session.resize(width) }}
+              />
+            </div>
+          </Show>
+        </div>
+        </Show>
 
         {/* Agents panel */}
         <Show when={agentsPanelOpen()}>
           <div
             id="agents-panel"
             classList={{
-              "relative flex flex-col min-h-0 h-full bg-background-stronger flex-1": true,
-              "md:flex-none shrink-0": !agentsShouldFill(),
+              "relative flex flex-col min-h-0 h-full bg-background-stronger flex-1 min-w-[160px]": true,
+              "md:flex-none": !agentsShouldFill(),
               "transition-[width] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-[width] motion-reduce:transition-none":
                 !size.active() && !ui.reviewSnap && !agentsShouldFill(),
             }}
-            style={{
-              width: agentsPanelWidth(),
-            }}
+            style={{ width: agentsPanelWidth() }}
           >
             <AgentsPanel />
             <Show when={desktopReviewOpen()}>
@@ -919,58 +1095,14 @@ export default function Page() {
                   size={layout.agents.width()}
                   min={180}
                   max={typeof window === "undefined" ? 480 : Math.min(480, window.innerWidth * 0.4)}
-                  onResize={(width) => {
-                    size.touch()
-                    layout.agents.resize(width)
-                  }}
+                  onResize={(width) => { size.touch(); layout.agents.resize(width) }}
                 />
               </div>
-            </Show>
-            <Show when={!isDesktop()}>
-              <SessionComposerRegion
-                state={composer}
-                ready={!store.deferRender && messagesReady()}
-                centered={true}
-                inputRef={(el) => {
-                  inputRef = el
-                }}
-                newSessionWorktree={newSessionWorktree()}
-                onNewSessionWorktreeReset={() => setStore("newSessionWorktree", "main")}
-                onSubmit={() => {
-                  comments.clear()
-                  resumeScroll()
-                }}
-                onResponseSubmit={resumeScroll}
-                setPromptDockRef={(el) => {
-                  promptDock = el
-                }}
-              />
             </Show>
           </div>
         </Show>
 
         <SessionSidePanel
-          floatingDockBoundary={() => (workspaceRef()?.closest("main") ?? workspaceRef()) as HTMLElement | undefined}
-          floatingPrompt={() => (
-            <SessionComposerRegion
-              state={composer}
-              ready={!store.deferRender && messagesReady()}
-              centered={false}
-              inputRef={(el) => {
-                inputRef = el
-              }}
-              newSessionWorktree={newSessionWorktree()}
-              onNewSessionWorktreeReset={() => setStore("newSessionWorktree", "main")}
-              onSubmit={() => {
-                comments.clear()
-                resumeScroll()
-              }}
-              onResponseSubmit={resumeScroll}
-              setPromptDockRef={(el) => {
-                promptDock = el
-              }}
-            />
-          )}
           activeDiff={tree.activeDiff}
           focusReviewDiff={focusReviewDiff}
           reviewSnap={ui.reviewSnap}

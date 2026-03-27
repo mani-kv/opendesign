@@ -10,7 +10,7 @@ import { useLanguage } from "@/context/language"
 import { useLayout } from "@/context/layout"
 import { useLocal } from "@/context/local"
 import { usePermission } from "@/context/permission"
-import { type ImageAttachmentPart, type Prompt, usePrompt } from "@/context/prompt"
+import { type FileContextItem, type ImageAttachmentPart, type Prompt, usePrompt } from "@/context/prompt"
 import { useSDK } from "@/context/sdk"
 import { useSync } from "@/context/sync"
 import { Identifier } from "@/utils/id"
@@ -278,7 +278,7 @@ export function createPromptSubmit(input: PromptSubmitInput) {
     }
 
     const context = prompt.context.items().slice()
-    const commentItems = context.filter((item) => item.type === "file" && !!item.comment?.trim())
+    const commentItems = context.filter((item): item is FileContextItem & { key: string } => item.type === "file" && !!item.comment?.trim())
 
     const messageID = Identifier.ascending("message")
     const { requestParts, optimisticParts } = buildRequestParts({

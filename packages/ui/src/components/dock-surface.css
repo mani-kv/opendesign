@@ -1,5 +1,6 @@
 [data-dock-surface="shell"] {
   background-color: var(--surface-raised-stronger-non-alpha);
+  border: 1px solid var(--border-weak-base);
   box-shadow: var(--shadow-xs-border);
   position: relative;
   z-index: 10;

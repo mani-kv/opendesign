@@ -275,13 +275,33 @@ export function Titlebar() {
                 aria-pressed={figmaAuthed()}
                 type="button"
               >
-                <span
-                  class="block w-2 h-2 rounded-full"
-                  classList={{
-                    "bg-green-500": figmaAuthed(),
-                    "bg-red-500": !figmaAuthed(),
-                  }}
-                />
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M8 24c2.2 0 4-1.8 4-4v-4H8c-2.2 0-4 1.8-4 4s1.8 4 4 4z"
+                    fill={figmaAuthed() ? "#0ACF83" : "currentColor"}
+                    opacity={figmaAuthed() ? 1 : 0.4}
+                  />
+                  <path
+                    d="M4 12c0-2.2 1.8-4 4-4h4v8H8c-2.2 0-4-1.8-4-4z"
+                    fill={figmaAuthed() ? "#A259FF" : "currentColor"}
+                    opacity={figmaAuthed() ? 1 : 0.4}
+                  />
+                  <path
+                    d="M4 4c0-2.2 1.8-4 4-4h4v8H8C5.8 8 4 6.2 4 4z"
+                    fill={figmaAuthed() ? "#F24E1E" : "currentColor"}
+                    opacity={figmaAuthed() ? 1 : 0.4}
+                  />
+                  <path
+                    d="M12 0h4c2.2 0 4 1.8 4 4s-1.8 4-4 4h-4V0z"
+                    fill={figmaAuthed() ? "#FF7262" : "currentColor"}
+                    opacity={figmaAuthed() ? 1 : 0.4}
+                  />
+                  <path
+                    d="M20 12c0 2.2-1.8 4-4 4s-4-1.8-4-4 1.8-4 4-4 4 1.8 4 4z"
+                    fill={figmaAuthed() ? "#1ABCFE" : "currentColor"}
+                    opacity={figmaAuthed() ? 1 : 0.4}
+                  />
+                </svg>
               </button>
             </Tooltip>
           </Show>

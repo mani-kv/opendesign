@@ -1,6 +1,7 @@
 [data-component="resize-handle"] {
   position: absolute;
   z-index: 10;
+  background-color: var(--border-weaker-base, rgba(33, 33, 33, 1));
 
   &::after {
     content: "";

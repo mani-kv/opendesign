@@ -26,7 +26,6 @@ import { useSync } from "@/context/sync"
 import { parseCommentNote, readCommentMetadata } from "@/utils/comment-note"
 import { parsePreFlightPlan, scenarioBranchName, type PreFlightPlan, type ScenarioPlan } from "@opencode-ai/opendesign/agent"
 import { PlanCard } from "@/components/plan-card"
-import { useChatMode } from "@/context/chat-mode"
 import { useAgents } from "@/context/agents"
 
 type MessageComment = {
@@ -250,7 +249,6 @@ export function MessageTimeline(props: {
   })
   const working = createMemo(() => !!pending() || sessionStatus().type !== "idle")
 
-  const chat = useChatMode()
   const [planStates, setPlanStates] = createSignal<Record<string, "dispatched">>({})
   const [planDismissed, setPlanDismissed] = createSignal(false)
 
@@ -317,23 +315,10 @@ export function MessageTimeline(props: {
       }
 
       setPlanStates((prev) => ({ ...prev, [messageId]: "dispatched" }))
-      if (chat.isFloat()) {
-        chat.minimize()
-      }
     } catch {
       // Leave plan in active state on error
     }
   }
-
-  // Auto-maximize only on NEW plan arrival (track previous to avoid re-triggering)
-  let prevPlanId: string | null = null
-  createEffect(() => {
-    const id = lastPlanMessageId()
-    if (id && id !== prevPlanId && chat.isMinimized() && planState(id) === "active" && !planDismissed()) {
-      chat.maximize()
-    }
-    prevPlanId = id
-  })
 
   const [slot, setSlot] = createStore({
     open: false,

@@ -199,6 +199,7 @@ export const { use: useSync, provider: SyncProvider } = createSimpleContext({
     const loadMessages = async (input: {
       directory: string
       client: typeof sdk.client
+      store: ReturnType<(typeof globalSync)["child"]>[0]
       setStore: Setter
       sessionID: string
       limit: number
@@ -211,7 +212,21 @@ export const { use: useSync, provider: SyncProvider } = createSimpleContext({
         .then((next) => {
           if (!tracked(input.directory, input.sessionID)) return
           batch(() => {
-            input.setStore("message", input.sessionID, reconcile(next.session, { key: "id" }))
+            const existing = input.store.message?.[input.sessionID]
+            if (existing && existing.length > 0 && next.session.length === 0) {
+              // Server returned empty but we have optimistic messages — keep them.
+              // SSE events will reconcile with server state.
+            } else {
+              // Merge: keep optimistic messages not yet confirmed by server
+              const serverIds = new Set(next.session.map((m) => m.id))
+              const optimistic = (existing ?? []).filter((m) => !serverIds.has(m.id))
+              const merged = next.session.slice()
+              for (const m of optimistic) {
+                const pos = Binary.search(merged, m.id, (x) => x.id)
+                merged.splice(pos.index, 0, m)
+              }
+              input.setStore("message", input.sessionID, reconcile(merged, { key: "id" }))
+            }
             for (const p of next.part) {
               input.setStore("part", p.id, p.part)
             }
@@ -315,6 +330,7 @@ export const { use: useSync, provider: SyncProvider } = createSimpleContext({
           const messagesReq = loadMessages({
             directory,
             client,
+            store,
             setStore,
             sessionID,
             limit,
@@ -381,7 +397,7 @@ export const { use: useSync, provider: SyncProvider } = createSimpleContext({
           async loadMore(sessionID: string, count?: number) {
             const directory = sdk.directory
             const client = sdk.client
-            const [, setStore] = globalSync.child(directory)
+            const [store, setStore] = globalSync.child(directory)
             touch(directory, setStore, sessionID)
             const key = keyFor(directory, sessionID)
             const step = count ?? messagePageSize
@@ -392,6 +408,7 @@ export const { use: useSync, provider: SyncProvider } = createSimpleContext({
             await loadMessages({
               directory,
               client,
+              store,
               setStore,
               sessionID,
               limit: currentLimit + step,

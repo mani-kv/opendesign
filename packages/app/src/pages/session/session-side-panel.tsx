@@ -1,6 +1,4 @@
-import { For, Match, Show, Switch, createEffect, createMemo, onCleanup, createSignal, lazy, type JSX } from "solid-js"
-import { ChatMessages } from "@/components/chat-messages"
-import { Portal } from "solid-js/web"
+import { For, Match, Show, Switch, createEffect, createMemo, onCleanup, createSignal, lazy } from "solid-js"
 import { createStore } from "solid-js/store"
 import { createMediaQuery } from "@solid-primitives/media"
 import { useProjectParams } from "@/context/project-scope"
@@ -31,10 +29,6 @@ const AgentSandboxTabContent = lazy(() =>
 )
 import { createBodyResizing, createOpenSessionFileTab, getTabReorderIndex, type Sizing } from "@/pages/session/helpers"
 import { setSessionHandoff } from "@/pages/session/handoff"
-import { ChatModeButtons } from "@/pages/session/composer/chat-mode-buttons"
-import { useChatMode } from "@/context/chat-mode"
-import { useAgents } from "@/context/agents"
-import { stateColor } from "@opencode-ai/opendesign/agent"
 
 function CanvasFigmaEmpty() {
   const language = useLanguage()
@@ -80,6 +74,13 @@ function PaneTabContent(props: { pane: string }) {
           </div>
         </Tabs.Content>
       </Match>
+      <Match when={props.pane === "context"}>
+        <Tabs.Content value="context" class="flex flex-col flex-1 min-h-0 overflow-hidden contain-strict">
+          <div class="relative pt-2 flex-1 min-h-0 overflow-hidden">
+            <SessionContextTab />
+          </div>
+        </Tabs.Content>
+      </Match>
     </Switch>
   )
 }
@@ -103,7 +104,9 @@ function SplitPanel(props: { panes: string[]; side: "left" | "right"; onActiveCh
       ? language.t("session.tab.canvas")
       : p === "figma"
         ? language.t("session.tab.figma")
-        : language.t("session.tab.sandbox")
+        : p === "context"
+          ? language.t("session.tab.context")
+          : language.t("session.tab.sandbox")
 
   return (
     <Tabs value={active()} onChange={setActive}>
@@ -261,168 +264,8 @@ function FigmaWebviewHost(props: { active: boolean; splitOffset?: number; figmaF
   )
 }
 
-function FloatingPromptDock(props: { boundaryRef?: () => HTMLElement | undefined; children: JSX.Element; messageTimeline?: JSX.Element }) {
-  const chat = useChatMode()
-  const language = useLanguage()
-  const agentsCtx = useAgents()
-  const focusedAgent = () => agentsCtx.selected()
-  const agentColor = () => focusedAgent() ? stateColor(focusedAgent()!.state) : undefined
-  const [pos, setPos] = createSignal<{ x: number; y: number } | null>(null)
-  const [dragging, setDragging] = createSignal(false)
-  const [hovered, setHovered] = createSignal(false)
-  const [focused, setFocused] = createSignal(false)
-  const [container, setContainer] = createSignal<HTMLDivElement | undefined>(undefined)
-  const [prompt, setPrompt] = createSignal<HTMLDivElement | undefined>(undefined)
-  const [start, setStart] = createSignal<
-    { clientX: number; clientY: number; elLeft: number; elTop: number } | undefined
-  >(undefined)
-
-  const clamp = (val: number, min: number, max: number) => Math.max(min, Math.min(max, val))
-
-  const getBoundary = () => props.boundaryRef?.() ?? container()
-
-  const onHandleDown = (e: MouseEvent) => {
-    e.preventDefault()
-    const el = prompt()
-    const cont = getBoundary()
-    if (!el || !cont) return
-    const rect = el.getBoundingClientRect()
-    const contRect = cont.getBoundingClientRect()
-    setStart({
-      clientX: e.clientX,
-      clientY: e.clientY,
-      elLeft: rect.left - contRect.left,
-      elTop: rect.top - contRect.top,
-    })
-    document.body.dataset.resizing = ""
-    setDragging(true)
-  }
-
-  createEffect(() => {
-    if (!dragging()) return
-    const move = (e: MouseEvent) => {
-      e.preventDefault()
-      const s = start()
-      const cont = getBoundary()
-      const el = prompt()
-      if (!s || !cont || !el) return
-      const contRect = cont.getBoundingClientRect()
-      const elRect = el.getBoundingClientRect()
-      const dx = e.clientX - s.clientX
-      const dy = e.clientY - s.clientY
-      let x = s.elLeft + dx
-      let y = s.elTop + dy
-      x = clamp(x, 16, contRect.width - elRect.width - 16)
-      y = clamp(y, 16, contRect.height - elRect.height - 16)
-      setPos({ x, y })
-    }
-    const up = () => {
-      delete document.body.dataset.resizing
-      setDragging(false)
-      setStart(undefined)
-    }
-    document.addEventListener("mousemove", move)
-    document.addEventListener("mouseup", up, { once: true })
-    onCleanup(() => {
-      document.removeEventListener("mousemove", move)
-    })
-  })
-
-  const content = (
-    <div
-      ref={setContainer}
-      class="pointer-events-none absolute inset-0 z-20"
-      classList={{ "cursor-grabbing": dragging() }}
-    >
-      <div
-        ref={setPrompt}
-        class="pointer-events-auto w-full max-w-[600px] px-2 rounded-lg overflow-hidden flex flex-col group transition-shadow duration-300"
-        classList={{
-          "h-fit pb-5": !chat.isFloat(),
-          "pb-2": chat.isFloat(),
-          "shadow-[0_0_20px_rgba(66,185,209,0.3)]": chat.isFloat() && !!focusedAgent(),
-        }}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
-        onFocusIn={() => setFocused(true)}
-        onFocusOut={() => setFocused(false)}
-        style={
-          pos()
-            ? {
-                position: "absolute" as const,
-                left: `${pos()!.x}px`,
-                top: `${pos()!.y}px`,
-                ...(chat.isFloat() ? { height: "min(500px, calc(100% - 32px))" } : {}),
-              }
-            : {
-                position: "absolute" as const,
-                left: "50%",
-                bottom: "1rem",
-                transform: "translateX(-50%)",
-                ...(chat.isFloat() ? { height: "min(500px, calc(100% - 32px))" } : {}),
-              }
-        }
-      >
-        <div
-          role="button"
-          tabIndex={0}
-          aria-label={language.t("prompt.dock.dragLabel")}
-          class="flex items-center justify-center w-full px-0 pt-3 cursor-grab active:cursor-grabbing touch-none select-none transition-opacity bg-[linear-gradient(25deg,rgba(123,234,203,0.1)_0%,rgba(66,185,209,0.2)_25%,rgba(213,209,93,0.1)_100%)] backdrop-blur-[12px]"
-          classList={{
-            "pb-[18px] rounded-t-[20px] mb-[-10px]": !chat.isFloat(),
-            "pb-2 rounded-t-lg": chat.isFloat(),
-            "opacity-0": !chat.isFloat() && !dragging() && !hovered() && !focused(),
-            "opacity-100": chat.isFloat() && !dragging(),
-            "opacity-100 cursor-grabbing": dragging(),
-          }}
-          onMouseDown={onHandleDown}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") e.preventDefault()
-          }}
-        >
-          <div class="flex items-center justify-between w-full px-3">
-            <div class="flex items-center gap-1 text-[#6b6b6b]">
-              <Icon name="grip-vertical" size="small" class="size-4" />
-              <Show
-                when={focusedAgent()}
-                fallback={
-                  <span class="text-12-regular">{chat.isFloat() ? "Chat" : language.t("prompt.dock.dragMe")}</span>
-                }
-              >
-                {(agent) => (
-                  <div class="flex items-center gap-1.5">
-                    <div class="size-2 rounded-full shrink-0" style={{ "background-color": agentColor() }} />
-                    <span class="text-12-medium text-text-base truncate max-w-40">{agent().scenario}</span>
-                  </div>
-                )}
-              </Show>
-              <Icon name="grip-vertical" size="small" class="size-4" />
-            </div>
-            <div onMouseDown={(e) => e.stopPropagation()}>
-              <ChatModeButtons />
-            </div>
-          </div>
-        </div>
-        <Show when={chat.isFloat() && props.messageTimeline}>
-          <div class="flex-1 w-full overflow-y-auto min-h-0 border border-border-base rounded-none bg-background-base mt-[-8px] mb-[-8px]">
-            {props.messageTimeline}
-          </div>
-        </Show>
-        <div class="shrink-0 pb-[20px]">{props.children}</div>
-      </div>
-    </div>
-  )
-
-  const boundary = props.boundaryRef?.()
-  if (boundary) {
-    return <Portal mount={boundary}>{content}</Portal>
-  }
-  return content
-}
 
 export function SessionSidePanel(props: {
-  floatingDockBoundary?: () => HTMLElement | undefined
-  floatingPrompt?: () => JSX.Element
   activeDiff?: string
   focusReviewDiff: (path: string) => void
   reviewSnap: boolean
@@ -435,7 +278,6 @@ export function SessionSidePanel(props: {
   const language = useLanguage()
   const command = useCommand()
   const platform = usePlatform()
-  const chat = useChatMode()
 
   const isDesktop = createMediaQuery("(min-width: 768px)")
   const sessionKey = createMemo(() => `${params.projectId}${params.id ? "/" + params.id : ""}`)
@@ -468,7 +310,13 @@ export function SessionSidePanel(props: {
   const [splitRightActive, setSplitRightActive] = createSignal("")
   const isActiveInSplit = (pane: string) => splitLeftActive() === pane || splitRightActive() === pane
   const bothClosed = createMemo(() => isDesktop() && !panes().canvas && !panes().figma && !panes().sandbox)
-  const visiblePaneTabs = createMemo(() => isDesktop() ? enabledPanes() : [])
+  const contextOpen = createMemo(() => tabs().active() === "context" || tabs().all().includes("context"))
+  const visiblePaneTabs = createMemo(() => {
+    if (!isDesktop()) return []
+    const base = enabledPanes()
+    if (contextOpen()) return [...base, "context"]
+    return base
+  })
   const panelWidth = createMemo(() => {
     if (!open()) return "0px"
     if (shouldFill()) return undefined
@@ -554,7 +402,6 @@ export function SessionSidePanel(props: {
     setActive: tabs().setActive,
   })
 
-  const contextOpen = createMemo(() => tabs().active() === "context" || tabs().all().includes("context"))
   const openedTabs = createMemo(() =>
     tabs()
       .all()
@@ -677,7 +524,7 @@ export function SessionSidePanel(props: {
         class="relative min-w-0 h-full flex overflow-hidden bg-background-base"
         classList={{
           "flex-1": shouldFill(),
-          "shrink-0": !shouldFill(),
+          "min-w-[200px]": !shouldFill(),
           "pointer-events-none": !open(),
           "transition-[width] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-[width] motion-reduce:transition-none":
             !props.size.active() && !props.reviewSnap && !shouldFill(),
@@ -721,44 +568,35 @@ export function SessionSidePanel(props: {
                               <SortableProvider ids={visiblePaneTabs()}>
                                 <For each={visiblePaneTabs()}>
                                   {(pane) => (
-                                    <SortablePaneTab pane={pane}>
-                                      <Switch>
-                                        <Match when={pane === "canvas"}>{language.t("session.tab.canvas")}</Match>
-                                        <Match when={pane === "figma"}>{language.t("session.tab.figma")}</Match>
-                                        <Match when={pane === "sandbox"}>{language.t("session.tab.sandbox")}</Match>
-                                      </Switch>
-                                    </SortablePaneTab>
+                                    <Show
+                                      when={pane === "context"}
+                                      fallback={
+                                        <SortablePaneTab pane={pane}>
+                                          <Switch>
+                                            <Match when={pane === "canvas"}>{language.t("session.tab.canvas")}</Match>
+                                            <Match when={pane === "figma"}>{language.t("session.tab.figma")}</Match>
+                                            <Match when={pane === "sandbox"}>{language.t("session.tab.sandbox")}</Match>
+                                          </Switch>
+                                        </SortablePaneTab>
+                                      }
+                                    >
+                                      <SortablePaneTab pane="context">
+                                        <div class="flex items-center gap-2">
+                                          <SessionContextUsage variant="indicator" />
+                                          <div>{language.t("session.tab.context")}</div>
+                                          <IconButton
+                                            icon="close-small"
+                                            variant="ghost"
+                                            class="h-5 w-5 -mr-1"
+                                            onClick={(e: MouseEvent) => { e.stopPropagation(); tabs().close("context") }}
+                                            aria-label={language.t("common.closeTab")}
+                                          />
+                                        </div>
+                                      </SortablePaneTab>
+                                    </Show>
                                   )}
                                 </For>
                               </SortableProvider>
-                              <Show when={contextOpen()}>
-                                <Tabs.Trigger
-                                  value="context"
-                                  closeButton={
-                                    <TooltipKeybind
-                                      title={language.t("common.closeTab")}
-                                      keybind={command.keybind("tab.close")}
-                                      placement="bottom"
-                                      gutter={10}
-                                    >
-                                      <IconButton
-                                        icon="close-small"
-                                        variant="ghost"
-                                        class="h-5 w-5"
-                                        onClick={() => tabs().close("context")}
-                                        aria-label={language.t("common.closeTab")}
-                                      />
-                                    </TooltipKeybind>
-                                  }
-                                  hideCloseButton
-                                  onMiddleClick={() => tabs().close("context")}
-                                >
-                                  <div class="flex items-center gap-2">
-                                    <SessionContextUsage variant="indicator" />
-                                    <div>{language.t("session.tab.context")}</div>
-                                  </div>
-                                </Tabs.Trigger>
-                              </Show>
                               <SortableProvider ids={openedTabs()}>
                                 <For each={openedTabs()}>
                                   {(tab) => <SortableTab tab={tab} onTabClose={tabs().close} />}
@@ -821,11 +659,9 @@ export function SessionSidePanel(props: {
 
                           <Show when={contextOpen()}>
                             <Tabs.Content value="context" class="flex flex-col h-full overflow-hidden contain-strict">
-                              <Show when={activeTab() === "context"}>
-                                <div class="relative pt-2 flex-1 min-h-0 overflow-hidden">
-                                  <SessionContextTab />
-                                </div>
-                              </Show>
+                              <div class="relative pt-2 flex-1 min-h-0 overflow-hidden">
+                                <SessionContextTab />
+                              </div>
                             </Tabs.Content>
                           </Show>
 
@@ -894,14 +730,6 @@ export function SessionSidePanel(props: {
                   }
                   figmaFirst={splitMode() && canSplit() && splitLeftActive() === "figma"}
                 />
-              </Show>
-              <Show when={props.floatingPrompt && reviewOpen() && !chat.isDocked()}>
-                <FloatingPromptDock
-                  boundaryRef={props.floatingDockBoundary}
-                  messageTimeline={<ChatMessages />}
-                >
-                  {props.floatingPrompt?.()}
-                </FloatingPromptDock>
               </Show>
             </div>
           </div>

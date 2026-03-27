@@ -1,4 +1,5 @@
 import { createEffect, createMemo, onCleanup } from "solid-js"
+import { produce } from "solid-js/store"
 import { Dynamic } from "solid-js/web"
 import { useNavigate, useParams } from "@solidjs/router"
 import { Key } from "@solid-primitives/keyed"
@@ -65,8 +66,8 @@ export function ProjectPool(props: { content: Component }) {
       layout.projectCache.drop([k])
       const { projectId, sessionId } = parseKey(k)
       const dir = resolveDirectory(projectId, home())
-      const [store] = globalSync.child(dir, { bootstrap: false })
-      if (sessionId) dropSessionCaches(store as Parameters<typeof dropSessionCaches>[0], [sessionId])
+      const [, setStore] = globalSync.child(dir, { bootstrap: false })
+      if (sessionId) setStore(produce((draft) => { dropSessionCaches(draft as Parameters<typeof dropSessionCaches>[0], [sessionId]) }))
     }
   })
 
