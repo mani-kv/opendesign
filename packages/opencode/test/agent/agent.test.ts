@@ -18,14 +18,14 @@ test("returns default native agents when no config", async () => {
     fn: async () => {
       const agents = await Agent.list()
       const names = agents.map((a) => a.name)
-      expect(names).toContain("opendesign-agent")
-      expect(names).toContain("opendesign-ask")
+      expect(names).toContain("prototype")
+      expect(names).toContain("ask")
       expect(names).toContain("general")
       expect(names).toContain("explore")
       expect(names).toContain("compaction")
       expect(names).toContain("title")
       expect(names).toContain("summary")
-      expect(names).toContain("opendesign-scenario")
+      expect(names).toContain("scenario")
       expect(names).toContain("research")
       expect(names).toContain("audit")
       expect(names).toContain("figma-write")
@@ -33,12 +33,12 @@ test("returns default native agents when no config", async () => {
   })
 })
 
-test("opendesign-agent has correct default properties", async () => {
+test("prototype agent has correct default properties", async () => {
   await using tmp = await tmpdir()
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      const agent = await Agent.get("opendesign-agent")
+      const agent = await Agent.get("prototype")
       expect(agent).toBeDefined()
       expect(agent?.mode).toBe("primary")
       expect(agent?.native).toBe(true)
@@ -51,12 +51,12 @@ test("opendesign-agent has correct default properties", async () => {
   })
 })
 
-test("opendesign-ask denies edits and writes", async () => {
+test("ask agent denies edits and writes", async () => {
   await using tmp = await tmpdir()
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      const ask = await Agent.get("opendesign-ask")
+      const ask = await Agent.get("ask")
       expect(ask).toBeDefined()
       expect(ask?.mode).toBe("primary")
       expect(evalPerm(ask, "edit")).toBe("deny")
@@ -103,12 +103,12 @@ test("explore agent asks for external directories and allows Truncate.GLOB", asy
   })
 })
 
-test("opendesign-scenario agent is a subagent with prompt", async () => {
+test("scenario agent is a subagent with prompt", async () => {
   await using tmp = await tmpdir()
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      const scenario = await Agent.get("opendesign-scenario")
+      const scenario = await Agent.get("scenario")
       expect(scenario).toBeDefined()
       expect(scenario?.mode).toBe("subagent")
       expect(scenario?.native).toBe(true)
@@ -226,7 +226,7 @@ test("custom agent config overrides native agent properties", async () => {
   await using tmp = await tmpdir({
     config: {
       agent: {
-        "opendesign-agent": {
+        "prototype": {
           model: "anthropic/claude-3",
           description: "Custom build agent",
           temperature: 0.7,
@@ -238,7 +238,7 @@ test("custom agent config overrides native agent properties", async () => {
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      const agent = await Agent.get("opendesign-agent")
+      const agent = await Agent.get("prototype")
       expect(agent).toBeDefined()
       expect(agent?.model?.providerID).toBe("anthropic")
       expect(agent?.model?.modelID).toBe("claude-3")
@@ -274,7 +274,7 @@ test("agent permission config merges with defaults", async () => {
   await using tmp = await tmpdir({
     config: {
       agent: {
-        "opendesign-agent": {
+        "prototype": {
           permission: {
             bash: {
               "rm -rf *": "deny",
@@ -287,7 +287,7 @@ test("agent permission config merges with defaults", async () => {
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      const agent = await Agent.get("opendesign-agent")
+      const agent = await Agent.get("prototype")
       expect(agent).toBeDefined()
       // Specific pattern is denied
       expect(PermissionNext.evaluate("bash", "rm -rf *", agent!.permission).action).toBe("deny")
@@ -306,7 +306,7 @@ test("global permission config applies to all agents", async () => {
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      const agent = await Agent.get("opendesign-agent")
+      const agent = await Agent.get("prototype")
       expect(agent).toBeDefined()
       expect(evalPerm(agent, "bash")).toBe("deny")
     },
@@ -317,16 +317,16 @@ test("agent steps/maxSteps config sets steps property", async () => {
   await using tmp = await tmpdir({
     config: {
       agent: {
-        "opendesign-agent": { steps: 50 },
-        "opendesign-ask": { maxSteps: 100 },
+        "prototype": { steps: 50 },
+        "ask": { maxSteps: 100 },
       },
     },
   })
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      const agent = await Agent.get("opendesign-agent")
-      const ask = await Agent.get("opendesign-ask")
+      const agent = await Agent.get("prototype")
+      const ask = await Agent.get("ask")
       expect(agent?.steps).toBe(50)
       expect(ask?.steps).toBe(100)
     },
@@ -354,14 +354,14 @@ test("agent name can be overridden", async () => {
   await using tmp = await tmpdir({
     config: {
       agent: {
-        "opendesign-agent": { name: "Builder" },
+        "prototype": { name: "Builder" },
       },
     },
   })
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      const agent = await Agent.get("opendesign-agent")
+      const agent = await Agent.get("prototype")
       expect(agent?.name).toBe("Builder")
     },
   })
@@ -371,14 +371,14 @@ test("agent prompt can be set from config", async () => {
   await using tmp = await tmpdir({
     config: {
       agent: {
-        "opendesign-agent": { prompt: "Custom system prompt" },
+        "prototype": { prompt: "Custom system prompt" },
       },
     },
   })
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      const agent = await Agent.get("opendesign-agent")
+      const agent = await Agent.get("prototype")
       expect(agent?.prompt).toBe("Custom system prompt")
     },
   })
@@ -388,7 +388,7 @@ test("unknown agent properties are placed into options", async () => {
   await using tmp = await tmpdir({
     config: {
       agent: {
-        "opendesign-agent": {
+        "prototype": {
           random_property: "hello",
           another_random: 123,
         },
@@ -398,7 +398,7 @@ test("unknown agent properties are placed into options", async () => {
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      const agent = await Agent.get("opendesign-agent")
+      const agent = await Agent.get("prototype")
       expect(agent?.options.random_property).toBe("hello")
       expect(agent?.options.another_random).toBe(123)
     },
@@ -409,7 +409,7 @@ test("agent options merge correctly", async () => {
   await using tmp = await tmpdir({
     config: {
       agent: {
-        "opendesign-agent": {
+        "prototype": {
           options: {
             custom_option: true,
             another_option: "value",
@@ -421,7 +421,7 @@ test("agent options merge correctly", async () => {
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      const agent = await Agent.get("opendesign-agent")
+      const agent = await Agent.get("prototype")
       expect(agent?.options.custom_option).toBe(true)
       expect(agent?.options.another_option).toBe("value")
     },
@@ -472,7 +472,7 @@ test("default permission includes doom_loop and external_directory as ask", asyn
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      const agent = await Agent.get("opendesign-agent")
+      const agent = await Agent.get("prototype")
       expect(evalPerm(agent, "doom_loop")).toBe("ask")
       expect(evalPerm(agent, "external_directory")).toBe("ask")
     },
@@ -484,7 +484,7 @@ test("webfetch is allowed by default", async () => {
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      const agent = await Agent.get("opendesign-agent")
+      const agent = await Agent.get("prototype")
       expect(evalPerm(agent, "webfetch")).toBe("allow")
     },
   })
@@ -494,7 +494,7 @@ test("legacy tools config converts to permissions", async () => {
   await using tmp = await tmpdir({
     config: {
       agent: {
-        "opendesign-agent": {
+        "prototype": {
           tools: {
             bash: false,
             read: false,
@@ -506,7 +506,7 @@ test("legacy tools config converts to permissions", async () => {
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      const agent = await Agent.get("opendesign-agent")
+      const agent = await Agent.get("prototype")
       expect(evalPerm(agent, "bash")).toBe("deny")
       expect(evalPerm(agent, "read")).toBe("deny")
     },
@@ -517,7 +517,7 @@ test("legacy tools config maps write/edit/patch/multiedit to edit permission", a
   await using tmp = await tmpdir({
     config: {
       agent: {
-        "opendesign-agent": {
+        "prototype": {
           tools: {
             write: false,
           },
@@ -528,7 +528,7 @@ test("legacy tools config maps write/edit/patch/multiedit to edit permission", a
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      const agent = await Agent.get("opendesign-agent")
+      const agent = await Agent.get("prototype")
       expect(evalPerm(agent, "edit")).toBe("deny")
     },
   })
@@ -546,7 +546,7 @@ test("Truncate.GLOB is allowed even when user denies external_directory globally
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      const agent = await Agent.get("opendesign-agent")
+      const agent = await Agent.get("prototype")
       expect(PermissionNext.evaluate("external_directory", Truncate.GLOB, agent!.permission).action).toBe("allow")
       expect(PermissionNext.evaluate("external_directory", Truncate.DIR, agent!.permission).action).toBe("deny")
       expect(PermissionNext.evaluate("external_directory", "/some/other/path", agent!.permission).action).toBe("deny")
@@ -559,7 +559,7 @@ test("Truncate.GLOB is allowed even when user denies external_directory per-agen
   await using tmp = await tmpdir({
     config: {
       agent: {
-        "opendesign-agent": {
+        "prototype": {
           permission: {
             external_directory: "deny",
           },
@@ -570,7 +570,7 @@ test("Truncate.GLOB is allowed even when user denies external_directory per-agen
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      const agent = await Agent.get("opendesign-agent")
+      const agent = await Agent.get("prototype")
       expect(PermissionNext.evaluate("external_directory", Truncate.GLOB, agent!.permission).action).toBe("allow")
       expect(PermissionNext.evaluate("external_directory", Truncate.DIR, agent!.permission).action).toBe("deny")
       expect(PermissionNext.evaluate("external_directory", "/some/other/path", agent!.permission).action).toBe("deny")
@@ -593,7 +593,7 @@ test("explicit Truncate.GLOB deny is respected", async () => {
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      const agent = await Agent.get("opendesign-agent")
+      const agent = await Agent.get("prototype")
       expect(PermissionNext.evaluate("external_directory", Truncate.GLOB, agent!.permission).action).toBe("deny")
       expect(PermissionNext.evaluate("external_directory", Truncate.DIR, agent!.permission).action).toBe("deny")
     },
@@ -625,7 +625,7 @@ description: Permission skill.
     await Instance.provide({
       directory: tmp.path,
       fn: async () => {
-        const agent = await Agent.get("opendesign-agent")
+        const agent = await Agent.get("prototype")
         const skillDir = path.join(tmp.path, ".opencode", "skill", "perm-skill")
         const target = path.join(skillDir, "reference", "notes.md")
         expect(PermissionNext.evaluate("external_directory", target, agent!.permission).action).toBe("allow")
@@ -636,28 +636,28 @@ description: Permission skill.
   }
 })
 
-test("defaultAgent returns opendesign-agent when no default_agent config", async () => {
+test("defaultAgent returns prototype when no default_agent config", async () => {
   await using tmp = await tmpdir()
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
       const agent = await Agent.defaultAgent()
-      expect(agent).toBe("opendesign-agent")
+      expect(agent).toBe("prototype")
     },
   })
 })
 
-test("defaultAgent respects default_agent config set to opendesign-ask", async () => {
+test("defaultAgent respects default_agent config set to ask", async () => {
   await using tmp = await tmpdir({
     config: {
-      default_agent: "opendesign-ask",
+      default_agent: "ask",
     },
   })
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
       const agent = await Agent.defaultAgent()
-      expect(agent).toBe("opendesign-ask")
+      expect(agent).toBe("ask")
     },
   })
 })
@@ -724,11 +724,11 @@ test("defaultAgent throws when default_agent points to non-existent agent", asyn
   })
 })
 
-test("defaultAgent returns opendesign-ask when opendesign-agent is disabled and default_agent not set", async () => {
+test("defaultAgent returns ask when prototype is disabled and default_agent not set", async () => {
   await using tmp = await tmpdir({
     config: {
       agent: {
-        "opendesign-agent": { disable: true },
+        "prototype": { disable: true },
       },
     },
   })
@@ -736,8 +736,8 @@ test("defaultAgent returns opendesign-ask when opendesign-agent is disabled and 
     directory: tmp.path,
     fn: async () => {
       const agent = await Agent.defaultAgent()
-      // opendesign-agent is disabled, so it should return opendesign-ask (next primary agent)
-      expect(agent).toBe("opendesign-ask")
+      // prototype is disabled, so it should return ask (next primary agent)
+      expect(agent).toBe("ask")
     },
   })
 })
@@ -746,15 +746,17 @@ test("defaultAgent throws when all primary agents are disabled", async () => {
   await using tmp = await tmpdir({
     config: {
       agent: {
-        "opendesign-agent": { disable: true },
-        "opendesign-ask": { disable: true },
+        "prototype": { disable: true },
+        "ask": { disable: true },
+        "specs": { disable: true },
+        "design": { disable: true },
       },
     },
   })
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      // opendesign-agent and opendesign-ask are disabled, no primary-capable agents remain
+      // prototype and ask are disabled, no primary-capable agents remain
       await expect(Agent.defaultAgent()).rejects.toThrow("no primary visible agent found")
     },
   })

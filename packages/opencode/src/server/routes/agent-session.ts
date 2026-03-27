@@ -5,11 +5,11 @@ import z from "zod"
 import { AgentSession } from "../../agent"
 import { MessageV2 } from "../../agent/message-v2"
 import { AgentPrompt } from "../../agent/prompt"
-import { SessionCompaction } from "../../session/compaction"
+import { SessionCompaction } from "../../agent/compaction"
 import { AgentRevert } from "../../agent/revert"
-import { SessionStatus } from "@/session/status"
-import { SessionSummary } from "@/session/summary"
-import { Todo } from "../../session/todo"
+import { SessionStatus } from "@/agent/status"
+import { SessionSummary } from "@/agent/summary"
+import { Todo } from "../../agent/todo"
 import { Agent } from "../../agent/agent"
 import { Snapshot } from "@/snapshot"
 import { Log } from "../../util/log"
@@ -17,7 +17,7 @@ import { PermissionNext } from "@/permission/next"
 import { Identifier } from "@/id/id"
 import { errors } from "../error"
 import { lazy } from "../../util/lazy"
-import { SessionCanvas } from "../../session/session-canvas"
+// TODO: canvas dropped
 
 const log = Log.create({ service: "server" })
 
@@ -810,81 +810,6 @@ export const AgentSessionRoutes = lazy(() =>
         const agentID = c.req.valid("param").agentID
         const agent = await AgentRevert.unrevert({ agentID })
         return c.json(agent)
-      },
-    )
-    .get(
-      "/:agentID/canvas",
-      describeRoute({
-        summary: "Get canvas state",
-        description: "Retrieve the canvas state for a specific agent session.",
-        operationId: "agent.session.canvas.get",
-        responses: {
-          200: {
-            description: "Canvas state",
-            content: {
-              "application/json": {
-                schema: resolver(
-                  z.object({
-                    state: z.string().nullable(),
-                  }),
-                ),
-              },
-            },
-          },
-          ...errors(400, 404),
-        },
-      }),
-      validator(
-        "param",
-        z.object({
-          agentID: Identifier.schema("agent").meta({ description: "Agent ID" }),
-        }),
-      ),
-      async (c) => {
-        const agentID = c.req.valid("param").agentID
-        const state = SessionCanvas.get(agentID)
-        return c.json({ state: state ?? null })
-      },
-    )
-    .put(
-      "/:agentID/canvas",
-      describeRoute({
-        summary: "Put canvas state",
-        description: "Save the canvas state for a specific agent session.",
-        operationId: "agent.session.canvas.put",
-        responses: {
-          200: {
-            description: "Canvas state saved",
-            content: {
-              "application/json": {
-                schema: resolver(
-                  z.object({
-                    ok: z.boolean(),
-                  }),
-                ),
-              },
-            },
-          },
-          ...errors(400),
-        },
-      }),
-      validator(
-        "param",
-        z.object({
-          agentID: Identifier.schema("agent").meta({ description: "Agent ID" }),
-        }),
-      ),
-      validator(
-        "json",
-        z.object({
-          state: z.string().meta({ description: "Canvas state JSON" }),
-        }),
-      ),
-      async (c) => {
-        const agentID = c.req.valid("param").agentID
-        const body = c.req.valid("json")
-        SessionCanvas.put(agentID, body.state)
-        return c.json({ ok: true })
       },
     )
     .post(

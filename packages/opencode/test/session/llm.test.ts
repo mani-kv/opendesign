@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, test } from "bun:test"
 import path from "path"
 import type { ModelMessage } from "ai"
-import { LLM } from "../../src/session/llm"
+import { LLM } from "../../src/agent/llm"
 import { Global } from "../../src/global"
 import { Instance } from "../../src/project/instance"
 import { Provider } from "../../src/provider/provider"
@@ -10,7 +10,7 @@ import { ModelsDev } from "../../src/provider/models"
 import { Filesystem } from "../../src/util/filesystem"
 import { tmpdir } from "../fixture/fixture"
 import type { Agent } from "../../src/agent/agent"
-import type { MessageV2 } from "../../src/session/message-v2"
+import type { MessageV2 } from "../../src/agent/message-v2"
 
 describe("session.llm.hasToolCalls", () => {
   test("returns false for empty messages array", () => {

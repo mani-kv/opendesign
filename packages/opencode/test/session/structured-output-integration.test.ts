@@ -1,10 +1,10 @@
 import { describe, expect, test } from "bun:test"
 import path from "path"
-import { Session } from "../../src/session"
-import { SessionPrompt } from "../../src/session/prompt"
+import { AgentSession as Session } from "../../src/agent"
+import { AgentPrompt } from "../../src/agent/prompt"
 import { Log } from "../../src/util/log"
 import { Instance } from "../../src/project/instance"
-import { MessageV2 } from "../../src/session/message-v2"
+import { MessageV2 } from "../../src/agent/message-v2"
 
 const projectRoot = path.join(__dirname, "../..")
 Log.init({ print: false })
@@ -27,7 +27,7 @@ describe("StructuredOutput Integration", () => {
       await withInstance(async () => {
         const session = await Session.create({ title: "Structured Output Test" })
 
-        const result = await SessionPrompt.prompt({
+        const result = await AgentPrompt.prompt({
           sessionID: session.id,
           parts: [
             {
@@ -75,7 +75,7 @@ describe("StructuredOutput Integration", () => {
       await withInstance(async () => {
         const session = await Session.create({ title: "Nested Schema Test" })
 
-        const result = await SessionPrompt.prompt({
+        const result = await AgentPrompt.prompt({
           sessionID: session.id,
           parts: [
             {
@@ -138,7 +138,7 @@ describe("StructuredOutput Integration", () => {
       await withInstance(async () => {
         const session = await Session.create({ title: "Text Output Test" })
 
-        const result = await SessionPrompt.prompt({
+        const result = await AgentPrompt.prompt({
           sessionID: session.id,
           parts: [
             {
@@ -174,7 +174,7 @@ describe("StructuredOutput Integration", () => {
       await withInstance(async () => {
         const session = await Session.create({ title: "OutputFormat Storage Test" })
 
-        await SessionPrompt.prompt({
+        await AgentPrompt.prompt({
           sessionID: session.id,
           parts: [
             {

@@ -1,9 +1,9 @@
 import { describe, expect, test, beforeEach, afterEach } from "bun:test"
 import path from "path"
-import { Session } from "../../src/session"
-import { SessionRevert } from "../../src/session/revert"
-import { SessionCompaction } from "../../src/session/compaction"
-import { MessageV2 } from "../../src/session/message-v2"
+import { AgentSession as Session } from "../../src/agent"
+import { AgentRevert } from "../../src/agent/revert"
+import { SessionCompaction } from "../../src/agent/compaction"
+import { MessageV2 } from "../../src/agent/message-v2"
 import { Log } from "../../src/util/log"
 import { Instance } from "../../src/project/instance"
 import { Identifier } from "../../src/id/id"
@@ -152,7 +152,7 @@ describe("revert + compact workflow", () => {
         expect(messageIds).toContain(assistantMsg2.id)
 
         // Revert the last user message (userMsg2)
-        await SessionRevert.revert({
+        await AgentRevert.revert({
           sessionID,
           messageID: userMsg2.id,
         })
@@ -168,7 +168,7 @@ describe("revert + compact workflow", () => {
         expect(messages.length).toBe(4)
 
         // Now clean up the revert state (this is what the compact endpoint should do)
-        await SessionRevert.cleanup(sessionInfo)
+        await AgentRevert.cleanup(sessionInfo)
 
         // After cleanup, the reverted messages (those after the revert point) should be removed
         messages = await Session.messages({ sessionID })
@@ -257,7 +257,7 @@ describe("revert + compact workflow", () => {
         })
 
         // Revert the user message
-        await SessionRevert.revert({
+        await AgentRevert.revert({
           sessionID,
           messageID: userMsg.id,
         })
@@ -267,7 +267,7 @@ describe("revert + compact workflow", () => {
         expect(sessionInfo.revert).toBeDefined()
 
         // Simulate what the compact endpoint does: cleanup revert before creating compaction
-        await SessionRevert.cleanup(sessionInfo)
+        await AgentRevert.cleanup(sessionInfo)
 
         // Verify revert state is cleared
         sessionInfo = await Session.get(sessionID)

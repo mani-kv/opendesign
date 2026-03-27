@@ -8,7 +8,11 @@ import { readFileSync, readdirSync } from "fs"
 import { JsonMigration } from "../../src/storage/json-migration"
 import { Global } from "../../src/global"
 import { ProjectTable } from "../../src/project/project.sql"
-import { SessionTable, MessageTable, PartTable, TodoTable, PermissionTable } from "../../src/session/session.sql"
+import { AgentTable as SessionTable } from "../../src/agent/agent.sql"
+import { MessageTable } from "../../src/agent/message.sql"
+import { PartTable } from "../../src/agent/part.sql"
+import { TodoTable } from "../../src/agent/todo.sql"
+import { PermissionTable } from "../../src/permission/permission.sql"
 import { SessionShareTable } from "../../src/share/share.sql"
 
 // Test fixtures

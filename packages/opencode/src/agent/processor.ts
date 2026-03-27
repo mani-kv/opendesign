@@ -1,7 +1,7 @@
 import { MessageV2 } from "./message-v2"
 import { Log } from "@/util/log"
 import { Identifier } from "@/id/id"
-import { Session } from "."
+import { AgentSession } from "."
 import { Agent } from "@/agent/agent"
 import { Snapshot } from "@/snapshot"
 import { SessionSummary } from "./summary"
@@ -75,7 +75,7 @@ export namespace SessionProcessor {
                     metadata: value.providerMetadata,
                   }
                   reasoningMap[value.id] = reasoningPart
-                  await Session.updatePart(reasoningPart)
+                  await AgentSession.updatePart(reasoningPart)
                   break
 
                 case "reasoning-delta":
@@ -83,7 +83,7 @@ export namespace SessionProcessor {
                     const part = reasoningMap[value.id]
                     part.text += value.text
                     if (value.providerMetadata) part.metadata = value.providerMetadata
-                    await Session.updatePartDelta({
+                    await AgentSession.updatePartDelta({
                       sessionID: part.sessionID,
                       messageID: part.messageID,
                       partID: part.id,
@@ -103,13 +103,13 @@ export namespace SessionProcessor {
                       end: Date.now(),
                     }
                     if (value.providerMetadata) part.metadata = value.providerMetadata
-                    await Session.updatePart(part)
+                    await AgentSession.updatePart(part)
                     delete reasoningMap[value.id]
                   }
                   break
 
                 case "tool-input-start":
-                  const part = await Session.updatePart({
+                  const part = await AgentSession.updatePart({
                     id: toolcalls[value.id]?.id ?? Identifier.ascending("part"),
                     messageID: input.assistantMessage.id,
                     sessionID: input.assistantMessage.sessionID,
@@ -134,7 +134,7 @@ export namespace SessionProcessor {
                 case "tool-call": {
                   const match = toolcalls[value.toolCallId]
                   if (match) {
-                    const part = await Session.updatePart({
+                    const part = await AgentSession.updatePart({
                       ...match,
                       tool: value.toolName,
                       state: {
@@ -180,7 +180,7 @@ export namespace SessionProcessor {
                 case "tool-result": {
                   const match = toolcalls[value.toolCallId]
                   if (match && match.state.status === "running") {
-                    await Session.updatePart({
+                    await AgentSession.updatePart({
                       ...match,
                       state: {
                         status: "completed",
@@ -204,7 +204,7 @@ export namespace SessionProcessor {
                 case "tool-error": {
                   const match = toolcalls[value.toolCallId]
                   if (match && match.state.status === "running") {
-                    await Session.updatePart({
+                    await AgentSession.updatePart({
                       ...match,
                       state: {
                         status: "error",
@@ -232,7 +232,7 @@ export namespace SessionProcessor {
 
                 case "start-step":
                   snapshot = await Snapshot.track()
-                  await Session.updatePart({
+                  await AgentSession.updatePart({
                     id: Identifier.ascending("part"),
                     messageID: input.assistantMessage.id,
                     sessionID: input.sessionID,
@@ -242,7 +242,7 @@ export namespace SessionProcessor {
                   break
 
                 case "finish-step":
-                  const usage = Session.getUsage({
+                  const usage = AgentSession.getUsage({
                     model: input.model,
                     usage: value.usage,
                     metadata: value.providerMetadata,
@@ -250,7 +250,7 @@ export namespace SessionProcessor {
                   input.assistantMessage.finish = value.finishReason
                   input.assistantMessage.cost += usage.cost
                   input.assistantMessage.tokens = usage.tokens
-                  await Session.updatePart({
+                  await AgentSession.updatePart({
                     id: Identifier.ascending("part"),
                     reason: value.finishReason,
                     snapshot: await Snapshot.track(),
@@ -260,11 +260,11 @@ export namespace SessionProcessor {
                     tokens: usage.tokens,
                     cost: usage.cost,
                   })
-                  await Session.updateMessage(input.assistantMessage)
+                  await AgentSession.updateMessage(input.assistantMessage)
                   if (snapshot) {
                     const patch = await Snapshot.patch(snapshot)
                     if (patch.files.length) {
-                      await Session.updatePart({
+                      await AgentSession.updatePart({
                         id: Identifier.ascending("part"),
                         messageID: input.assistantMessage.id,
                         sessionID: input.sessionID,
@@ -299,14 +299,14 @@ export namespace SessionProcessor {
                     },
                     metadata: value.providerMetadata,
                   }
-                  await Session.updatePart(currentText)
+                  await AgentSession.updatePart(currentText)
                   break
 
                 case "text-delta":
                   if (currentText) {
                     currentText.text += value.text
                     if (value.providerMetadata) currentText.metadata = value.providerMetadata
-                    await Session.updatePartDelta({
+                    await AgentSession.updatePartDelta({
                       sessionID: currentText.sessionID,
                       messageID: currentText.messageID,
                       partID: currentText.id,
@@ -334,7 +334,7 @@ export namespace SessionProcessor {
                       end: Date.now(),
                     }
                     if (value.providerMetadata) currentText.metadata = value.providerMetadata
-                    await Session.updatePart(currentText)
+                    await AgentSession.updatePart(currentText)
                   }
                   currentText = undefined
                   break
@@ -358,7 +358,7 @@ export namespace SessionProcessor {
             const error = MessageV2.fromError(e, { providerID: input.model.providerID })
             if (MessageV2.ContextOverflowError.isInstance(error)) {
               needsCompaction = true
-              Bus.publish(Session.Event.Error, {
+              Bus.publish(AgentSession.Event.Error, {
                 sessionID: input.sessionID,
                 error,
               })
@@ -377,7 +377,7 @@ export namespace SessionProcessor {
                 continue
               }
               input.assistantMessage.error = error
-              Bus.publish(Session.Event.Error, {
+              Bus.publish(AgentSession.Event.Error, {
                 sessionID: input.assistantMessage.sessionID,
                 error: input.assistantMessage.error,
               })
@@ -387,7 +387,7 @@ export namespace SessionProcessor {
           if (snapshot) {
             const patch = await Snapshot.patch(snapshot)
             if (patch.files.length) {
-              await Session.updatePart({
+              await AgentSession.updatePart({
                 id: Identifier.ascending("part"),
                 messageID: input.assistantMessage.id,
                 sessionID: input.sessionID,
@@ -401,7 +401,7 @@ export namespace SessionProcessor {
           const p = await MessageV2.parts(input.assistantMessage.id)
           for (const part of p) {
             if (part.type === "tool" && part.state.status !== "completed" && part.state.status !== "error") {
-              await Session.updatePart({
+              await AgentSession.updatePart({
                 ...part,
                 state: {
                   ...part.state,
@@ -416,7 +416,7 @@ export namespace SessionProcessor {
             }
           }
           input.assistantMessage.time.completed = Date.now()
-          await Session.updateMessage(input.assistantMessage)
+          await AgentSession.updateMessage(input.assistantMessage)
           if (needsCompaction) return "compact"
           if (blocked) return "stop"
           if (input.assistantMessage.error) return "stop"

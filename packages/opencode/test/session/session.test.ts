@@ -1,10 +1,10 @@
 import { describe, expect, test } from "bun:test"
 import path from "path"
-import { Session } from "../../src/session"
+import { AgentSession as Session } from "../../src/agent"
 import { Bus } from "../../src/bus"
 import { Log } from "../../src/util/log"
 import { Instance } from "../../src/project/instance"
-import { MessageV2 } from "../../src/session/message-v2"
+import { MessageV2 } from "../../src/agent/message-v2"
 import { Identifier } from "../../src/id/id"
 
 const projectRoot = path.join(__dirname, "../..")

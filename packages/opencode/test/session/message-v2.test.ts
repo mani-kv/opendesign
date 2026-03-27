@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test"
 import { APICallError } from "ai"
-import { MessageV2 } from "../../src/session/message-v2"
+import { MessageV2 } from "../../src/agent/message-v2"
 import type { Provider } from "../../src/provider/provider"
 
 const sessionID = "session"

@@ -3,7 +3,14 @@ import { drizzle } from "drizzle-orm/bun-sqlite"
 import { Global } from "../global"
 import { Log } from "../util/log"
 import { ProjectTable } from "../project/project.sql"
-import { SessionTable, MessageTable, PartTable, TodoTable, PermissionTable } from "../session/session.sql"
+// TODO: legacy migration - these tables reference the OLD schema.
+// This migration will not work with the new agent-based schema.
+// Keeping imports for compilation but this module should be removed or rewritten.
+import { AgentTable as SessionTable } from "../agent/agent.sql"
+import { MessageTable } from "../agent/message.sql"
+import { PartTable } from "../agent/part.sql"
+import { TodoTable } from "../agent/todo.sql"
+import { PermissionTable } from "../permission/permission.sql"
 // TODO: dropped - share removed
 import path from "path"
 import { existsSync } from "fs"

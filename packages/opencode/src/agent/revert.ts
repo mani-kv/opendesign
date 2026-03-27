@@ -10,7 +10,7 @@ import { PartTable } from "./part.sql"
 import { Storage } from "@/storage/storage"
 import { Bus } from "../bus"
 import { AgentPrompt } from "./prompt"
-import { SessionSummary } from "../session/summary"
+import { SessionSummary } from "./summary"
 
 export namespace AgentRevert {
   const log = Log.create({ service: "agent.revert" })

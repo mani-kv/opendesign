@@ -2,7 +2,7 @@ import { BusEvent } from "@/bus/bus-event"
 import { Bus } from "@/bus"
 import z from "zod"
 import { Database, eq, asc } from "../storage/db"
-import { TodoTable } from "./session.sql"
+import { TodoTable } from "./todo.sql"
 
 export namespace Todo {
   export const Info = z
@@ -26,12 +26,12 @@ export namespace Todo {
 
   export function update(input: { sessionID: string; todos: Info[] }) {
     Database.transaction((db) => {
-      db.delete(TodoTable).where(eq(TodoTable.session_id, input.sessionID)).run()
+      db.delete(TodoTable).where(eq(TodoTable.agent_id, input.sessionID)).run()
       if (input.todos.length === 0) return
       db.insert(TodoTable)
         .values(
           input.todos.map((todo, position) => ({
-            session_id: input.sessionID,
+            agent_id: input.sessionID,
             content: todo.content,
             status: todo.status,
             priority: todo.priority,
@@ -45,7 +45,7 @@ export namespace Todo {
 
   export function get(sessionID: string) {
     const rows = Database.use((db) =>
-      db.select().from(TodoTable).where(eq(TodoTable.session_id, sessionID)).orderBy(asc(TodoTable.position)).all(),
+      db.select().from(TodoTable).where(eq(TodoTable.agent_id, sessionID)).orderBy(asc(TodoTable.position)).all(),
     )
     return rows.map((row) => ({
       content: row.content,

@@ -13,7 +13,7 @@ const ctx = {
   sessionID: "test",
   messageID: "",
   callID: "",
-  agent: "opendesign-agent",
+  agent: "prototype",
   abort: AbortSignal.any([]),
   messages: [],
   metadata: () => {},
@@ -163,7 +163,7 @@ describe("tool.read env file permissions", () => {
     ["environment.ts", false],
   ]
 
-  describe.each(["opendesign-agent"])("agent=%s", (agentName) => {
+  describe.each(["prototype"])("agent=%s", (agentName) => {
     test.each(cases)("%s asks=%s", async (filename, shouldAsk) => {
       await using tmp = await tmpdir({
         init: (dir) => Bun.write(path.join(dir, filename), "content"),

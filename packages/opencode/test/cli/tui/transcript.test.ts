@@ -13,7 +13,7 @@ describe("transcript", () => {
       id: "msg_123",
       sessionID: "ses_123",
       role: "assistant",
-      agent: "opendesign-agent",
+      agent: "prototype",
       modelID: "claude-sonnet-4-20250514",
       providerID: "anthropic",
       mode: "",
@@ -41,7 +41,7 @@ describe("transcript", () => {
     })
 
     test("titlecases agent name", () => {
-      const msg = { ...baseMsg, agent: "opendesign-ask" }
+      const msg = { ...baseMsg, agent: "ask" }
       const result = formatAssistantHeader(msg, true)
       expect(result).toContain("Opendesign-Ask")
     })
@@ -203,7 +203,7 @@ describe("transcript", () => {
         id: "msg_123",
         sessionID: "ses_123",
         role: "user",
-        agent: "opendesign-agent",
+        agent: "prototype",
         model: { providerID: "anthropic", modelID: "claude-sonnet-4-20250514" },
         time: { created: 1000000 },
       }
@@ -218,7 +218,7 @@ describe("transcript", () => {
         id: "msg_123",
         sessionID: "ses_123",
         role: "assistant",
-        agent: "opendesign-agent",
+        agent: "prototype",
         modelID: "claude-sonnet-4-20250514",
         providerID: "anthropic",
         mode: "",
@@ -248,7 +248,7 @@ describe("transcript", () => {
             id: "msg_1",
             sessionID: "ses_abc123",
             role: "user" as const,
-            agent: "opendesign-agent",
+            agent: "prototype",
             model: { providerID: "anthropic", modelID: "claude-sonnet-4-20250514" },
             time: { created: 1000000000000 },
           },
@@ -259,7 +259,7 @@ describe("transcript", () => {
             id: "msg_2",
             sessionID: "ses_abc123",
             role: "assistant" as const,
-            agent: "opendesign-agent",
+            agent: "prototype",
             modelID: "claude-sonnet-4-20250514",
             providerID: "anthropic",
             mode: "",
@@ -297,7 +297,7 @@ describe("transcript", () => {
             id: "msg_1",
             sessionID: "ses_abc123",
             role: "assistant" as const,
-            agent: "opendesign-agent",
+            agent: "prototype",
             modelID: "claude-sonnet-4-20250514",
             providerID: "anthropic",
             mode: "",

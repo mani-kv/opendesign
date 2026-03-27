@@ -2,9 +2,9 @@ import path from "path"
 import { describe, expect, test } from "bun:test"
 import { fileURLToPath } from "url"
 import { Instance } from "../../src/project/instance"
-import { Session } from "../../src/session"
-import { MessageV2 } from "../../src/session/message-v2"
-import { SessionPrompt } from "../../src/session/prompt"
+import { AgentSession as Session } from "../../src/agent"
+import { MessageV2 } from "../../src/agent/message-v2"
+import { AgentPrompt } from "../../src/agent/prompt"
 import { Log } from "../../src/util/log"
 import { tmpdir } from "../fixture/fixture"
 
@@ -29,9 +29,9 @@ describe("session.prompt missing file", () => {
         const session = await Session.create({})
 
         const missing = path.join(tmp.path, "does-not-exist.ts")
-        const msg = await SessionPrompt.prompt({
+        const msg = await AgentPrompt.prompt({
           sessionID: session.id,
-          agent: "opendesign-agent",
+          agent: "prototype",
           noReply: true,
           parts: [
             { type: "text", text: "please review @does-not-exist.ts" },
@@ -74,9 +74,9 @@ describe("session.prompt missing file", () => {
         const session = await Session.create({})
 
         const missing = path.join(tmp.path, "still-missing.ts")
-        const msg = await SessionPrompt.prompt({
+        const msg = await AgentPrompt.prompt({
           sessionID: session.id,
-          agent: "opendesign-agent",
+          agent: "prototype",
           noReply: true,
           parts: [
             {
@@ -121,7 +121,7 @@ describe("session.prompt special characters", () => {
       fn: async () => {
         const session = await Session.create({})
         const template = "Read @file#name.txt"
-        const parts = await SessionPrompt.resolvePromptParts(template)
+        const parts = await AgentPrompt.resolvePromptParts(template)
         const fileParts = parts.filter((part) => part.type === "file")
 
         expect(fileParts.length).toBe(1)
@@ -131,7 +131,7 @@ describe("session.prompt special characters", () => {
         const decodedPath = fileURLToPath(fileParts[0].url)
         expect(decodedPath).toBe(path.join(tmp.path, "file#name.txt"))
 
-        const message = await SessionPrompt.prompt({
+        const message = await AgentPrompt.prompt({
           sessionID: session.id,
           parts,
           noReply: true,
@@ -157,7 +157,7 @@ describe("session.prompt agent variant", () => {
         git: true,
         config: {
           agent: {
-            "opendesign-agent": {
+            "prototype": {
               model: "openai/gpt-5.2",
               variant: "xhigh",
             },
@@ -170,9 +170,9 @@ describe("session.prompt agent variant", () => {
         fn: async () => {
           const session = await Session.create({})
 
-          const other = await SessionPrompt.prompt({
+          const other = await AgentPrompt.prompt({
             sessionID: session.id,
-            agent: "opendesign-agent",
+            agent: "prototype",
             model: { providerID: "opencode", modelID: "kimi-k2.5-free" },
             noReply: true,
             parts: [{ type: "text", text: "hello" }],
@@ -180,9 +180,9 @@ describe("session.prompt agent variant", () => {
           if (other.info.role !== "user") throw new Error("expected user message")
           expect(other.info.variant).toBeUndefined()
 
-          const match = await SessionPrompt.prompt({
+          const match = await AgentPrompt.prompt({
             sessionID: session.id,
-            agent: "opendesign-agent",
+            agent: "prototype",
             noReply: true,
             parts: [{ type: "text", text: "hello again" }],
           })
@@ -190,9 +190,9 @@ describe("session.prompt agent variant", () => {
           expect(match.info.model).toEqual({ providerID: "openai", modelID: "gpt-5.2" })
           expect(match.info.variant).toBe("xhigh")
 
-          const override = await SessionPrompt.prompt({
+          const override = await AgentPrompt.prompt({
             sessionID: session.id,
-            agent: "opendesign-agent",
+            agent: "prototype",
             noReply: true,
             variant: "high",
             parts: [{ type: "text", text: "hello third" }],

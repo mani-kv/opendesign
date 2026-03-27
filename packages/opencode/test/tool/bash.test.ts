@@ -12,7 +12,7 @@ const ctx = {
   sessionID: "test",
   messageID: "",
   callID: "",
-  agent: "opendesign-agent",
+  agent: "prototype",
   abort: AbortSignal.any([]),
   messages: [],
   metadata: () => {},

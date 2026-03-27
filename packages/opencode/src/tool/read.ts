@@ -9,7 +9,7 @@ import { FileTime } from "../file/time"
 import DESCRIPTION from "./read.txt"
 import { Instance } from "../project/instance"
 import { assertExternalDirectory } from "./external-directory"
-import { InstructionPrompt } from "../session/instruction"
+import { InstructionPrompt } from "../agent/instruction"
 import { Filesystem } from "../util/filesystem"
 
 const DEFAULT_READ_LIMIT = 2000

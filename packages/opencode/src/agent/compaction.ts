@@ -1,6 +1,6 @@
 import { BusEvent } from "@/bus/bus-event"
 import { Bus } from "@/bus"
-import { Session } from "."
+import { AgentSession } from "."
 import { Identifier } from "../id/id"
 import { Instance } from "../project/instance"
 import { Provider } from "../provider/provider"
@@ -59,7 +59,7 @@ export namespace SessionCompaction {
     const config = await Config.get()
     if (config.compaction?.prune === false) return
     log.info("pruning")
-    const msgs = await Session.messages({ sessionID: input.sessionID })
+    const msgs = await AgentSession.messages({ sessionID: input.sessionID })
     let total = 0
     let pruned = 0
     const toPrune = []
@@ -91,7 +91,7 @@ export namespace SessionCompaction {
       for (const part of toPrune) {
         if (part.state.status === "completed") {
           part.state.time.compacted = Date.now()
-          await Session.updatePart(part)
+          await AgentSession.updatePart(part)
         }
       }
       log.info("pruned", { count: toPrune.length })
@@ -132,7 +132,7 @@ export namespace SessionCompaction {
     const model = agent.model
       ? await Provider.getModel(agent.model.providerID, agent.model.modelID)
       : await Provider.getModel(userMessage.model.providerID, userMessage.model.modelID)
-    const msg = (await Session.updateMessage({
+    const msg = (await AgentSession.updateMessage({
       id: Identifier.ascending("message"),
       role: "assistant",
       parentID: input.parentID,
@@ -228,14 +228,14 @@ When constructing the summary, try to stick to this template:
           : "Session too large to compact - context exceeds model limit even after stripping media",
       }).toObject()
       processor.message.finish = "error"
-      await Session.updateMessage(processor.message)
+      await AgentSession.updateMessage(processor.message)
       return "stop"
     }
 
     if (result === "continue" && input.auto) {
       if (replay) {
         const original = replay.info as MessageV2.User
-        const replayMsg = await Session.updateMessage({
+        const replayMsg = await AgentSession.updateMessage({
           id: Identifier.ascending("message"),
           role: "user",
           sessionID: input.sessionID,
@@ -253,7 +253,7 @@ When constructing the summary, try to stick to this template:
             part.type === "file" && MessageV2.isMedia(part.mime)
               ? { type: "text" as const, text: `[Attached ${part.mime}: ${part.filename ?? "file"}]` }
               : part
-          await Session.updatePart({
+          await AgentSession.updatePart({
             ...replayPart,
             id: Identifier.ascending("part"),
             messageID: replayMsg.id,
@@ -261,7 +261,7 @@ When constructing the summary, try to stick to this template:
           })
         }
       } else {
-        const continueMsg = await Session.updateMessage({
+        const continueMsg = await AgentSession.updateMessage({
           id: Identifier.ascending("message"),
           role: "user",
           sessionID: input.sessionID,
@@ -274,7 +274,7 @@ When constructing the summary, try to stick to this template:
             ? "The previous request exceeded the provider's size limit due to large media attachments. The conversation was compacted and media files were removed from context. If the user was asking about attached images or files, explain that the attachments were too large to process and suggest they try again with smaller or fewer files.\n\n"
             : "") +
           "Continue if you have next steps, or stop and ask for clarification if you are unsure how to proceed."
-        await Session.updatePart({
+        await AgentSession.updatePart({
           id: Identifier.ascending("part"),
           messageID: continueMsg.id,
           sessionID: input.sessionID,
@@ -305,7 +305,7 @@ When constructing the summary, try to stick to this template:
       overflow: z.boolean().optional(),
     }),
     async (input) => {
-      const msg = await Session.updateMessage({
+      const msg = await AgentSession.updateMessage({
         id: Identifier.ascending("message"),
         role: "user",
         model: input.model,
@@ -315,7 +315,7 @@ When constructing the summary, try to stick to this template:
           created: Date.now(),
         },
       })
-      await Session.updatePart({
+      await AgentSession.updatePart({
         id: Identifier.ascending("part"),
         messageID: msg.id,
         sessionID: msg.sessionID,

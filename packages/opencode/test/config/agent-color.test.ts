@@ -14,8 +14,8 @@ test("agent color parsed from project config", async () => {
         JSON.stringify({
           $schema: "https://opencode.ai/config.json",
           agent: {
-            "opendesign-agent": { color: "#FFA500" },
-            "opendesign-ask": { color: "primary" },
+            "prototype": { color: "#FFA500" },
+            "ask": { color: "primary" },
           },
         }),
       )
@@ -25,8 +25,8 @@ test("agent color parsed from project config", async () => {
     directory: tmp.path,
     fn: async () => {
       const cfg = await Config.get()
-      expect(cfg.agent?.["opendesign-agent"]?.color).toBe("#FFA500")
-      expect(cfg.agent?.["opendesign-ask"]?.color).toBe("primary")
+      expect(cfg.agent?.["prototype"]?.color).toBe("#FFA500")
+      expect(cfg.agent?.["ask"]?.color).toBe("primary")
     },
   })
 })
@@ -39,8 +39,8 @@ test("Agent.get includes color from config", async () => {
         JSON.stringify({
           $schema: "https://opencode.ai/config.json",
           agent: {
-            "opendesign-ask": { color: "#A855F7" },
-            "opendesign-agent": { color: "accent" },
+            "ask": { color: "#A855F7" },
+            "prototype": { color: "accent" },
           },
         }),
       )
@@ -49,9 +49,9 @@ test("Agent.get includes color from config", async () => {
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      const ask = await AgentSvc.get("opendesign-ask")
+      const ask = await AgentSvc.get("ask")
       expect(ask?.color).toBe("#A855F7")
-      const agent = await AgentSvc.get("opendesign-agent")
+      const agent = await AgentSvc.get("prototype")
       expect(agent?.color).toBe("accent")
     },
   })
