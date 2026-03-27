@@ -1,5 +1,5 @@
 import z from "zod"
-import type { MessageV2 } from "../session/message-v2"
+import type { MessageV2 } from "../agent/message-v2"
 import type { Agent } from "../agent/agent"
 import type { PermissionNext } from "../permission/next"
 import { Truncate } from "./truncation"
@@ -14,7 +14,7 @@ export namespace Tool {
   }
 
   export type Context<M extends Metadata = Metadata> = {
-    sessionID: string
+    agentID: string
     messageID: string
     agent: string
     abort: AbortSignal
@@ -22,7 +22,7 @@ export namespace Tool {
     extra?: { [key: string]: any }
     messages: MessageV2.WithParts[]
     metadata(input: { title?: string; metadata?: M }): void
-    ask(input: Omit<PermissionNext.Request, "id" | "sessionID" | "tool">): Promise<void>
+    ask(input: Omit<PermissionNext.Request, "id" | "agentID" | "tool">): Promise<void>
   }
   export interface Info<Parameters extends z.ZodType = z.ZodType, M extends Metadata = Metadata> {
     id: string
@@ -36,7 +36,7 @@ export namespace Tool {
         title: string
         metadata: M
         output: string
-        attachments?: Omit<MessageV2.FilePart, "id" | "sessionID" | "messageID">[]
+        attachments?: Omit<MessageV2.FilePart, "id" | "agentID" | "messageID">[]
       }>
       formatValidationError?(error: z.ZodError): string
     }>

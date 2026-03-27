@@ -1,7 +1,7 @@
 import { z } from "zod"
 
 export type ToolContext = {
-  sessionID: string
+  agentID: string
   messageID: string
   agent: string
   /**

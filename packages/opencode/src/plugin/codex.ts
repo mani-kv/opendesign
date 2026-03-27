@@ -620,7 +620,7 @@ export async function CodexAuthPlugin(input: PluginInput): Promise<Hooks> {
       if (input.model.providerID !== "openai") return
       output.headers.originator = "opencode"
       output.headers["User-Agent"] = `opencode/${Installation.VERSION} (${os.platform()} ${os.release()}; ${os.arch()})`
-      output.headers.session_id = input.sessionID
+      output.headers.session_id = input.agentID
     },
   }
 }

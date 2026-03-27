@@ -10,7 +10,7 @@ export const QuestionTool = Tool.define("question", {
   }),
   async execute(params, ctx) {
     const answers = await Question.ask({
-      sessionID: ctx.sessionID,
+      sessionID: ctx.agentID,
       questions: params.questions,
       tool: ctx.callID ? { messageID: ctx.messageID, callID: ctx.callID } : undefined,
     })

@@ -68,7 +68,7 @@ export namespace PermissionNext {
   export const Request = z
     .object({
       id: Identifier.schema("permission"),
-      sessionID: Identifier.schema("session"),
+      agentID: z.string(),
       permission: z.string(),
       patterns: z.string().array(),
       metadata: z.record(z.string(), z.any()),
@@ -99,7 +99,7 @@ export namespace PermissionNext {
     Replied: BusEvent.define(
       "permission.replied",
       z.object({
-        sessionID: z.string(),
+        agentID: z.string(),
         requestID: z.string(),
         reply: Reply,
       }),
@@ -172,19 +172,19 @@ export namespace PermissionNext {
       if (!existing) return
       delete s.pending[input.requestID]
       Bus.publish(Event.Replied, {
-        sessionID: existing.info.sessionID,
+        agentID: existing.info.agentID,
         requestID: existing.info.id,
         reply: input.reply,
       })
       if (input.reply === "reject") {
         existing.reject(input.message ? new CorrectedError(input.message) : new RejectedError())
         // Reject all other pending permissions for this session
-        const sessionID = existing.info.sessionID
+        const agentID = existing.info.agentID
         for (const [id, pending] of Object.entries(s.pending)) {
-          if (pending.info.sessionID === sessionID) {
+          if (pending.info.agentID === agentID) {
             delete s.pending[id]
             Bus.publish(Event.Replied, {
-              sessionID: pending.info.sessionID,
+              agentID: pending.info.agentID,
               requestID: pending.info.id,
               reply: "reject",
             })
@@ -208,16 +208,16 @@ export namespace PermissionNext {
 
         existing.resolve()
 
-        const sessionID = existing.info.sessionID
+        const agentID = existing.info.agentID
         for (const [id, pending] of Object.entries(s.pending)) {
-          if (pending.info.sessionID !== sessionID) continue
+          if (pending.info.agentID !== agentID) continue
           const ok = pending.info.patterns.every(
             (pattern) => evaluate(pending.info.permission, pattern, s.approved).action === "allow",
           )
           if (!ok) continue
           delete s.pending[id]
           Bus.publish(Event.Replied, {
-            sessionID: pending.info.sessionID,
+            agentID: pending.info.agentID,
             requestID: pending.info.id,
             reply: "always",
           })

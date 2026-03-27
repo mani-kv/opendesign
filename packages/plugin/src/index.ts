@@ -157,7 +157,7 @@ export interface Hooks {
    */
   "chat.message"?: (
     input: {
-      sessionID: string
+      agentID: string
       agent?: string
       model?: { providerID: string; modelID: string }
       messageID?: string
@@ -169,28 +169,28 @@ export interface Hooks {
    * Modify parameters sent to LLM
    */
   "chat.params"?: (
-    input: { sessionID: string; agent: string; model: Model; provider: ProviderContext; message: UserMessage },
+    input: { agentID: string; agent: string; model: Model; provider: ProviderContext; message: UserMessage },
     output: { temperature: number; topP: number; topK: number; options: Record<string, any> },
   ) => Promise<void>
   "chat.headers"?: (
-    input: { sessionID: string; agent: string; model: Model; provider: ProviderContext; message: UserMessage },
+    input: { agentID: string; agent: string; model: Model; provider: ProviderContext; message: UserMessage },
     output: { headers: Record<string, string> },
   ) => Promise<void>
   "permission.ask"?: (input: Permission, output: { status: "ask" | "deny" | "allow" }) => Promise<void>
   "command.execute.before"?: (
-    input: { command: string; sessionID: string; arguments: string },
+    input: { command: string; agentID: string; arguments: string },
     output: { parts: Part[] },
   ) => Promise<void>
   "tool.execute.before"?: (
-    input: { tool: string; sessionID: string; callID: string },
+    input: { tool: string; agentID: string; callID: string },
     output: { args: any },
   ) => Promise<void>
   "shell.env"?: (
-    input: { cwd: string; sessionID?: string; callID?: string },
+    input: { cwd: string; agentID?: string; callID?: string },
     output: { env: Record<string, string> },
   ) => Promise<void>
   "tool.execute.after"?: (
-    input: { tool: string; sessionID: string; callID: string; args: any },
+    input: { tool: string; agentID: string; callID: string; args: any },
     output: {
       title: string
       output: string
@@ -207,7 +207,7 @@ export interface Hooks {
     },
   ) => Promise<void>
   "experimental.chat.system.transform"?: (
-    input: { sessionID?: string; model: Model },
+    input: { agentID?: string; model: Model },
     output: {
       system: string[]
     },
@@ -220,11 +220,11 @@ export interface Hooks {
    * - `prompt`: If set, replaces the default compaction prompt entirely
    */
   "experimental.session.compacting"?: (
-    input: { sessionID: string },
+    input: { agentID: string },
     output: { context: string[]; prompt?: string },
   ) => Promise<void>
   "experimental.text.complete"?: (
-    input: { sessionID: string; messageID: string; partID: string },
+    input: { agentID: string; messageID: string; partID: string },
     output: { text: string },
   ) => Promise<void>
   /**

@@ -1,11 +1,12 @@
 import { Tool } from "./tool"
 import DESCRIPTION from "./task.txt"
 import z from "zod"
-import { Session } from "../session"
-import { MessageV2 } from "../session/message-v2"
+import { AgentSession } from "../agent"
+import { MessageV2 } from "../agent/message-v2"
 import { Identifier } from "../id/id"
 import { Agent } from "../agent/agent"
-import { SessionPrompt } from "../session/prompt"
+import { AgentPrompt } from "../agent/prompt"
+import { Instance } from "../project/instance"
 import { iife } from "@/util/iife"
 import { defer } from "@/util/defer"
 import { Config } from "../config/config"
@@ -65,12 +66,12 @@ export const TaskTool = Tool.define("task", async (ctx) => {
 
       const session = await iife(async () => {
         if (params.task_id) {
-          const found = await Session.get(params.task_id).catch(() => {})
+          const found = await AgentSession.get(params.task_id).catch(() => {})
           if (found) return found
         }
 
-        return await Session.create({
-          parentID: ctx.sessionID,
+        return await AgentSession.create({
+          featureID: Instance.project.id,
           title: params.description + ` (@${agent.name} subagent)`,
           permission: [
             {
@@ -100,7 +101,7 @@ export const TaskTool = Tool.define("task", async (ctx) => {
           ],
         })
       })
-      const msg = await MessageV2.get({ sessionID: ctx.sessionID, messageID: ctx.messageID })
+      const msg = await MessageV2.get({ agentID: ctx.agentID, messageID: ctx.messageID })
       if (msg.info.role !== "assistant") throw new Error("Not an assistant message")
 
       const model = agent.model ?? {
@@ -119,15 +120,15 @@ export const TaskTool = Tool.define("task", async (ctx) => {
       const messageID = Identifier.ascending("message")
 
       function cancel() {
-        SessionPrompt.cancel(session.id)
+        AgentPrompt.cancel(session.id)
       }
       ctx.abort.addEventListener("abort", cancel)
       using _ = defer(() => ctx.abort.removeEventListener("abort", cancel))
-      const promptParts = await SessionPrompt.resolvePromptParts(params.prompt)
+      const promptParts = await AgentPrompt.resolvePromptParts(params.prompt)
 
-      const result = await SessionPrompt.prompt({
+      const result = await AgentPrompt.prompt({
         messageID,
-        sessionID: session.id,
+        agentID: session.id,
         model: {
           modelID: model.modelID,
           providerID: model.providerID,

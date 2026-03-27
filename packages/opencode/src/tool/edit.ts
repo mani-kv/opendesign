@@ -78,14 +78,14 @@ export const EditTool = Tool.define("edit", {
           file: filePath,
           event: existed ? "change" : "add",
         })
-        FileTime.read(ctx.sessionID, filePath)
+        FileTime.read(ctx.agentID, filePath)
         return
       }
 
       const stats = Filesystem.stat(filePath)
       if (!stats) throw new Error(`File ${filePath} not found`)
       if (stats.isDirectory()) throw new Error(`Path is a directory, not a file: ${filePath}`)
-      await FileTime.assert(ctx.sessionID, filePath)
+      await FileTime.assert(ctx.agentID, filePath)
       contentOld = await Filesystem.readText(filePath)
 
       const ending = detectLineEnding(contentOld)
@@ -119,7 +119,7 @@ export const EditTool = Tool.define("edit", {
       diff = trimDiff(
         createTwoFilesPatch(filePath, filePath, normalizeLineEndings(contentOld), normalizeLineEndings(contentNew)),
       )
-      FileTime.read(ctx.sessionID, filePath)
+      FileTime.read(ctx.agentID, filePath)
     })
 
     const filediff: Snapshot.FileDiff = {

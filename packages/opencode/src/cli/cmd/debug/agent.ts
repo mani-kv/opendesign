@@ -2,8 +2,8 @@ import { EOL } from "os"
 import { basename } from "path"
 import { Agent } from "../../../agent/agent"
 import { Provider } from "../../../provider/provider"
-import { Session } from "../../../session"
-import type { MessageV2 } from "../../../session/message-v2"
+import { AgentSession } from "../../../agent"
+import type { MessageV2 } from "../../../agent/message-v2"
 import { Identifier } from "../../../id/id"
 import { ToolRegistry } from "../../../tool/registry"
 import { Instance } from "../../../project/instance"
@@ -112,13 +112,13 @@ function parseToolParams(input?: string) {
 }
 
 async function createToolContext(agent: Agent.Info) {
-  const session = await Session.create({ title: `Debug tool run (${agent.name})` })
+  const session = await AgentSession.create({ title: `Debug tool run (${agent.name})` })
   const messageID = Identifier.ascending("message")
   const model = agent.model ?? (await Provider.defaultModel())
   const now = Date.now()
   const message: MessageV2.Assistant = {
     id: messageID,
-    sessionID: session.id,
+    agentID: session.id,
     role: "assistant",
     time: {
       created: now,
@@ -143,19 +143,19 @@ async function createToolContext(agent: Agent.Info) {
       },
     },
   }
-  await Session.updateMessage(message)
+  await AgentSession.updateMessage(message)
 
   const ruleset = PermissionNext.merge(agent.permission, session.permission ?? [])
 
   return {
-    sessionID: session.id,
+    agentID: session.id,
     messageID,
     callID: Identifier.ascending("part"),
     agent: agent.name,
     abort: new AbortController().signal,
     messages: [],
     metadata: () => {},
-    async ask(req: Omit<PermissionNext.Request, "id" | "sessionID" | "tool">) {
+    async ask(req: Omit<PermissionNext.Request, "id" | "agentID" | "tool">) {
       for (const pattern of req.patterns) {
         const rule = PermissionNext.evaluate(req.permission, pattern, ruleset)
         if (rule.action === "deny") {

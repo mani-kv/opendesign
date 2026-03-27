@@ -28,7 +28,7 @@ export const WriteTool = Tool.define("write", {
 
     const exists = await Filesystem.exists(filepath)
     const contentOld = exists ? await Filesystem.readText(filepath) : ""
-    if (exists) await FileTime.assert(ctx.sessionID, filepath)
+    if (exists) await FileTime.assert(ctx.agentID, filepath)
 
     const diff = trimDiff(createTwoFilesPatch(filepath, filepath, contentOld, params.content))
     await ctx.ask({
@@ -49,7 +49,7 @@ export const WriteTool = Tool.define("write", {
       file: filepath,
       event: exists ? "change" : "add",
     })
-    FileTime.read(ctx.sessionID, filepath)
+    FileTime.read(ctx.agentID, filepath)
 
     let output = "Wrote file successfully."
     await LSP.touchFile(filepath, true)

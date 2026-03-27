@@ -312,7 +312,7 @@ export async function CopilotAuthPlugin(input: PluginInput): Promise<Hooks> {
       const session = await sdk.session
         .get({
           path: {
-            id: incoming.sessionID,
+            id: incoming.agentID,
           },
           query: {
             directory: input.directory,
