@@ -1,0 +1,97 @@
+<h2>P0: Figma → Wireframe Canvas Pipeline</h2>
+<p class="subtitle">Three approaches to building the import pipeline and wireframe sketchpad</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Canvas-First: Extend Rust/WASM Canvas</h3>
+      <p>Add wireframe primitives (section, button, text, image, list, nav) directly to canvas-core in Rust. Figma data maps into these Rust node types. All interaction (draw, select, drag, resize) happens in the WASM canvas.</p>
+      <div class="pros-cons">
+        <div class="pros">
+          <h4>Pros</h4>
+          <ul>
+            <li>GPU-accelerated — handles hundreds of wireframe nodes smoothly</li>
+            <li>Your Rust canvas becomes the proprietary moat</li>
+            <li>Single rendering surface — no split between canvas systems</li>
+            <li>Snapshot/persistence already exists, just needs extending</li>
+          </ul>
+        </div>
+        <div class="cons">
+          <h4>Cons</h4>
+          <ul>
+            <li>Rust development is slower — each new wireframe type requires Rust + WASM rebuild</li>
+            <li>Text rendering in Vello is non-trivial (font loading, shaping)</li>
+            <li>Harder to iterate on visual design of wireframe components</li>
+            <li>Current canvas only renders filled rectangles — significant work needed</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Web-First: SVG/HTML Wireframe Canvas</h3>
+      <p>Build the wireframe canvas as a SolidJS SVG/HTML layer (extending the existing agent-sandbox SVG canvas). Wireframe components are SolidJS components. Figma data maps into a TypeScript scene graph. The Rust canvas is used only for visual diff overlays later.</p>
+      <div class="pros-cons">
+        <div class="pros">
+          <h4>Pros</h4>
+          <ul>
+            <li>Fast iteration — wireframe components are just SolidJS + CSS</li>
+            <li>Text rendering is free (browser handles it)</li>
+            <li>Builds on existing SVG canvas code (agent-sandbox/canvas.tsx)</li>
+            <li>Design system palette UI is natural in the web layer</li>
+            <li>Drag-and-drop from palette → canvas is straightforward</li>
+          </ul>
+        </div>
+        <div class="cons">
+          <h4>Cons</h4>
+          <ul>
+            <li>SVG performance degrades at 500+ nodes (fine for wireframes though)</li>
+            <li>Two canvas systems remain (SVG wireframe + Rust for future rendering)</li>
+            <li>Less "proprietary" — SVG canvas is commodity tech</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Hybrid: Web Wireframes + Rust Preview</h3>
+      <p>Wireframe editing in SolidJS/SVG (fast iteration). When a Figma design is imported, show a rasterized preview image on the Rust canvas alongside the SVG wireframe decomposition. The Rust canvas handles the preview image layer; the SVG layer handles wireframe manipulation.</p>
+      <div class="pros-cons">
+        <div class="pros">
+          <h4>Pros</h4>
+          <ul>
+            <li>Best of both worlds — fast wireframe iteration + GPU preview rendering</li>
+            <li>Figma import shows real design as reference while wireframe is editable</li>
+            <li>Uses each canvas for what it's good at</li>
+            <li>Rust canvas gains image rendering (useful long-term)</li>
+          </ul>
+        </div>
+        <div class="cons">
+          <h4>Cons</h4>
+          <ul>
+            <li>Two rendering surfaces to coordinate (z-ordering, pan/zoom sync)</li>
+            <li>More complexity to maintain</li>
+            <li>May feel disjointed if not carefully integrated</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 2rem; padding: 1.5rem; background: rgba(255,255,255,0.03); border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);">
+  <h3>⭐ Recommendation: Option B (Web-First)</h3>
+  <p style="color: #aaa; line-height: 1.6;">
+    For an MVP wireframe sketchpad, the web layer wins on iteration speed. Wireframe components are just SolidJS components — you can design, tweak, and add new ones in minutes, not hours of Rust compilation. The existing SVG canvas already has pan/zoom/drag/selection. Text rendering is free. The design system palette is a natural web UI element.
+  </p>
+  <p style="color: #aaa; line-height: 1.6; margin-top: 0.75rem;">
+    The Rust canvas isn't wasted — it becomes the foundation for visual diff rendering later (P1), where GPU acceleration actually matters. And you can always migrate wireframe rendering to Rust later if SVG becomes a bottleneck (it won't for wireframes).
+  </p>
+</div>

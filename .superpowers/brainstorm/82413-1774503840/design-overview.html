@@ -1,0 +1,101 @@
+<h2>OpenDesign: Agentic Prototyping Studio</h2>
+<p class="subtitle">Full system design — Section 1 of 4: Core Workflow</p>
+
+<div class="section">
+  <h3>The Pipeline</h3>
+  <div class="mockup">
+    <div class="mockup-header">End-to-End Flow</div>
+    <div class="mockup-body" style="padding: 2rem; font-family: monospace; font-size: 13px; line-height: 2.2;">
+      <div style="display: flex; align-items: flex-start; gap: 1rem; flex-wrap: wrap;">
+
+        <!-- Step 1 -->
+        <div style="background: rgba(99,102,241,0.15); border: 1px solid rgba(99,102,241,0.3); border-radius: 10px; padding: 1rem 1.2rem; min-width: 180px; text-align: center;">
+          <div style="font-size: 11px; color: #818cf8; margin-bottom: 4px;">STEP 1</div>
+          <div style="color: #e2e8f0; font-weight: 600;">Paste Figma URL</div>
+          <div style="color: #94a3b8; font-size: 11px; margin-top: 4px;">Cmd+V on canvas</div>
+        </div>
+
+        <div style="color: #475569; font-size: 20px; padding-top: 1.2rem;">→</div>
+
+        <!-- Step 2 -->
+        <div style="background: rgba(99,102,241,0.15); border: 1px solid rgba(99,102,241,0.3); border-radius: 10px; padding: 1rem 1.2rem; min-width: 180px; text-align: center;">
+          <div style="font-size: 11px; color: #818cf8; margin-bottom: 4px;">STEP 2</div>
+          <div style="color: #e2e8f0; font-weight: 600;">Figma MCP Fetch</div>
+          <div style="color: #94a3b8; font-size: 11px; margin-top: 4px;">Image + component tree<br/>+ tokens + variants</div>
+        </div>
+
+        <div style="color: #475569; font-size: 20px; padding-top: 1.2rem;">→</div>
+
+        <!-- Step 3 -->
+        <div style="background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); border-radius: 10px; padding: 1rem 1.2rem; min-width: 180px; text-align: center;">
+          <div style="font-size: 11px; color: #34d399; margin-bottom: 4px;">STEP 3</div>
+          <div style="color: #e2e8f0; font-weight: 600;">Canvas Render</div>
+          <div style="color: #94a3b8; font-size: 11px; margin-top: 4px;">Raster image +<br/>bounding box overlays</div>
+        </div>
+
+        <div style="color: #475569; font-size: 20px; padding-top: 1.2rem;">→</div>
+
+        <!-- Step 4 -->
+        <div style="background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.3); border-radius: 10px; padding: 1rem 1.2rem; min-width: 180px; text-align: center;">
+          <div style="font-size: 11px; color: #fbbf24; margin-bottom: 4px;">STEP 4</div>
+          <div style="color: #e2e8f0; font-weight: 600;">Select & Annotate</div>
+          <div style="color: #94a3b8; font-size: 11px; margin-top: 4px;">Click component →<br/>tag agent → prompt</div>
+        </div>
+
+        <div style="color: #475569; font-size: 20px; padding-top: 1.2rem;">→</div>
+
+        <!-- Step 5 -->
+        <div style="background: rgba(236,72,153,0.15); border: 1px solid rgba(236,72,153,0.3); border-radius: 10px; padding: 1rem 1.2rem; min-width: 180px; text-align: center;">
+          <div style="font-size: 11px; color: #f472b6; margin-bottom: 4px;">STEP 5</div>
+          <div style="color: #e2e8f0; font-weight: 600;">Explore Variations</div>
+          <div style="color: #94a3b8; font-size: 11px; margin-top: 4px;">Sandpack nodes spawn<br/>on canvas as tree</div>
+        </div>
+
+        <div style="color: #475569; font-size: 20px; padding-top: 1.2rem;">→</div>
+
+        <!-- Step 6 -->
+        <div style="background: rgba(139,92,246,0.15); border: 1px solid rgba(139,92,246,0.3); border-radius: 10px; padding: 1rem 1.2rem; min-width: 180px; text-align: center;">
+          <div style="font-size: 11px; color: #a78bfa; margin-bottom: 4px;">STEP 6</div>
+          <div style="color: #e2e8f0; font-weight: 600;">Approve & Collapse</div>
+          <div style="color: #94a3b8; font-size: 11px; margin-top: 4px;">Select best → tree collapses<br/>→ column view</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 2rem;">
+  <h3>Canvas Architecture</h3>
+  <div class="mockup">
+    <div class="mockup-header">Layered Rendering Model</div>
+    <div class="mockup-body" style="padding: 2rem;">
+      <div style="display: flex; flex-direction: column; gap: 0; max-width: 600px; margin: 0 auto;">
+
+        <div style="background: rgba(139,92,246,0.12); border: 1px solid rgba(139,92,246,0.3); border-radius: 10px 10px 0 0; padding: 1rem 1.5rem; text-align: center;">
+          <div style="color: #a78bfa; font-weight: 600; font-size: 14px;">Layer 3: Rust/WASM Overlay (future)</div>
+          <div style="color: #94a3b8; font-size: 12px; margin-top: 4px;">Visual diff rendering • GPU-accelerated comparisons</div>
+        </div>
+
+        <div style="background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.3); padding: 1rem 1.5rem; text-align: center;">
+          <div style="color: #fbbf24; font-weight: 600; font-size: 14px;">Layer 2: Interaction Layer (HTML/CSS)</div>
+          <div style="color: #94a3b8; font-size: 12px; margin-top: 4px;">Bounding box overlays • Annotations/comments • Selection UI • Design system slider</div>
+        </div>
+
+        <div style="background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3); padding: 1rem 1.5rem; text-align: center;">
+          <div style="color: #34d399; font-weight: 600; font-size: 14px;">Layer 1: Content Layer (HTML/CSS)</div>
+          <div style="color: #94a3b8; font-size: 12px; margin-top: 4px;">Raster images • Sandpack iframes • Variation tree layout • Pan/zoom container</div>
+        </div>
+
+        <div style="background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.3); border-radius: 0 0 10px 10px; padding: 1rem 1.5rem; text-align: center;">
+          <div style="color: #818cf8; font-weight: 600; font-size: 14px;">Layer 0: Infinite Canvas (HTML/CSS)</div>
+          <div style="color: #94a3b8; font-size: 12px; margin-top: 4px;">Pan • Zoom • Grid • Background • Coordinate system</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 2rem; padding: 1.5rem; background: rgba(255,255,255,0.03); border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);">
+  <p style="color: #94a3b8; font-size: 13px;">Section 1 of 4 — respond in terminal if this looks right, then I'll show the next section.</p>
+</div>

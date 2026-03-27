@@ -1,0 +1,244 @@
+<h2>Schema Stress Test: Walking Through Your Workflow</h2>
+<p class="subtitle">Where does every piece of data land? What's missing?</p>
+
+<div class="section">
+  <h3>Step 1: User opens OpenDesign, creates a Product</h3>
+  <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+    <div style="flex: 1; min-width: 280px; background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.2); border-radius: 8px; padding: 1rem;">
+      <div style="color: #34d399; font-weight: 600; font-size: 13px; margin-bottom: 8px;">Data Created</div>
+      <div style="font-family: monospace; font-size: 11px; color: #94a3b8; line-height: 1.8;">
+        <span style="color: #818cf8;">ProductTable</span> row:<br/>
+        &nbsp;&nbsp;id: "a1b2c3" (git root hash)<br/>
+        &nbsp;&nbsp;name: "Acme Dashboard"<br/>
+        &nbsp;&nbsp;directory: "/Users/me/acme"<br/>
+        &nbsp;&nbsp;git_root: "a1b2c3"
+      </div>
+    </div>
+    <div style="flex: 1; min-width: 280px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 1rem;">
+      <div style="color: #e2e8f0; font-weight: 600; font-size: 13px; margin-bottom: 8px;">✅ Schema handles this</div>
+      <div style="color: #94a3b8; font-size: 12px; line-height: 1.6;">ProductTable maps 1:1 to a git repo. ID from root commit hash (same as old ProjectTable).</div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 1.5rem;">
+  <h3>Step 2: Connect Figma, import design system</h3>
+  <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+    <div style="flex: 1; min-width: 280px; background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.2); border-radius: 8px; padding: 1rem;">
+      <div style="color: #34d399; font-weight: 600; font-size: 13px; margin-bottom: 8px;">Data Created</div>
+      <div style="font-family: monospace; font-size: 11px; color: #94a3b8; line-height: 1.8;">
+        <span style="color: #818cf8;">AccountTable</span>: OAuth token for Figma<br/><br/>
+        <span style="color: #818cf8;">DesignSystemTable</span> row:<br/>
+        &nbsp;&nbsp;name: "Acme Brand v2"<br/>
+        &nbsp;&nbsp;figma_file_key: "abc123"<br/>
+        &nbsp;&nbsp;tokens: { colors, spacing, type }<br/>
+        &nbsp;&nbsp;components: [Button, Card, ...]<br/>
+        &nbsp;&nbsp;last_synced_at: 1711417200<br/><br/>
+        <span style="color: #818cf8;">ProductDesignSystemTable</span>:<br/>
+        &nbsp;&nbsp;product_id → design_system_id
+      </div>
+    </div>
+    <div style="flex: 1; min-width: 280px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 1rem;">
+      <div style="color: #e2e8f0; font-weight: 600; font-size: 13px; margin-bottom: 8px;">✅ Schema handles this</div>
+      <div style="color: #94a3b8; font-size: 12px; line-height: 1.6;">
+        DesignSystem is independent of Product (can be shared).<br/>
+        Join table links them.<br/>
+        A Figma file with multiple team libraries → multiple DesignSystem rows.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 1.5rem;">
+  <h3>Step 3: Create a Feature, paste Figma URL</h3>
+  <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+    <div style="flex: 1; min-width: 280px; background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.2); border-radius: 8px; padding: 1rem;">
+      <div style="color: #34d399; font-weight: 600; font-size: 13px; margin-bottom: 8px;">Data Created</div>
+      <div style="font-family: monospace; font-size: 11px; color: #94a3b8; line-height: 1.8;">
+        <span style="color: #818cf8;">FeatureTable</span> row:<br/>
+        &nbsp;&nbsp;name: "Onboarding Flow"<br/>
+        &nbsp;&nbsp;branch: "feature/onboarding"<br/>
+        &nbsp;&nbsp;status: "active"<br/>
+        &nbsp;&nbsp;figma_url: "figma.com/design/..."<br/>
+        &nbsp;&nbsp;canvas_state: {<br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;viewport: { x, y, zoom },<br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;nodes: [RasterImageNode]<br/>
+        &nbsp;&nbsp;}<br/><br/>
+        <span style="color: #ef4444;">❓ Where does the Figma node tree go?</span><br/>
+        <span style="color: #ef4444;">❓ Where does the hit-map go?</span><br/>
+        <span style="color: #ef4444;">❓ Where does the raster image binary go?</span>
+      </div>
+    </div>
+    <div style="flex: 1; min-width: 280px; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); border-radius: 8px; padding: 1rem;">
+      <div style="color: #f87171; font-weight: 600; font-size: 13px; margin-bottom: 8px;">⚠️ GAP FOUND</div>
+      <div style="color: #94a3b8; font-size: 12px; line-height: 1.6;">
+        <strong>Missing: Figma import data storage.</strong><br/><br/>
+        When we paste a URL, we get:<br/>
+        1. Raster image (PNG) — needs file storage, not DB<br/>
+        2. Node tree (JSON) — needed for hit-map / bounding boxes<br/>
+        3. Component references — which DS components are used where<br/><br/>
+        None of these have a home in the current schema.<br/><br/>
+        <strong>Fix:</strong> Add <code>figma_node_tree</code> and <code>figma_raster_url</code> to FeatureTable. Or create a FigmaImportTable.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 1.5rem;">
+  <h3>Step 4: Base prototype generation</h3>
+  <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+    <div style="flex: 1; min-width: 280px; background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.2); border-radius: 8px; padding: 1rem;">
+      <div style="color: #34d399; font-weight: 600; font-size: 13px; margin-bottom: 8px;">Data Created</div>
+      <div style="font-family: monospace; font-size: 11px; color: #94a3b8; line-height: 1.8;">
+        <span style="color: #818cf8;">AgentTable</span> row (system agent):<br/>
+        &nbsp;&nbsp;feature_id: "feat_1"<br/>
+        &nbsp;&nbsp;annotation_id: NULL (no annotation)<br/>
+        &nbsp;&nbsp;title: "Base prototype"<br/>
+        &nbsp;&nbsp;status: "working"<br/><br/>
+        Agent generates Sandpack code...<br/><br/>
+        <span style="color: #ef4444;">❓ Where does the "current prototype"<br/>
+        &nbsp;&nbsp;&nbsp;Sandpack code live?</span>
+      </div>
+    </div>
+    <div style="flex: 1; min-width: 280px; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); border-radius: 8px; padding: 1rem;">
+      <div style="color: #f87171; font-weight: 600; font-size: 13px; margin-bottom: 8px;">⚠️ GAP FOUND</div>
+      <div style="color: #94a3b8; font-size: 12px; line-height: 1.6;">
+        <strong>Missing: Current prototype files.</strong><br/><br/>
+        The "live prototype" on the canvas is a Sandpack running code. That code lives... where?<br/><br/>
+        Checkpoints store snapshots, but the <em>current</em> running prototype code needs a home.<br/><br/>
+        <strong>Fix:</strong> Add <code>prototype_files</code> (JSON Sandpack bundle) to FeatureTable. This is the "current state" that gets updated on each approval and snapshotted into checkpoints.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 1.5rem;">
+  <h3>Step 5: Select component, annotate, spawn agent</h3>
+  <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+    <div style="flex: 1; min-width: 280px; background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.2); border-radius: 8px; padding: 1rem;">
+      <div style="color: #34d399; font-weight: 600; font-size: 13px; margin-bottom: 8px;">Data Created</div>
+      <div style="font-family: monospace; font-size: 11px; color: #94a3b8; line-height: 1.8;">
+        <span style="color: #818cf8;">AnnotationTable</span> row:<br/>
+        &nbsp;&nbsp;feature_id: "feat_1"<br/>
+        &nbsp;&nbsp;component_node_id: "1234:5678"<br/>
+        &nbsp;&nbsp;component_name: "CardCarousel"<br/>
+        &nbsp;&nbsp;prompt: "Explore variations..."<br/>
+        &nbsp;&nbsp;ds_slider: 0.3<br/>
+        &nbsp;&nbsp;variation_count: 4<br/><br/>
+        <span style="color: #818cf8;">AgentTable</span> row:<br/>
+        &nbsp;&nbsp;feature_id: "feat_1"<br/>
+        &nbsp;&nbsp;annotation_id: "ann_1"<br/>
+        &nbsp;&nbsp;branch: "agent/carousel-v1"<br/>
+        &nbsp;&nbsp;status: "working"<br/>
+        &nbsp;&nbsp;color: "#818cf8"
+      </div>
+    </div>
+    <div style="flex: 1; min-width: 280px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 1rem;">
+      <div style="color: #e2e8f0; font-weight: 600; font-size: 13px; margin-bottom: 8px;">✅ Schema handles this</div>
+      <div style="color: #94a3b8; font-size: 12px; line-height: 1.6;">
+        Annotation captures the full context of what the user asked.<br/>
+        Agent is 1:1 with annotation.<br/>
+        Agent chat thread: Messages + Parts under the Agent.<br/><br/>
+        DS slider value persists on the annotation, so the same component can be re-annotated with different settings.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 1.5rem;">
+  <h3>Step 6: Agent generates variations</h3>
+  <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+    <div style="flex: 1; min-width: 280px; background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.2); border-radius: 8px; padding: 1rem;">
+      <div style="color: #34d399; font-weight: 600; font-size: 13px; margin-bottom: 8px;">Data Created</div>
+      <div style="font-family: monospace; font-size: 11px; color: #94a3b8; line-height: 1.8;">
+        4x <span style="color: #818cf8;">VariationTable</span> rows:<br/>
+        &nbsp;&nbsp;agent_id: "agent_1"<br/>
+        &nbsp;&nbsp;annotation_id: "ann_1"<br/>
+        &nbsp;&nbsp;label: "Stacked overlap"<br/>
+        &nbsp;&nbsp;rationale: "Uses depth..."<br/>
+        &nbsp;&nbsp;files: { "App.tsx": "...", ... }<br/>
+        &nbsp;&nbsp;status: "pending"<br/>
+        &nbsp;&nbsp;position_x/y: (near annotation)
+      </div>
+    </div>
+    <div style="flex: 1; min-width: 280px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 1rem;">
+      <div style="color: #e2e8f0; font-weight: 600; font-size: 13px; margin-bottom: 8px;">✅ Schema handles this</div>
+      <div style="color: #94a3b8; font-size: 12px; line-height: 1.6;">
+        Each variation has its own Sandpack file bundle.<br/>
+        All start as "pending".<br/>
+        Position fields let them render near the annotation on canvas.<br/><br/>
+        <strong>Note:</strong> Variation files are PARTIAL — only the section the agent changed. The full prototype is assembled by merging variation files with the current prototype_files.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 1.5rem;">
+  <h3>Step 7: Approve variation → checkpoint</h3>
+  <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+    <div style="flex: 1; min-width: 280px; background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.2); border-radius: 8px; padding: 1rem;">
+      <div style="color: #34d399; font-weight: 600; font-size: 13px; margin-bottom: 8px;">Data Changed</div>
+      <div style="font-family: monospace; font-size: 11px; color: #94a3b8; line-height: 1.8;">
+        <span style="color: #818cf8;">VariationTable</span> update:<br/>
+        &nbsp;&nbsp;status: "pending" → "approved"<br/><br/>
+        <span style="color: #818cf8;">FeatureTable</span> update:<br/>
+        &nbsp;&nbsp;prototype_files: merged with variation<br/><br/>
+        <span style="color: #818cf8;">CheckpointTable</span> row:<br/>
+        &nbsp;&nbsp;feature_id: "feat_1"<br/>
+        &nbsp;&nbsp;parent_id: "cp_1" (previous)<br/>
+        &nbsp;&nbsp;variation_id: "var_2"<br/>
+        &nbsp;&nbsp;label: "v3 · Carousel → full-bleed"<br/>
+        &nbsp;&nbsp;files: { full Sandpack snapshot }<br/>
+        &nbsp;&nbsp;canvas_snapshot: { current canvas }
+      </div>
+    </div>
+    <div style="flex: 1; min-width: 280px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 1rem;">
+      <div style="color: #e2e8f0; font-weight: 600; font-size: 13px; margin-bottom: 8px;">✅ Schema handles this (with fix)</div>
+      <div style="color: #94a3b8; font-size: 12px; line-height: 1.6;">
+        Approval flow works:<br/>
+        1. Variation → "approved"<br/>
+        2. Feature.prototype_files updated<br/>
+        3. Checkpoint created with full snapshot<br/>
+        4. Other variations stay "pending" (dimmed in UI)<br/><br/>
+        Restore = load checkpoint.files into Feature.prototype_files<br/>
+        Fork = new checkpoint with parent_id<br/>
+        Compare = diff two checkpoint.files
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 2rem;">
+  <h3>Gaps Found — Proposed Fixes</h3>
+  <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+
+    <div style="background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); border-radius: 8px; padding: 1rem;">
+      <div style="color: #f87171; font-weight: 600; font-size: 13px; margin-bottom: 8px;">Gap 1: Prototype Files</div>
+      <div style="color: #94a3b8; font-size: 12px; line-height: 1.6;">
+        The "current running prototype" (Sandpack code) has no home.<br/><br/>
+        <strong>Fix:</strong> Add <code>prototype_files</code> TEXT (JSON) to FeatureTable.
+      </div>
+    </div>
+
+    <div style="background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); border-radius: 8px; padding: 1rem;">
+      <div style="color: #f87171; font-weight: 600; font-size: 13px; margin-bottom: 8px;">Gap 2: Figma Node Tree</div>
+      <div style="color: #94a3b8; font-size: 12px; line-height: 1.6;">
+        The imported Figma node tree (for hit-map / bounding boxes) has no home.<br/><br/>
+        <strong>Fix:</strong> Add <code>figma_node_tree</code> TEXT (JSON) to FeatureTable.
+      </div>
+    </div>
+
+    <div style="background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); border-radius: 8px; padding: 1rem;">
+      <div style="color: #f87171; font-weight: 600; font-size: 13px; margin-bottom: 8px;">Gap 3: Raster Image</div>
+      <div style="color: #94a3b8; font-size: 12px; line-height: 1.6;">
+        Raster PNG from Figma needs file storage (too large for DB).<br/><br/>
+        <strong>Fix:</strong> Store on disk at <code>.opendesign/raster/{feature_id}.png</code>. Add <code>figma_raster_path</code> to FeatureTable.
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="section" style="margin-top: 1.5rem; padding: 1rem; background: rgba(255,255,255,0.03); border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);">
+  <p style="color: #94a3b8; font-size: 13px;">Review in terminal — I found 3 gaps and have a question about McpConfigTable timing.</p>
+</div>
