@@ -6,7 +6,7 @@ import { Worktree } from "../../worktree"
 import { Instance } from "../../project/instance"
 import { Project } from "../../project/project"
 import { MCP } from "../../mcp"
-import { Session } from "../../session"
+import { AgentSession } from "../../agent"
 import { zodToJsonSchema } from "zod-to-json-schema"
 import { errors } from "../error"
 import { lazy } from "../../util/lazy"
@@ -199,7 +199,7 @@ export const ExperimentalRoutes = lazy(() =>
             description: "List of sessions",
             content: {
               "application/json": {
-                schema: resolver(Session.GlobalInfo.array()),
+                schema: resolver(AgentSession.GlobalInfo.array()),
               },
             },
           },
@@ -226,15 +226,13 @@ export const ExperimentalRoutes = lazy(() =>
       async (c) => {
         const query = c.req.valid("query")
         const limit = query.limit ?? 100
-        const sessions: Session.GlobalInfo[] = []
-        for await (const session of Session.listGlobal({
+        const sessions: AgentSession.GlobalInfo[] = []
+        for (const session of AgentSession.listGlobal({
           directory: query.directory,
-          roots: query.roots,
           start: query.start,
           cursor: query.cursor,
           search: query.search,
           limit: limit + 1,
-          archived: query.archived,
         })) {
           sessions.push(session)
         }

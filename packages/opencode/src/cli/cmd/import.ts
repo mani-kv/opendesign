@@ -1,10 +1,12 @@
 import type { Argv } from "yargs"
 import type { Session as SDKSession, Message, Part } from "@opencode-ai/sdk/v2"
-import { Session } from "../../session"
+import { AgentSession } from "../../agent"
 import { cmd } from "./cmd"
 import { bootstrap } from "../bootstrap"
 import { Database } from "../../storage/db"
-import { SessionTable, MessageTable, PartTable } from "../../session/session.sql"
+import { AgentTable } from "../../agent/agent.sql"
+import { MessageTable } from "../../agent/message.sql"
+import { PartTable } from "../../agent/part.sql"
 import { Instance } from "../../project/instance"
 // TODO: dropped - share removed
 import { EOL } from "os"
@@ -86,7 +88,7 @@ export const ImportCommand = cmd({
     await bootstrap(process.cwd(), async () => {
       let exportData:
         | {
-            info: Session.Info
+            info: AgentSession.Info
             messages: Array<{
               info: Message
               parts: Part[]
@@ -153,12 +155,12 @@ export const ImportCommand = cmd({
         return
       }
 
-      const row = { ...Session.toRow(exportData.info), project_id: Instance.project.id }
+      const row = { ...AgentSession.toRow(exportData.info), feature_id: Instance.project.id }
       Database.use((db) =>
         db
-          .insert(SessionTable)
+          .insert(AgentTable)
           .values(row)
-          .onConflictDoUpdate({ target: SessionTable.id, set: { project_id: row.project_id } })
+          .onConflictDoUpdate({ target: AgentTable.id, set: { feature_id: row.feature_id } })
           .run(),
       )
 
@@ -168,7 +170,7 @@ export const ImportCommand = cmd({
             .insert(MessageTable)
             .values({
               id: msg.info.id,
-              session_id: exportData.info.id,
+              agent_id: exportData.info.id,
               time_created: msg.info.time?.created ?? Date.now(),
               data: msg.info,
             })
@@ -183,7 +185,7 @@ export const ImportCommand = cmd({
               .values({
                 id: part.id,
                 message_id: msg.info.id,
-                session_id: exportData.info.id,
+                agent_id: exportData.info.id,
                 data: part,
               })
               .onConflictDoNothing()

@@ -713,7 +713,7 @@ export namespace ProviderTransform {
 
   export function options(input: {
     model: Provider.Model
-    sessionID: string
+    agentID: string
     providerOptions?: Record<string, any>
   }): Record<string, any> {
     const result: Record<string, any> = {}
@@ -751,7 +751,7 @@ export namespace ProviderTransform {
     }
 
     if (input.model.providerID === "openai" || input.providerOptions?.setCacheKey) {
-      result["promptCacheKey"] = input.sessionID
+      result["promptCacheKey"] = input.agentID
     }
 
     if (input.model.api.npm === "@ai-sdk/google" || input.model.api.npm === "@ai-sdk/google-vertex") {
@@ -807,18 +807,18 @@ export namespace ProviderTransform {
       }
 
       if (input.model.providerID.startsWith("opencode")) {
-        result["promptCacheKey"] = input.sessionID
+        result["promptCacheKey"] = input.agentID
         result["include"] = ["reasoning.encrypted_content"]
         result["reasoningSummary"] = "auto"
       }
     }
 
     if (input.model.providerID === "venice") {
-      result["promptCacheKey"] = input.sessionID
+      result["promptCacheKey"] = input.agentID
     }
 
     if (input.model.providerID === "openrouter") {
-      result["prompt_cache_key"] = input.sessionID
+      result["prompt_cache_key"] = input.agentID
     }
     if (input.model.api.npm === "@ai-sdk/gateway") {
       result["gateway"] = {

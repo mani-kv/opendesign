@@ -1,6 +1,6 @@
 import type { Argv } from "yargs"
 import { cmd } from "./cmd"
-import { Session } from "../../session"
+import { AgentSession } from "../../agent"
 import { bootstrap } from "../bootstrap"
 import { UI } from "../ui"
 import { Locale } from "../../util/locale"
@@ -39,18 +39,18 @@ function pagerCmd(): string[] {
 }
 
 export const SessionCommand = cmd({
-  command: "session",
-  describe: "manage sessions",
+  command: "agent",
+  describe: "manage agent sessions",
   builder: (yargs: Argv) => yargs.command(SessionListCommand).command(SessionDeleteCommand).demandCommand(),
   async handler() {},
 })
 
 export const SessionDeleteCommand = cmd({
-  command: "delete <sessionID>",
-  describe: "delete a session",
+  command: "delete <agentID>",
+  describe: "delete an agent session",
   builder: (yargs: Argv) => {
-    return yargs.positional("sessionID", {
-      describe: "session ID to delete",
+    return yargs.positional("agentID", {
+      describe: "agent ID to delete",
       type: "string",
       demandOption: true,
     })
@@ -58,25 +58,25 @@ export const SessionDeleteCommand = cmd({
   handler: async (args) => {
     await bootstrap(process.cwd(), async () => {
       try {
-        await Session.get(args.sessionID)
+        await AgentSession.get(args.agentID)
       } catch {
-        UI.error(`Session not found: ${args.sessionID}`)
+        UI.error(`Agent session not found: ${args.agentID}`)
         process.exit(1)
       }
-      await Session.remove(args.sessionID)
-      UI.println(UI.Style.TEXT_SUCCESS_BOLD + `Session ${args.sessionID} deleted` + UI.Style.TEXT_NORMAL)
+      await AgentSession.remove(args.agentID)
+      UI.println(UI.Style.TEXT_SUCCESS_BOLD + `Agent session ${args.agentID} deleted` + UI.Style.TEXT_NORMAL)
     })
   },
 })
 
 export const SessionListCommand = cmd({
   command: "list",
-  describe: "list sessions",
+  describe: "list agent sessions",
   builder: (yargs: Argv) => {
     return yargs
       .option("max-count", {
         alias: "n",
-        describe: "limit to N most recent sessions",
+        describe: "limit to N most recent agent sessions",
         type: "number",
       })
       .option("format", {
@@ -88,7 +88,7 @@ export const SessionListCommand = cmd({
   },
   handler: async (args) => {
     await bootstrap(process.cwd(), async () => {
-      const sessions = [...Session.list({ roots: true, limit: args.maxCount })]
+      const sessions = [...AgentSession.list({ limit: args.maxCount })]
 
       if (sessions.length === 0) {
         return
@@ -125,7 +125,7 @@ export const SessionListCommand = cmd({
   },
 })
 
-function formatSessionTable(sessions: Session.Info[]): string {
+function formatSessionTable(sessions: AgentSession.Info[]): string {
   const lines: string[] = []
 
   const maxIdWidth = Math.max(20, ...sessions.map((s) => s.id.length))
@@ -144,13 +144,13 @@ function formatSessionTable(sessions: Session.Info[]): string {
   return lines.join(EOL)
 }
 
-function formatSessionJSON(sessions: Session.Info[]): string {
+function formatSessionJSON(sessions: AgentSession.Info[]): string {
   const jsonData = sessions.map((session) => ({
     id: session.id,
     title: session.title,
     updated: session.time.updated,
     created: session.time.created,
-    projectId: session.projectID,
+    featureId: session.featureID,
     directory: session.directory,
   }))
   return JSON.stringify(jsonData, null, 2)

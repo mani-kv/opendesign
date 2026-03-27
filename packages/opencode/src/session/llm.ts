@@ -98,7 +98,7 @@ export namespace LLM {
       ? ProviderTransform.smallOptions(input.model)
       : ProviderTransform.options({
           model: input.model,
-          sessionID: input.sessionID,
+          agentID: input.sessionID,
           providerOptions: provider.options,
         })
     const options: Record<string, any> = pipe(

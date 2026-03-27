@@ -3,7 +3,7 @@ import { Filesystem } from "../util/filesystem"
 import path from "path"
 import { Database, eq } from "../storage/db"
 import { ProjectTable } from "./project.sql"
-import { SessionTable } from "../session/session.sql"
+import { AgentTable } from "../agent/agent.sql"
 import { Log } from "../util/log"
 import { Flag } from "@/flag/flag"
 import { work } from "../util/queue"
@@ -313,18 +313,18 @@ export namespace Project {
     if (!row) return
 
     const sessions = Database.use((db) =>
-      db.select().from(SessionTable).where(eq(SessionTable.project_id, "global")).all(),
+      db.select().from(AgentTable).where(eq(AgentTable.feature_id, "global")).all(),
     )
     if (sessions.length === 0) return
 
-    log.info("migrating sessions from global", { newProjectID: id, worktree, count: sessions.length })
+    log.info("migrating agents from global", { newProjectID: id, worktree, count: sessions.length })
 
     await work(10, sessions, async (row) => {
-      // Skip sessions that belong to a different directory
+      // Skip agents that belong to a different directory
       if (row.directory && row.directory !== worktree) return
 
-      log.info("migrating session", { sessionID: row.id, from: "global", to: id })
-      Database.use((db) => db.update(SessionTable).set({ project_id: id }).where(eq(SessionTable.id, row.id)).run())
+      log.info("migrating agent", { agentID: row.id, from: "global", to: id })
+      Database.use((db) => db.update(AgentTable).set({ feature_id: id }).where(eq(AgentTable.id, row.id)).run())
     }).catch((error) => {
       log.error("failed to migrate sessions from global to project", { error, projectId: id })
     })

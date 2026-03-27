@@ -23,7 +23,7 @@ import { Command } from "../command"
 import { Global } from "../global"
 // TODO: dropped - workspace removed
 import { ProjectRoutes } from "./routes/project"
-import { SessionRoutes } from "./routes/session"
+import { AgentSessionRoutes } from "./routes/agent-session"
 import { PtyRoutes } from "./routes/pty"
 import { McpRoutes } from "./routes/mcp"
 import { AgentFilesRoutes } from "./routes/agent-files"
@@ -242,7 +242,7 @@ export namespace Server {
       .route("/pty", PtyRoutes())
       .route("/config", ConfigRoutes())
       .route("/experimental", ExperimentalRoutes())
-      .route("/session", SessionRoutes())
+      .route("/session", AgentSessionRoutes())
       .route("/permission", PermissionRoutes())
       .route("/question", QuestionRoutes())
       .route("/provider", ProviderRoutes())

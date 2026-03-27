@@ -8,7 +8,7 @@ import { BunProc } from "../bun"
 import { Instance } from "../project/instance"
 import { Flag } from "../flag/flag"
 import { CodexAuthPlugin } from "./codex"
-import { Session } from "../session"
+import { AgentSession } from "../agent"
 import { NamedError } from "@opencode-ai/util/error"
 import { CopilotAuthPlugin } from "./copilot"
 import { gitlabAuthPlugin as GitlabAuthPlugin } from "@gitlab/opencode-gitlab-auth"
@@ -66,7 +66,7 @@ export namespace Plugin {
           const cause = err instanceof Error ? err.cause : err
           const detail = cause instanceof Error ? cause.message : String(cause ?? err)
           log.error("failed to install plugin", { pkg, version, error: detail })
-          Bus.publish(Session.Event.Error, {
+          Bus.publish(AgentSession.Event.Error, {
             error: new NamedError.Unknown({
               message: `Failed to install plugin ${pkg}@${version}: ${detail}`,
             }).toObject(),
@@ -90,7 +90,7 @@ export namespace Plugin {
         .catch((err) => {
           const message = err instanceof Error ? err.message : String(err)
           log.error("failed to load plugin", { path: plugin, error: message })
-          Bus.publish(Session.Event.Error, {
+          Bus.publish(AgentSession.Event.Error, {
             error: new NamedError.Unknown({
               message: `Failed to load plugin ${plugin}: ${message}`,
             }).toObject(),

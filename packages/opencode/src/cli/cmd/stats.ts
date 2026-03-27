@@ -1,9 +1,9 @@
 import type { Argv } from "yargs"
 import { cmd } from "./cmd"
-import { Session } from "../../session"
+import { AgentSession } from "../../agent"
 import { bootstrap } from "../bootstrap"
 import { Database } from "../../storage/db"
-import { SessionTable } from "../../session/session.sql"
+import { AgentTable } from "../../agent/agent.sql"
 import { Project } from "../../project/project"
 import { Instance } from "../../project/instance"
 
@@ -87,9 +87,9 @@ async function getCurrentProject(): Promise<Project.Info> {
   return Instance.project
 }
 
-async function getAllSessions(): Promise<Session.Info[]> {
-  const rows = Database.use((db) => db.select().from(SessionTable).all())
-  return rows.map((row) => Session.fromRow(row))
+async function getAllSessions(): Promise<AgentSession.Info[]> {
+  const rows = Database.use((db) => db.select().from(AgentTable).all())
+  return rows.map((row) => AgentSession.fromRow(row))
 }
 
 export async function aggregateSessionStats(days?: number, projectFilter?: string): Promise<SessionStats> {
@@ -117,9 +117,9 @@ export async function aggregateSessionStats(days?: number, projectFilter?: strin
   if (projectFilter !== undefined) {
     if (projectFilter === "") {
       const currentProject = await getCurrentProject()
-      filteredSessions = filteredSessions.filter((session) => session.projectID === currentProject.id)
+      filteredSessions = filteredSessions.filter((session) => session.featureID === currentProject.id)
     } else {
-      filteredSessions = filteredSessions.filter((session) => session.projectID === projectFilter)
+      filteredSessions = filteredSessions.filter((session) => session.featureID === projectFilter)
     }
   }
 
@@ -167,7 +167,7 @@ export async function aggregateSessionStats(days?: number, projectFilter?: strin
     const batch = filteredSessions.slice(i, i + BATCH_SIZE)
 
     const batchPromises = batch.map(async (session) => {
-      const messages = await Session.messages({ sessionID: session.id })
+      const messages = await AgentSession.messages({ agentID: session.id })
 
       let sessionCost = 0
       let sessionTokens = { input: 0, output: 0, reasoning: 0, cache: { read: 0, write: 0 } }
