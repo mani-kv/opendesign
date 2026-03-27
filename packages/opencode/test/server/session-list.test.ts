@@ -29,18 +29,18 @@ describe("Session.list", () => {
     })
   })
 
-  test("filters root sessions", async () => {
+  test("lists all sessions without filters", async () => {
     await Instance.provide({
       directory: projectRoot,
       fn: async () => {
-        const root = await Session.create({ title: "root-session" })
-        const child = await Session.create({ title: "child-session" })
+        const first = await Session.create({ title: "first-session" })
+        const second = await Session.create({ title: "second-session" })
 
         const sessions = [...Session.list()]
         const ids = sessions.map((s) => s.id)
 
-        expect(ids).toContain(root.id)
-        expect(ids).not.toContain(child.id)
+        expect(ids).toContain(first.id)
+        expect(ids).toContain(second.id)
       },
     })
   })

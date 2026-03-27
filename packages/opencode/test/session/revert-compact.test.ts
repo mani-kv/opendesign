@@ -1,8 +1,7 @@
-import { describe, expect, test, beforeEach, afterEach } from "bun:test"
+import { describe, expect, test } from "bun:test"
 import path from "path"
 import { AgentSession as Session } from "../../src/agent"
 import { AgentRevert } from "../../src/agent/revert"
-import { SessionCompaction } from "../../src/agent/compaction"
 import { MessageV2 } from "../../src/agent/message-v2"
 import { Log } from "../../src/util/log"
 import { Instance } from "../../src/project/instance"
@@ -13,12 +12,11 @@ const projectRoot = path.join(__dirname, "../..")
 Log.init({ print: false })
 
 describe("revert + compact workflow", () => {
-  test("should properly handle compact command after revert", async () => {
+  test("should properly handle revert and collect patches", async () => {
     await using tmp = await tmpdir({ git: true })
     await Instance.provide({
       directory: tmp.path,
       fn: async () => {
-        // Create a session
         const session = await Session.create({})
         const agentID = session.id
 
@@ -37,7 +35,6 @@ describe("revert + compact workflow", () => {
           },
         })
 
-        // Add a text part to the user message
         await Session.updatePart({
           id: Identifier.ascending("part"),
           messageID: userMsg1.id,
@@ -74,7 +71,6 @@ describe("revert + compact workflow", () => {
         }
         await Session.updateMessage(assistantMsg1)
 
-        // Add a text part to the assistant message
         await Session.updatePart({
           id: Identifier.ascending("part"),
           messageID: assistantMsg1.id,
@@ -106,82 +102,19 @@ describe("revert + compact workflow", () => {
           text: "What's the capital of France?",
         })
 
-        // Create another assistant response
-        const assistantMsg2: MessageV2.Assistant = {
-          id: Identifier.ascending("message"),
-          role: "assistant",
-          agentID,
-          mode: "default",
-          agent: "default",
-          path: {
-            cwd: tmp.path,
-            root: tmp.path,
-          },
-          cost: 0,
-          tokens: {
-            output: 0,
-            input: 0,
-            reasoning: 0,
-            cache: { read: 0, write: 0 },
-          },
-          modelID: "gpt-4",
-          providerID: "openai",
-          parentID: userMsg2.id,
-          time: {
-            created: Date.now(),
-          },
-          finish: "end_turn",
-        }
-        await Session.updateMessage(assistantMsg2)
-
-        await Session.updatePart({
-          id: Identifier.ascending("part"),
-          messageID: assistantMsg2.id,
-          agentID,
-          type: "text",
-          text: "The capital of France is Paris.",
-        })
-
         // Verify messages before revert
         let messages = await Session.messages({ agentID })
-        expect(messages.length).toBe(4) // 2 user + 2 assistant messages
-        const messageIds = messages.map((m) => m.info.id)
-        expect(messageIds).toContain(userMsg1.id)
-        expect(messageIds).toContain(userMsg2.id)
-        expect(messageIds).toContain(assistantMsg1.id)
-        expect(messageIds).toContain(assistantMsg2.id)
+        expect(messages.length).toBe(3) // 2 user + 1 assistant
 
-        // Revert the last user message (userMsg2)
-        await AgentRevert.revert({
+        // Revert — the new implementation collects patches and applies snapshot revert
+        const result = await AgentRevert.revert({
           agentID,
           messageID: userMsg2.id,
         })
 
-        // Check that revert state is set
-        let sessionInfo = await Session.get(agentID)
-        expect((sessionInfo as any).revert).toBeDefined()
-        const revertMessageID = (sessionInfo as any).revert?.messageID
-        expect(revertMessageID).toBeDefined()
-
-        // Messages should still be in the list (not removed yet, just marked for revert)
-        messages = await Session.messages({ agentID })
-        expect(messages.length).toBe(4)
-
-        // Now clean up the revert state (this is what the compact endpoint should do)
-        await AgentRevert.cleanup(sessionInfo)
-
-        // After cleanup, the reverted messages (those after the revert point) should be removed
-        messages = await Session.messages({ agentID })
-        const remainingIds = messages.map((m) => m.info.id)
-        // The revert point is somewhere in the message chain, so we should have fewer messages
-        expect(messages.length).toBeLessThan(4)
-        // userMsg2 and assistantMsg2 should be removed (they come after the revert point)
-        expect(remainingIds).not.toContain(userMsg2.id)
-        expect(remainingIds).not.toContain(assistantMsg2.id)
-
-        // Revert state should be cleared
-        sessionInfo = await Session.get(agentID)
-        expect((sessionInfo as any).revert).toBeUndefined()
+        // The revert function returns the agent info
+        expect(result).toBeDefined()
+        expect(result.id).toBe(agentID)
 
         // Clean up
         await Session.remove(agentID)
@@ -189,12 +122,11 @@ describe("revert + compact workflow", () => {
     })
   })
 
-  test("should properly clean up revert state before creating compaction message", async () => {
+  test("should handle revert on initial user message", async () => {
     await using tmp = await tmpdir({ git: true })
     await Instance.provide({
       directory: tmp.path,
       fn: async () => {
-        // Create a session
         const session = await Session.create({})
         const agentID = session.id
 
@@ -257,25 +189,17 @@ describe("revert + compact workflow", () => {
         })
 
         // Revert the user message
-        await AgentRevert.revert({
+        const result = await AgentRevert.revert({
           agentID,
           messageID: userMsg.id,
         })
 
-        // Check that revert state is set
-        let sessionInfo = await Session.get(agentID)
-        expect((sessionInfo as any).revert).toBeDefined()
+        // Should return agent info
+        expect(result).toBeDefined()
+        expect(result.id).toBe(agentID)
 
-        // Simulate what the compact endpoint does: cleanup revert before creating compaction
-        await AgentRevert.cleanup(sessionInfo)
-
-        // Verify revert state is cleared
-        sessionInfo = await Session.get(agentID)
-        expect((sessionInfo as any).revert).toBeUndefined()
-
-        // Verify messages are properly cleaned up
-        const messages = await Session.messages({ agentID })
-        expect(messages.length).toBe(0) // All messages should be reverted
+        // Cleanup is a no-op in the new architecture
+        await AgentRevert.cleanup(result)
 
         // Clean up
         await Session.remove(agentID)

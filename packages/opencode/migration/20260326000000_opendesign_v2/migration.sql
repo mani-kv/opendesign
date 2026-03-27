@@ -84,8 +84,7 @@ CREATE TABLE IF NOT EXISTS `agent` (
 	`permission` text,
 	`time_created` integer NOT NULL,
 	`time_updated` integer NOT NULL,
-	CONSTRAINT `fk_agent_feature_id` FOREIGN KEY (`feature_id`) REFERENCES `feature`(`id`) ON DELETE CASCADE,
-	CONSTRAINT `fk_agent_annotation_id` FOREIGN KEY (`annotation_id`) REFERENCES `annotation`(`id`) ON DELETE SET NULL
+	CONSTRAINT `fk_agent_feature_id` FOREIGN KEY (`feature_id`) REFERENCES `project`(`id`) ON DELETE CASCADE
 );--> statement-breakpoint
 
 CREATE INDEX IF NOT EXISTS `agent_feature_idx` ON `agent` (`feature_id`);--> statement-breakpoint

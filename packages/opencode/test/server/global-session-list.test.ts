@@ -35,7 +35,7 @@ describe("Session.listGlobal", () => {
     expect(secondItem?.product?.id).toBe(secondSession.featureID)
   })
 
-  test("excludes archived sessions by default", async () => {
+  test("lists archived sessions (no status filter)", async () => {
     await using tmp = await tmpdir({ git: true })
 
     const archived = await Instance.provide({
@@ -51,12 +51,7 @@ describe("Session.listGlobal", () => {
     const sessions = [...Session.listGlobal({ limit: 200 })]
     const ids = sessions.map((session) => session.id)
 
-    expect(ids).not.toContain(archived.id)
-
-    const allSessions = [...Session.listGlobal({ limit: 200 })]
-    const allIds = allSessions.map((session) => session.id)
-
-    expect(allIds).toContain(archived.id)
+    expect(ids).toContain(archived.id)
   })
 
   test("supports cursor pagination", async () => {

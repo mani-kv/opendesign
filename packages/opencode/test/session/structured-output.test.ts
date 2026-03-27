@@ -96,7 +96,7 @@ describe("structured-output.UserMessage", () => {
   test("user message accepts outputFormat", () => {
     const result = MessageV2.User.safeParse({
       id: "test-id",
-      sessionID: "test-session",
+      agentID: "test-session",
       role: "user",
       time: { created: Date.now() },
       agent: "default",
@@ -112,7 +112,7 @@ describe("structured-output.UserMessage", () => {
   test("user message works without outputFormat (optional)", () => {
     const result = MessageV2.User.safeParse({
       id: "test-id",
-      sessionID: "test-session",
+      agentID: "test-session",
       role: "user",
       time: { created: Date.now() },
       agent: "default",
@@ -125,7 +125,7 @@ describe("structured-output.UserMessage", () => {
 describe("structured-output.AssistantMessage", () => {
   const baseAssistantMessage = {
     id: "test-id",
-    sessionID: "test-session",
+    agentID: "test-session",
     role: "assistant" as const,
     parentID: "parent-id",
     modelID: "claude-3",
