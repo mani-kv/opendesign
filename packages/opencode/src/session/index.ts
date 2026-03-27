@@ -22,7 +22,7 @@ import { SessionPrompt } from "./prompt"
 import { fn } from "@/util/fn"
 import { Command } from "../command"
 import { Snapshot } from "@/snapshot"
-import { WorkspaceContext } from "../control-plane/workspace-context"
+// TODO: dropped - workspace removed
 
 import type { Provider } from "@/provider/provider"
 import { PermissionNext } from "@/permission/next"
@@ -347,32 +347,14 @@ export namespace Session {
     return fromRow(row)
   })
 
-  export const share = fn(Identifier.schema("session"), async (id) => {
-    const cfg = await Config.get()
-    if (cfg.share === "disabled") {
-      throw new Error("Sharing is disabled in configuration")
-    }
-    const { ShareNext } = await import("@/share/share-next")
-    const share = await ShareNext.create(id)
-    Database.use((db) => {
-      const row = db.update(SessionTable).set({ share_url: share.url }).where(eq(SessionTable.id, id)).returning().get()
-      if (!row) throw new NotFoundError({ message: `Session not found: ${id}` })
-      const info = fromRow(row)
-      Database.effect(() => Bus.publish(Event.Updated, { info }))
-    })
-    return share
+  // TODO: dropped - share removed
+  export const share = fn(Identifier.schema("session"), async (_id) => {
+    throw new Error("Sharing has been removed")
   })
 
-  export const unshare = fn(Identifier.schema("session"), async (id) => {
-    // Use ShareNext to remove the share (same as share function uses ShareNext to create)
-    const { ShareNext } = await import("@/share/share-next")
-    await ShareNext.remove(id)
-    Database.use((db) => {
-      const row = db.update(SessionTable).set({ share_url: null }).where(eq(SessionTable.id, id)).returning().get()
-      if (!row) throw new NotFoundError({ message: `Session not found: ${id}` })
-      const info = fromRow(row)
-      Database.effect(() => Bus.publish(Event.Updated, { info }))
-    })
+  // TODO: dropped - share removed
+  export const unshare = fn(Identifier.schema("session"), async (_id) => {
+    throw new Error("Sharing has been removed")
   })
 
   export const setTitle = fn(
@@ -545,9 +527,7 @@ export namespace Session {
     const project = Instance.project
     const conditions = [eq(SessionTable.project_id, project.id)]
 
-    if (WorkspaceContext.workspaceID) {
-      conditions.push(eq(SessionTable.workspace_id, WorkspaceContext.workspaceID))
-    }
+    // TODO: dropped - workspace removed
     if (input?.directory) {
       conditions.push(eq(SessionTable.directory, input.directory))
     }

@@ -12,7 +12,7 @@ import { Provider } from "../provider/provider"
 import { NamedError } from "@opencode-ai/util/error"
 import { LSP } from "../lsp"
 import { Format } from "../format"
-import { TuiRoutes } from "./routes/tui"
+// TODO: dropped - tui removed
 import { Instance } from "../project/instance"
 import { Vcs } from "../project/vcs"
 import { Agent } from "../agent/agent"
@@ -21,8 +21,7 @@ import { Auth } from "../auth"
 import { Flag } from "../flag/flag"
 import { Command } from "../command"
 import { Global } from "../global"
-import { WorkspaceContext } from "../control-plane/workspace-context"
-import { WorkspaceRouterMiddleware } from "../control-plane/workspace-router-middleware"
+// TODO: dropped - workspace removed
 import { ProjectRoutes } from "./routes/project"
 import { SessionRoutes } from "./routes/session"
 import { PtyRoutes } from "./routes/pty"
@@ -186,7 +185,7 @@ export namespace Server {
       )
       .use(async (c, next) => {
         if (c.req.path === "/log") return next()
-        const workspaceID = c.req.query("workspace") || c.req.header("x-opencode-workspace")
+        // TODO: dropped - workspace removed (workspaceID query/header)
         const raw = c.req.query("directory") || c.req.header("x-opencode-directory") || process.cwd()
         let directory = Filesystem.resolve(
           (() => {
@@ -207,20 +206,16 @@ export namespace Server {
           await mkdir(directory, { recursive: true }).catch(() => {})
         }
 
-        return WorkspaceContext.provide({
-          workspaceID,
+        // TODO: dropped - workspace removed (WorkspaceContext.provide wrapper)
+        return Instance.provide({
+          directory,
+          init: InstanceBootstrap,
           async fn() {
-            return Instance.provide({
-              directory,
-              init: InstanceBootstrap,
-              async fn() {
-                return next()
-              },
-            })
+            return next()
           },
         })
       })
-      .use(WorkspaceRouterMiddleware)
+      // TODO: dropped - workspace removed (WorkspaceRouterMiddleware)
       .get(
         "/doc",
         openAPIRouteHandler(app, {
@@ -254,7 +249,7 @@ export namespace Server {
       .route("/", FileRoutes())
       .route("/mcp", McpRoutes())
       .route("/agent", AgentFilesRoutes())
-      .route("/tui", TuiRoutes())
+      // TODO: dropped - tui removed
       .post(
         "/instance/dispose",
         describeRoute({

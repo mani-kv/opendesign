@@ -10,7 +10,7 @@ import { Session } from "../../session"
 import { zodToJsonSchema } from "zod-to-json-schema"
 import { errors } from "../error"
 import { lazy } from "../../util/lazy"
-import { WorkspaceRoutes } from "./workspace"
+// TODO: dropped - workspace removed
 
 export const ExperimentalRoutes = lazy(() =>
   new Hono()
@@ -88,7 +88,7 @@ export const ExperimentalRoutes = lazy(() =>
         )
       },
     )
-    .route("/workspace", WorkspaceRoutes())
+    // TODO: dropped - workspace removed
     .post(
       "/worktree",
       describeRoute({

@@ -14,7 +14,7 @@ import { Installation } from "./installation"
 import { NamedError } from "@opencode-ai/util/error"
 import { FormatError } from "./cli/error"
 import { ServeCommand } from "./cli/cmd/serve"
-import { WorkspaceServeCommand } from "./cli/cmd/workspace-serve"
+// TODO: dropped - workspace removed
 import { Filesystem } from "./util/filesystem"
 import { DebugCommand } from "./cli/cmd/debug"
 import { StatsCommand } from "./cli/cmd/stats"
@@ -22,8 +22,7 @@ import { McpCommand } from "./cli/cmd/mcp"
 import { GithubCommand } from "./cli/cmd/github"
 import { ExportCommand } from "./cli/cmd/export"
 import { ImportCommand } from "./cli/cmd/import"
-import { AttachCommand } from "./cli/cmd/tui/attach"
-import { TuiThreadCommand } from "./cli/cmd/tui/thread"
+// TODO: dropped - tui removed
 import { AcpCommand } from "./cli/cmd/acp"
 import { EOL } from "os"
 import { WebCommand } from "./cli/cmd/web"
@@ -130,8 +129,7 @@ let cli = yargs(hideBin(process.argv))
   .completion("completion", "generate shell completion script")
   .command(AcpCommand)
   .command(McpCommand)
-  .command(TuiThreadCommand)
-  .command(AttachCommand)
+  // TODO: dropped - tui removed
   .command(RunCommand)
   .command(GenerateCommand)
   .command(DebugCommand)
@@ -154,9 +152,7 @@ let cli = yargs(hideBin(process.argv))
   .command(SessionCommand)
   .command(DbCommand)
 
-if (Installation.isLocal()) {
-  cli = cli.command(WorkspaceServeCommand)
-}
+// TODO: dropped - workspace removed
 
 cli = cli
   .fail((msg, err) => {

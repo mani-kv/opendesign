@@ -2,7 +2,7 @@ import { Server } from "../../server/server"
 import { cmd } from "./cmd"
 import { withNetworkOptions, resolveNetworkOptions } from "../network"
 import { Flag } from "../../flag/flag"
-import { Workspace } from "../../control-plane/workspace"
+// TODO: dropped - workspace removed
 import { Project } from "../../project/project"
 import { Installation } from "../../installation"
 
