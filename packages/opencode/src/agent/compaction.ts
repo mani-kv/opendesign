@@ -22,7 +22,7 @@ export namespace SessionCompaction {
     Compacted: BusEvent.define(
       "session.compacted",
       z.object({
-        sessionID: z.string(),
+        agentID: z.string(),
       }),
     ),
   }
@@ -55,11 +55,11 @@ export namespace SessionCompaction {
   // goes backwards through parts until there are 40_000 tokens worth of tool
   // calls. then erases output of previous tool calls. idea is to throw away old
   // tool calls that are no longer relevant.
-  export async function prune(input: { sessionID: string }) {
+  export async function prune(input: { agentID: string }) {
     const config = await Config.get()
     if (config.compaction?.prune === false) return
     log.info("pruning")
-    const msgs = await AgentSession.messages({ sessionID: input.sessionID })
+    const msgs = await AgentSession.messages({ agentID: input.agentID })
     let total = 0
     let pruned = 0
     const toPrune = []
@@ -101,7 +101,7 @@ export namespace SessionCompaction {
   export async function process(input: {
     parentID: string
     messages: MessageV2.WithParts[]
-    sessionID: string
+    agentID: string
     abort: AbortSignal
     auto: boolean
     overflow?: boolean
@@ -136,7 +136,7 @@ export namespace SessionCompaction {
       id: Identifier.ascending("message"),
       role: "assistant",
       parentID: input.parentID,
-      sessionID: input.sessionID,
+      agentID: input.agentID,
       mode: "compaction",
       agent: "compaction",
       variant: userMessage.variant,
@@ -160,14 +160,14 @@ export namespace SessionCompaction {
     })) as MessageV2.Assistant
     const processor = SessionProcessor.create({
       assistantMessage: msg,
-      sessionID: input.sessionID,
+      agentID: input.agentID,
       model,
       abort: input.abort,
     })
     // Allow plugins to inject context or replace compaction prompt
     const compacting = await Plugin.trigger(
       "experimental.session.compacting",
-      { sessionID: input.sessionID },
+      { agentID: input.agentID },
       { context: [], prompt: undefined },
     )
     const defaultPrompt = `Provide a detailed prompt for continuing our conversation above.
@@ -203,7 +203,7 @@ When constructing the summary, try to stick to this template:
       user: userMessage,
       agent,
       abort: input.abort,
-      sessionID: input.sessionID,
+      agentID: input.agentID,
       tools: {},
       system: [],
       messages: [
@@ -238,7 +238,7 @@ When constructing the summary, try to stick to this template:
         const replayMsg = await AgentSession.updateMessage({
           id: Identifier.ascending("message"),
           role: "user",
-          sessionID: input.sessionID,
+          agentID: input.agentID,
           time: { created: Date.now() },
           agent: original.agent,
           model: original.model,
@@ -257,14 +257,14 @@ When constructing the summary, try to stick to this template:
             ...replayPart,
             id: Identifier.ascending("part"),
             messageID: replayMsg.id,
-            sessionID: input.sessionID,
+            agentID: input.agentID,
           })
         }
       } else {
         const continueMsg = await AgentSession.updateMessage({
           id: Identifier.ascending("message"),
           role: "user",
-          sessionID: input.sessionID,
+          agentID: input.agentID,
           time: { created: Date.now() },
           agent: userMessage.agent,
           model: userMessage.model,
@@ -277,7 +277,7 @@ When constructing the summary, try to stick to this template:
         await AgentSession.updatePart({
           id: Identifier.ascending("part"),
           messageID: continueMsg.id,
-          sessionID: input.sessionID,
+          agentID: input.agentID,
           type: "text",
           synthetic: true,
           text,
@@ -289,13 +289,13 @@ When constructing the summary, try to stick to this template:
       }
     }
     if (processor.message.error) return "stop"
-    Bus.publish(Event.Compacted, { sessionID: input.sessionID })
+    Bus.publish(Event.Compacted, { agentID: input.agentID })
     return "continue"
   }
 
   export const create = fn(
     z.object({
-      sessionID: Identifier.schema("session"),
+      agentID: Identifier.schema("agent"),
       agent: z.string(),
       model: z.object({
         providerID: z.string(),
@@ -309,7 +309,7 @@ When constructing the summary, try to stick to this template:
         id: Identifier.ascending("message"),
         role: "user",
         model: input.model,
-        sessionID: input.sessionID,
+        agentID: input.agentID,
         agent: input.agent,
         time: {
           created: Date.now(),
@@ -318,7 +318,7 @@ When constructing the summary, try to stick to this template:
       await AgentSession.updatePart({
         id: Identifier.ascending("part"),
         messageID: msg.id,
-        sessionID: msg.sessionID,
+        agentID: msg.agentID,
         type: "compaction",
         auto: input.auto,
         overflow: input.overflow,

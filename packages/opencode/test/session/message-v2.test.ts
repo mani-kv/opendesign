@@ -3,7 +3,7 @@ import { APICallError } from "ai"
 import { MessageV2 } from "../../src/agent/message-v2"
 import type { Provider } from "../../src/provider/provider"
 
-const sessionID = "session"
+const agentID = "session"
 const model: Provider.Model = {
   id: "test-model",
   providerID: "test",
@@ -56,7 +56,7 @@ const model: Provider.Model = {
 function userInfo(id: string): MessageV2.User {
   return {
     id,
-    sessionID,
+    agentID,
     role: "user",
     time: { created: 0 },
     agent: "user",
@@ -75,7 +75,7 @@ function assistantInfo(
   const infoModel = meta ?? { providerID: model.providerID, modelID: model.api.id }
   return {
     id,
-    sessionID,
+    agentID,
     role: "assistant",
     time: { created: 0 },
     error,
@@ -98,7 +98,7 @@ function assistantInfo(
 function basePart(messageID: string, id: string) {
   return {
     id,
-    sessionID,
+    agentID,
     messageID,
   }
 }

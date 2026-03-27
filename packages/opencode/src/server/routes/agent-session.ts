@@ -13,6 +13,7 @@ import { Todo } from "../../agent/todo"
 import { Agent } from "../../agent/agent"
 import { Snapshot } from "@/snapshot"
 import { Log } from "../../util/log"
+import { Instance } from "../../project/instance"
 import { PermissionNext } from "@/permission/next"
 import { Identifier } from "@/id/id"
 import { errors } from "../error"
@@ -172,7 +173,7 @@ export const AgentSessionRoutes = lazy(() =>
       validator("json", AgentSession.create.schema.optional()),
       async (c) => {
         const body = c.req.valid("json") ?? {}
-        const agent = await AgentSession.create(body)
+        const agent = await AgentSession.create({ featureID: Instance.project.id, ...body })
         return c.json(agent)
       },
     )
@@ -361,7 +362,7 @@ export const AgentSessionRoutes = lazy(() =>
       validator(
         "param",
         z.object({
-          agentID: SessionSummary.diff.schema.shape.sessionID,
+          agentID: SessionSummary.diff.schema.shape.agentID,
         }),
       ),
       validator(
@@ -374,7 +375,7 @@ export const AgentSessionRoutes = lazy(() =>
         const query = c.req.valid("query")
         const params = c.req.valid("param")
         const result = await SessionSummary.diff({
-          sessionID: params.agentID,
+          agentID: params.agentID,
           messageID: query.messageID,
         })
         return c.json(result)
@@ -427,7 +428,7 @@ export const AgentSessionRoutes = lazy(() =>
           }
         }
         await SessionCompaction.create({
-          sessionID: agentID,
+          agentID: agentID,
           agent: currentAgent,
           model: {
             providerID: body.providerID,

@@ -4,7 +4,7 @@ import { QuestionTool } from "../../src/tool/question"
 import * as QuestionModule from "../../src/question"
 
 const ctx = {
-  sessionID: "test-session",
+  agentID: "test-session",
   messageID: "test-message",
   callID: "test-call",
   agent: "test-agent",

@@ -32,7 +32,7 @@ describe("session.started event", () => {
         expect(eventReceived).toBe(true)
         expect(receivedInfo).toBeDefined()
         expect(receivedInfo?.id).toBe(session.id)
-        expect(receivedInfo?.projectID).toBe(session.projectID)
+        expect(receivedInfo?.featureID).toBe(session.featureID)
         expect(receivedInfo?.directory).toBe(session.directory)
         expect(receivedInfo?.title).toBe(session.title)
 
@@ -84,7 +84,7 @@ describe("step-finish token propagation via Bus event", () => {
           const messageID = Identifier.ascending("message")
           await Session.updateMessage({
             id: messageID,
-            sessionID: session.id,
+            agentID: session.id,
             role: "user",
             time: { created: Date.now() },
             agent: "user",
@@ -109,7 +109,7 @@ describe("step-finish token propagation via Bus event", () => {
           const partInput = {
             id: Identifier.ascending("part"),
             messageID,
-            sessionID: session.id,
+            agentID: session.id,
             type: "step-finish" as const,
             reason: "stop",
             cost: 0.005,

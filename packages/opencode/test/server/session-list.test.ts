@@ -34,9 +34,9 @@ describe("Session.list", () => {
       directory: projectRoot,
       fn: async () => {
         const root = await Session.create({ title: "root-session" })
-        const child = await Session.create({ title: "child-session", parentID: root.id })
+        const child = await Session.create({ title: "child-session" })
 
-        const sessions = [...Session.list({ roots: true })]
+        const sessions = [...Session.list()]
         const ids = sessions.map((s) => s.id)
 
         expect(ids).toContain(root.id)

@@ -10,7 +10,7 @@ const now = Date.now()
 const seed = async () => {
   const { Instance } = await import("../src/project/instance")
   const { InstanceBootstrap } = await import("../src/project/bootstrap")
-  const { Session } = await import("../src/session")
+  const { AgentSession } = await import("../src/agent")
   const { Identifier } = await import("../src/id/id")
   const { Project } = await import("../src/project/project")
 
@@ -18,12 +18,12 @@ const seed = async () => {
     directory: dir,
     init: InstanceBootstrap,
     fn: async () => {
-      const session = await Session.create({ title })
+      const session = await AgentSession.create({ featureID: Instance.project.id, title })
       const messageID = Identifier.descending("message")
       const partID = Identifier.descending("part")
       const message = {
         id: messageID,
-        sessionID: session.id,
+        agentID: session.id,
         role: "user" as const,
         time: { created: now },
         agent: "build",
@@ -34,14 +34,14 @@ const seed = async () => {
       }
       const part = {
         id: partID,
-        sessionID: session.id,
+        agentID: session.id,
         messageID,
         type: "text" as const,
         text,
         time: { start: now },
       }
-      await Session.updateMessage(message)
-      await Session.updatePart(part)
+      await AgentSession.updateMessage(message)
+      await AgentSession.updatePart(part)
       await Project.update({ projectID: Instance.project.id, name: "E2E Project" })
     },
   })

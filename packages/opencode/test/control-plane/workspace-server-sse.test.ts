@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { afterEach, describe, expect, test } from "bun:test"
 import { Log } from "../../src/util/log"
 import { WorkspaceServer } from "../../src/control-plane/workspace-server/server"

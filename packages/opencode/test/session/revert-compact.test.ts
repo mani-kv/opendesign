@@ -20,13 +20,13 @@ describe("revert + compact workflow", () => {
       fn: async () => {
         // Create a session
         const session = await Session.create({})
-        const sessionID = session.id
+        const agentID = session.id
 
         // Create a user message
         const userMsg1 = await Session.updateMessage({
           id: Identifier.ascending("message"),
           role: "user",
-          sessionID,
+          agentID,
           agent: "default",
           model: {
             providerID: "openai",
@@ -41,7 +41,7 @@ describe("revert + compact workflow", () => {
         await Session.updatePart({
           id: Identifier.ascending("part"),
           messageID: userMsg1.id,
-          sessionID,
+          agentID,
           type: "text",
           text: "Hello, please help me",
         })
@@ -50,7 +50,7 @@ describe("revert + compact workflow", () => {
         const assistantMsg1: MessageV2.Assistant = {
           id: Identifier.ascending("message"),
           role: "assistant",
-          sessionID,
+          agentID,
           mode: "default",
           agent: "default",
           path: {
@@ -78,7 +78,7 @@ describe("revert + compact workflow", () => {
         await Session.updatePart({
           id: Identifier.ascending("part"),
           messageID: assistantMsg1.id,
-          sessionID,
+          agentID,
           type: "text",
           text: "Sure, I'll help you!",
         })
@@ -87,7 +87,7 @@ describe("revert + compact workflow", () => {
         const userMsg2 = await Session.updateMessage({
           id: Identifier.ascending("message"),
           role: "user",
-          sessionID,
+          agentID,
           agent: "default",
           model: {
             providerID: "openai",
@@ -101,7 +101,7 @@ describe("revert + compact workflow", () => {
         await Session.updatePart({
           id: Identifier.ascending("part"),
           messageID: userMsg2.id,
-          sessionID,
+          agentID,
           type: "text",
           text: "What's the capital of France?",
         })
@@ -110,7 +110,7 @@ describe("revert + compact workflow", () => {
         const assistantMsg2: MessageV2.Assistant = {
           id: Identifier.ascending("message"),
           role: "assistant",
-          sessionID,
+          agentID,
           mode: "default",
           agent: "default",
           path: {
@@ -137,13 +137,13 @@ describe("revert + compact workflow", () => {
         await Session.updatePart({
           id: Identifier.ascending("part"),
           messageID: assistantMsg2.id,
-          sessionID,
+          agentID,
           type: "text",
           text: "The capital of France is Paris.",
         })
 
         // Verify messages before revert
-        let messages = await Session.messages({ sessionID })
+        let messages = await Session.messages({ agentID })
         expect(messages.length).toBe(4) // 2 user + 2 assistant messages
         const messageIds = messages.map((m) => m.info.id)
         expect(messageIds).toContain(userMsg1.id)
@@ -153,25 +153,25 @@ describe("revert + compact workflow", () => {
 
         // Revert the last user message (userMsg2)
         await AgentRevert.revert({
-          sessionID,
+          agentID,
           messageID: userMsg2.id,
         })
 
         // Check that revert state is set
-        let sessionInfo = await Session.get(sessionID)
-        expect(sessionInfo.revert).toBeDefined()
-        const revertMessageID = sessionInfo.revert?.messageID
+        let sessionInfo = await Session.get(agentID)
+        expect((sessionInfo as any).revert).toBeDefined()
+        const revertMessageID = (sessionInfo as any).revert?.messageID
         expect(revertMessageID).toBeDefined()
 
         // Messages should still be in the list (not removed yet, just marked for revert)
-        messages = await Session.messages({ sessionID })
+        messages = await Session.messages({ agentID })
         expect(messages.length).toBe(4)
 
         // Now clean up the revert state (this is what the compact endpoint should do)
         await AgentRevert.cleanup(sessionInfo)
 
         // After cleanup, the reverted messages (those after the revert point) should be removed
-        messages = await Session.messages({ sessionID })
+        messages = await Session.messages({ agentID })
         const remainingIds = messages.map((m) => m.info.id)
         // The revert point is somewhere in the message chain, so we should have fewer messages
         expect(messages.length).toBeLessThan(4)
@@ -180,11 +180,11 @@ describe("revert + compact workflow", () => {
         expect(remainingIds).not.toContain(assistantMsg2.id)
 
         // Revert state should be cleared
-        sessionInfo = await Session.get(sessionID)
-        expect(sessionInfo.revert).toBeUndefined()
+        sessionInfo = await Session.get(agentID)
+        expect((sessionInfo as any).revert).toBeUndefined()
 
         // Clean up
-        await Session.remove(sessionID)
+        await Session.remove(agentID)
       },
     })
   })
@@ -196,13 +196,13 @@ describe("revert + compact workflow", () => {
       fn: async () => {
         // Create a session
         const session = await Session.create({})
-        const sessionID = session.id
+        const agentID = session.id
 
         // Create initial messages
         const userMsg = await Session.updateMessage({
           id: Identifier.ascending("message"),
           role: "user",
-          sessionID,
+          agentID,
           agent: "default",
           model: {
             providerID: "openai",
@@ -216,7 +216,7 @@ describe("revert + compact workflow", () => {
         await Session.updatePart({
           id: Identifier.ascending("part"),
           messageID: userMsg.id,
-          sessionID,
+          agentID,
           type: "text",
           text: "Hello",
         })
@@ -224,7 +224,7 @@ describe("revert + compact workflow", () => {
         const assistantMsg: MessageV2.Assistant = {
           id: Identifier.ascending("message"),
           role: "assistant",
-          sessionID,
+          agentID,
           mode: "default",
           agent: "default",
           path: {
@@ -251,34 +251,34 @@ describe("revert + compact workflow", () => {
         await Session.updatePart({
           id: Identifier.ascending("part"),
           messageID: assistantMsg.id,
-          sessionID,
+          agentID,
           type: "text",
           text: "Hi there!",
         })
 
         // Revert the user message
         await AgentRevert.revert({
-          sessionID,
+          agentID,
           messageID: userMsg.id,
         })
 
         // Check that revert state is set
-        let sessionInfo = await Session.get(sessionID)
-        expect(sessionInfo.revert).toBeDefined()
+        let sessionInfo = await Session.get(agentID)
+        expect((sessionInfo as any).revert).toBeDefined()
 
         // Simulate what the compact endpoint does: cleanup revert before creating compaction
         await AgentRevert.cleanup(sessionInfo)
 
         // Verify revert state is cleared
-        sessionInfo = await Session.get(sessionID)
-        expect(sessionInfo.revert).toBeUndefined()
+        sessionInfo = await Session.get(agentID)
+        expect((sessionInfo as any).revert).toBeUndefined()
 
         // Verify messages are properly cleaned up
-        const messages = await Session.messages({ sessionID })
+        const messages = await Session.messages({ agentID })
         expect(messages.length).toBe(0) // All messages should be reverted
 
         // Clean up
-        await Session.remove(sessionID)
+        await Session.remove(agentID)
       },
     })
   })

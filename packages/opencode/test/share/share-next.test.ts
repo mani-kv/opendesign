@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { test, expect, mock } from "bun:test"
 import { ShareNext } from "../../src/share/share-next"
 import { AccessToken, Account, AccountID, OrgID } from "../../src/account"

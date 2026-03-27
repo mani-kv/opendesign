@@ -25,7 +25,7 @@ export namespace SessionProcessor {
 
   export function create(input: {
     assistantMessage: MessageV2.Assistant
-    sessionID: string
+    agentID: string
     model: Provider.Model
     abort: AbortSignal
   }) {
@@ -56,7 +56,7 @@ export namespace SessionProcessor {
               input.abort.throwIfAborted()
               switch (value.type) {
                 case "start":
-                  SessionStatus.set(input.sessionID, { type: "busy" })
+                  SessionStatus.set(input.agentID, { type: "busy" })
                   break
 
                 case "reasoning-start":
@@ -66,7 +66,7 @@ export namespace SessionProcessor {
                   const reasoningPart = {
                     id: Identifier.ascending("part"),
                     messageID: input.assistantMessage.id,
-                    sessionID: input.assistantMessage.sessionID,
+                    agentID: input.assistantMessage.agentID,
                     type: "reasoning" as const,
                     text: "",
                     time: {
@@ -84,7 +84,7 @@ export namespace SessionProcessor {
                     part.text += value.text
                     if (value.providerMetadata) part.metadata = value.providerMetadata
                     await AgentSession.updatePartDelta({
-                      sessionID: part.sessionID,
+                      agentID: part.agentID,
                       messageID: part.messageID,
                       partID: part.id,
                       field: "text",
@@ -112,7 +112,7 @@ export namespace SessionProcessor {
                   const part = await AgentSession.updatePart({
                     id: toolcalls[value.id]?.id ?? Identifier.ascending("part"),
                     messageID: input.assistantMessage.id,
-                    sessionID: input.assistantMessage.sessionID,
+                    agentID: input.assistantMessage.agentID,
                     type: "tool",
                     tool: value.toolName,
                     callID: value.id,
@@ -165,7 +165,7 @@ export namespace SessionProcessor {
                       await PermissionNext.ask({
                         permission: "doom_loop",
                         patterns: [value.toolName],
-                        sessionID: input.assistantMessage.sessionID,
+                        agentID: input.assistantMessage.agentID,
                         metadata: {
                           tool: value.toolName,
                           input: value.input,
@@ -235,7 +235,7 @@ export namespace SessionProcessor {
                   await AgentSession.updatePart({
                     id: Identifier.ascending("part"),
                     messageID: input.assistantMessage.id,
-                    sessionID: input.sessionID,
+                    agentID: input.agentID,
                     snapshot,
                     type: "step-start",
                   })
@@ -255,7 +255,7 @@ export namespace SessionProcessor {
                     reason: value.finishReason,
                     snapshot: await Snapshot.track(),
                     messageID: input.assistantMessage.id,
-                    sessionID: input.assistantMessage.sessionID,
+                    agentID: input.assistantMessage.agentID,
                     type: "step-finish",
                     tokens: usage.tokens,
                     cost: usage.cost,
@@ -267,7 +267,7 @@ export namespace SessionProcessor {
                       await AgentSession.updatePart({
                         id: Identifier.ascending("part"),
                         messageID: input.assistantMessage.id,
-                        sessionID: input.sessionID,
+                        agentID: input.agentID,
                         type: "patch",
                         hash: patch.hash,
                         files: patch.files,
@@ -276,7 +276,7 @@ export namespace SessionProcessor {
                     snapshot = undefined
                   }
                   SessionSummary.summarize({
-                    sessionID: input.sessionID,
+                    agentID: input.agentID,
                     messageID: input.assistantMessage.parentID,
                   })
                   if (
@@ -291,7 +291,7 @@ export namespace SessionProcessor {
                   currentText = {
                     id: Identifier.ascending("part"),
                     messageID: input.assistantMessage.id,
-                    sessionID: input.assistantMessage.sessionID,
+                    agentID: input.assistantMessage.agentID,
                     type: "text",
                     text: "",
                     time: {
@@ -307,7 +307,7 @@ export namespace SessionProcessor {
                     currentText.text += value.text
                     if (value.providerMetadata) currentText.metadata = value.providerMetadata
                     await AgentSession.updatePartDelta({
-                      sessionID: currentText.sessionID,
+                      agentID: currentText.agentID,
                       messageID: currentText.messageID,
                       partID: currentText.id,
                       field: "text",
@@ -322,7 +322,7 @@ export namespace SessionProcessor {
                     const textOutput = await Plugin.trigger(
                       "experimental.text.complete",
                       {
-                        sessionID: input.sessionID,
+                        agentID: input.agentID,
                         messageID: input.assistantMessage.id,
                         partID: currentText.id,
                       },
@@ -359,7 +359,7 @@ export namespace SessionProcessor {
             if (MessageV2.ContextOverflowError.isInstance(error)) {
               needsCompaction = true
               Bus.publish(AgentSession.Event.Error, {
-                sessionID: input.sessionID,
+                agentID: input.agentID,
                 error,
               })
             } else {
@@ -367,7 +367,7 @@ export namespace SessionProcessor {
               if (retry !== undefined) {
                 attempt++
                 const delay = SessionRetry.delay(attempt, error.name === "APIError" ? error : undefined)
-                SessionStatus.set(input.sessionID, {
+                SessionStatus.set(input.agentID, {
                   type: "retry",
                   attempt,
                   message: retry,
@@ -378,10 +378,10 @@ export namespace SessionProcessor {
               }
               input.assistantMessage.error = error
               Bus.publish(AgentSession.Event.Error, {
-                sessionID: input.assistantMessage.sessionID,
+                agentID: input.assistantMessage.agentID,
                 error: input.assistantMessage.error,
               })
-              SessionStatus.set(input.sessionID, { type: "idle" })
+              SessionStatus.set(input.agentID, { type: "idle" })
             }
           }
           if (snapshot) {
@@ -390,7 +390,7 @@ export namespace SessionProcessor {
               await AgentSession.updatePart({
                 id: Identifier.ascending("part"),
                 messageID: input.assistantMessage.id,
-                sessionID: input.sessionID,
+                agentID: input.agentID,
                 type: "patch",
                 hash: patch.hash,
                 files: patch.files,

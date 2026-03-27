@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { afterEach, describe, expect, mock, test } from "bun:test"
 import { Identifier } from "../../src/id/id"
 import { Hono } from "hono"

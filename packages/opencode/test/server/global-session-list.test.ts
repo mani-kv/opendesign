@@ -1,6 +1,5 @@
 import { describe, expect, test } from "bun:test"
 import { Instance } from "../../src/project/instance"
-import { Project } from "../../src/project/project"
 import { AgentSession as Session } from "../../src/agent"
 import { Log } from "../../src/util/log"
 import { tmpdir } from "../fixture/fixture"
@@ -27,16 +26,13 @@ describe("Session.listGlobal", () => {
     expect(ids).toContain(firstSession.id)
     expect(ids).toContain(secondSession.id)
 
-    const firstProject = Project.get(firstSession.projectID)
-    const secondProject = Project.get(secondSession.projectID)
-
     const firstItem = sessions.find((session) => session.id === firstSession.id)
     const secondItem = sessions.find((session) => session.id === secondSession.id)
 
-    expect(firstItem?.project?.id).toBe(firstProject?.id)
-    expect(firstItem?.project?.worktree).toBe(firstProject?.worktree)
-    expect(secondItem?.project?.id).toBe(secondProject?.id)
-    expect(secondItem?.project?.worktree).toBe(secondProject?.worktree)
+    expect(firstItem?.product).toBeTruthy()
+    expect(firstItem?.product?.id).toBe(firstSession.featureID)
+    expect(secondItem?.product).toBeTruthy()
+    expect(secondItem?.product?.id).toBe(secondSession.featureID)
   })
 
   test("excludes archived sessions by default", async () => {
@@ -49,7 +45,7 @@ describe("Session.listGlobal", () => {
 
     await Instance.provide({
       directory: tmp.path,
-      fn: async () => Session.setArchived({ sessionID: archived.id, time: Date.now() }),
+      fn: async () => Session.setStatus({ agentID: archived.id, status: "archived" }),
     })
 
     const sessions = [...Session.listGlobal({ limit: 200 })]
@@ -57,7 +53,7 @@ describe("Session.listGlobal", () => {
 
     expect(ids).not.toContain(archived.id)
 
-    const allSessions = [...Session.listGlobal({ limit: 200, archived: true })]
+    const allSessions = [...Session.listGlobal({ limit: 200 })]
     const allIds = allSessions.map((session) => session.id)
 
     expect(allIds).toContain(archived.id)

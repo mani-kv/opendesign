@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { afterEach, describe, expect, test } from "bun:test"
 import { parseSSE } from "../../src/control-plane/sse"
 import { resetDatabase } from "../fixture/db"

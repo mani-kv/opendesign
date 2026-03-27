@@ -10,7 +10,7 @@ import { Agent } from "../../src/agent/agent"
 const FIXTURES_DIR = path.join(import.meta.dir, "fixtures")
 
 const ctx = {
-  sessionID: "test",
+  agentID: "test",
   messageID: "",
   callID: "",
   agent: "prototype",
@@ -64,10 +64,10 @@ describe("tool.read external_directory permission", () => {
       directory: tmp.path,
       fn: async () => {
         const read = await ReadTool.init()
-        const requests: Array<Omit<PermissionNext.Request, "id" | "sessionID" | "tool">> = []
+        const requests: Array<Omit<PermissionNext.Request, "id" | "agentID" | "tool">> = []
         const testCtx = {
           ...ctx,
-          ask: async (req: Omit<PermissionNext.Request, "id" | "sessionID" | "tool">) => {
+          ask: async (req: Omit<PermissionNext.Request, "id" | "agentID" | "tool">) => {
             requests.push(req)
           },
         }
@@ -90,10 +90,10 @@ describe("tool.read external_directory permission", () => {
       directory: tmp.path,
       fn: async () => {
         const read = await ReadTool.init()
-        const requests: Array<Omit<PermissionNext.Request, "id" | "sessionID" | "tool">> = []
+        const requests: Array<Omit<PermissionNext.Request, "id" | "agentID" | "tool">> = []
         const testCtx = {
           ...ctx,
-          ask: async (req: Omit<PermissionNext.Request, "id" | "sessionID" | "tool">) => {
+          ask: async (req: Omit<PermissionNext.Request, "id" | "agentID" | "tool">) => {
             requests.push(req)
           },
         }
@@ -111,10 +111,10 @@ describe("tool.read external_directory permission", () => {
       directory: tmp.path,
       fn: async () => {
         const read = await ReadTool.init()
-        const requests: Array<Omit<PermissionNext.Request, "id" | "sessionID" | "tool">> = []
+        const requests: Array<Omit<PermissionNext.Request, "id" | "agentID" | "tool">> = []
         const testCtx = {
           ...ctx,
-          ask: async (req: Omit<PermissionNext.Request, "id" | "sessionID" | "tool">) => {
+          ask: async (req: Omit<PermissionNext.Request, "id" | "agentID" | "tool">) => {
             requests.push(req)
           },
         }
@@ -137,10 +137,10 @@ describe("tool.read external_directory permission", () => {
       directory: tmp.path,
       fn: async () => {
         const read = await ReadTool.init()
-        const requests: Array<Omit<PermissionNext.Request, "id" | "sessionID" | "tool">> = []
+        const requests: Array<Omit<PermissionNext.Request, "id" | "agentID" | "tool">> = []
         const testCtx = {
           ...ctx,
-          ask: async (req: Omit<PermissionNext.Request, "id" | "sessionID" | "tool">) => {
+          ask: async (req: Omit<PermissionNext.Request, "id" | "agentID" | "tool">) => {
             requests.push(req)
           },
         }
@@ -175,7 +175,7 @@ describe("tool.read env file permissions", () => {
           let askedForEnv = false
           const ctxWithPermissions = {
             ...ctx,
-            ask: async (req: Omit<PermissionNext.Request, "id" | "sessionID" | "tool">) => {
+            ask: async (req: Omit<PermissionNext.Request, "id" | "agentID" | "tool">) => {
               for (const pattern of req.patterns) {
                 const rule = PermissionNext.evaluate(req.permission, pattern, agent.permission)
                 if (rule.action === "ask" && req.permission === "read") {
@@ -390,7 +390,7 @@ describe("tool.read truncation", () => {
         expect(result.attachments).toBeDefined()
         expect(result.attachments?.length).toBe(1)
         expect(result.attachments?.[0]).not.toHaveProperty("id")
-        expect(result.attachments?.[0]).not.toHaveProperty("sessionID")
+        expect(result.attachments?.[0]).not.toHaveProperty("agentID")
         expect(result.attachments?.[0]).not.toHaveProperty("messageID")
       },
     })
@@ -407,7 +407,7 @@ describe("tool.read truncation", () => {
         expect(result.attachments?.length).toBe(1)
         expect(result.attachments?.[0].type).toBe("file")
         expect(result.attachments?.[0]).not.toHaveProperty("id")
-        expect(result.attachments?.[0]).not.toHaveProperty("sessionID")
+        expect(result.attachments?.[0]).not.toHaveProperty("agentID")
         expect(result.attachments?.[0]).not.toHaveProperty("messageID")
       },
     })

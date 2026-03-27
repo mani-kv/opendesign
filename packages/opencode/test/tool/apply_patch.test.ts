@@ -6,7 +6,7 @@ import { Instance } from "../../src/project/instance"
 import { tmpdir } from "../fixture/fixture"
 
 const baseCtx = {
-  sessionID: "test",
+  agentID: "test",
   messageID: "",
   callID: "",
   agent: "prototype",

@@ -139,7 +139,7 @@ export const ImportCommand = cmd({
           return
         }
 
-        exportData = transformed
+        exportData = transformed as unknown as typeof exportData
       } else {
         exportData = await Filesystem.readJson<NonNullable<typeof exportData>>(args.file).catch(() => undefined)
         if (!exportData) {

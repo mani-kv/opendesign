@@ -9,7 +9,7 @@ import type { PermissionNext } from "../../src/permission/next"
 import { Truncate } from "../../src/tool/truncation"
 
 const ctx = {
-  sessionID: "test",
+  agentID: "test",
   messageID: "",
   callID: "",
   agent: "prototype",
@@ -48,10 +48,10 @@ describe("tool.bash permissions", () => {
       directory: tmp.path,
       fn: async () => {
         const bash = await BashTool.init()
-        const requests: Array<Omit<PermissionNext.Request, "id" | "sessionID" | "tool">> = []
+        const requests: Array<Omit<PermissionNext.Request, "id" | "agentID" | "tool">> = []
         const testCtx = {
           ...ctx,
-          ask: async (req: Omit<PermissionNext.Request, "id" | "sessionID" | "tool">) => {
+          ask: async (req: Omit<PermissionNext.Request, "id" | "agentID" | "tool">) => {
             requests.push(req)
           },
         }
@@ -75,10 +75,10 @@ describe("tool.bash permissions", () => {
       directory: tmp.path,
       fn: async () => {
         const bash = await BashTool.init()
-        const requests: Array<Omit<PermissionNext.Request, "id" | "sessionID" | "tool">> = []
+        const requests: Array<Omit<PermissionNext.Request, "id" | "agentID" | "tool">> = []
         const testCtx = {
           ...ctx,
-          ask: async (req: Omit<PermissionNext.Request, "id" | "sessionID" | "tool">) => {
+          ask: async (req: Omit<PermissionNext.Request, "id" | "agentID" | "tool">) => {
             requests.push(req)
           },
         }
@@ -103,10 +103,10 @@ describe("tool.bash permissions", () => {
       directory: tmp.path,
       fn: async () => {
         const bash = await BashTool.init()
-        const requests: Array<Omit<PermissionNext.Request, "id" | "sessionID" | "tool">> = []
+        const requests: Array<Omit<PermissionNext.Request, "id" | "agentID" | "tool">> = []
         const testCtx = {
           ...ctx,
-          ask: async (req: Omit<PermissionNext.Request, "id" | "sessionID" | "tool">) => {
+          ask: async (req: Omit<PermissionNext.Request, "id" | "agentID" | "tool">) => {
             requests.push(req)
           },
         }
@@ -129,10 +129,10 @@ describe("tool.bash permissions", () => {
       directory: tmp.path,
       fn: async () => {
         const bash = await BashTool.init()
-        const requests: Array<Omit<PermissionNext.Request, "id" | "sessionID" | "tool">> = []
+        const requests: Array<Omit<PermissionNext.Request, "id" | "agentID" | "tool">> = []
         const testCtx = {
           ...ctx,
-          ask: async (req: Omit<PermissionNext.Request, "id" | "sessionID" | "tool">) => {
+          ask: async (req: Omit<PermissionNext.Request, "id" | "agentID" | "tool">) => {
             requests.push(req)
           },
         }
@@ -162,10 +162,10 @@ describe("tool.bash permissions", () => {
       directory: tmp.path,
       fn: async () => {
         const bash = await BashTool.init()
-        const requests: Array<Omit<PermissionNext.Request, "id" | "sessionID" | "tool">> = []
+        const requests: Array<Omit<PermissionNext.Request, "id" | "agentID" | "tool">> = []
         const testCtx = {
           ...ctx,
-          ask: async (req: Omit<PermissionNext.Request, "id" | "sessionID" | "tool">) => {
+          ask: async (req: Omit<PermissionNext.Request, "id" | "agentID" | "tool">) => {
             requests.push(req)
           },
         }
@@ -192,10 +192,10 @@ describe("tool.bash permissions", () => {
       directory: tmp.path,
       fn: async () => {
         const bash = await BashTool.init()
-        const requests: Array<Omit<PermissionNext.Request, "id" | "sessionID" | "tool">> = []
+        const requests: Array<Omit<PermissionNext.Request, "id" | "agentID" | "tool">> = []
         const testCtx = {
           ...ctx,
-          ask: async (req: Omit<PermissionNext.Request, "id" | "sessionID" | "tool">) => {
+          ask: async (req: Omit<PermissionNext.Request, "id" | "agentID" | "tool">) => {
             requests.push(req)
           },
         }
@@ -222,10 +222,10 @@ describe("tool.bash permissions", () => {
       directory: tmp.path,
       fn: async () => {
         const bash = await BashTool.init()
-        const requests: Array<Omit<PermissionNext.Request, "id" | "sessionID" | "tool">> = []
+        const requests: Array<Omit<PermissionNext.Request, "id" | "agentID" | "tool">> = []
         const testCtx = {
           ...ctx,
-          ask: async (req: Omit<PermissionNext.Request, "id" | "sessionID" | "tool">) => {
+          ask: async (req: Omit<PermissionNext.Request, "id" | "agentID" | "tool">) => {
             requests.push(req)
           },
         }
@@ -249,10 +249,10 @@ describe("tool.bash permissions", () => {
       directory: tmp.path,
       fn: async () => {
         const bash = await BashTool.init()
-        const requests: Array<Omit<PermissionNext.Request, "id" | "sessionID" | "tool">> = []
+        const requests: Array<Omit<PermissionNext.Request, "id" | "agentID" | "tool">> = []
         const testCtx = {
           ...ctx,
-          ask: async (req: Omit<PermissionNext.Request, "id" | "sessionID" | "tool">) => {
+          ask: async (req: Omit<PermissionNext.Request, "id" | "agentID" | "tool">) => {
             requests.push(req)
           },
         }
@@ -275,10 +275,10 @@ describe("tool.bash permissions", () => {
       directory: tmp.path,
       fn: async () => {
         const bash = await BashTool.init()
-        const requests: Array<Omit<PermissionNext.Request, "id" | "sessionID" | "tool">> = []
+        const requests: Array<Omit<PermissionNext.Request, "id" | "agentID" | "tool">> = []
         const testCtx = {
           ...ctx,
-          ask: async (req: Omit<PermissionNext.Request, "id" | "sessionID" | "tool">) => {
+          ask: async (req: Omit<PermissionNext.Request, "id" | "agentID" | "tool">) => {
             requests.push(req)
           },
         }
@@ -296,10 +296,10 @@ describe("tool.bash permissions", () => {
       directory: tmp.path,
       fn: async () => {
         const bash = await BashTool.init()
-        const requests: Array<Omit<PermissionNext.Request, "id" | "sessionID" | "tool">> = []
+        const requests: Array<Omit<PermissionNext.Request, "id" | "agentID" | "tool">> = []
         const testCtx = {
           ...ctx,
-          ask: async (req: Omit<PermissionNext.Request, "id" | "sessionID" | "tool">) => {
+          ask: async (req: Omit<PermissionNext.Request, "id" | "agentID" | "tool">) => {
             requests.push(req)
           },
         }

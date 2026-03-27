@@ -1504,7 +1504,6 @@ export namespace AgentPrompt {
     providerID: string
     modelID: string
   }) {
-    if (input.session.parentID) return
     if (!AgentSession.isDefaultTitle(input.session.title)) return
 
     // Find first non-synthetic user message

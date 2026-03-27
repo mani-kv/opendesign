@@ -4,7 +4,7 @@ import { ProviderTransform } from "../../src/provider/transform"
 const OUTPUT_TOKEN_MAX = 32000
 
 describe("ProviderTransform.options - setCacheKey", () => {
-  const sessionID = "test-session-123"
+  const agentID = "test-session-123"
 
   const mockModel = {
     id: "anthropic/claude-3-5-sonnet",
@@ -41,16 +41,16 @@ describe("ProviderTransform.options - setCacheKey", () => {
   test("should set promptCacheKey when providerOptions.setCacheKey is true", () => {
     const result = ProviderTransform.options({
       model: mockModel,
-      sessionID,
+      agentID,
       providerOptions: { setCacheKey: true },
     })
-    expect(result.promptCacheKey).toBe(sessionID)
+    expect(result.promptCacheKey).toBe(agentID)
   })
 
   test("should not set promptCacheKey when providerOptions.setCacheKey is false", () => {
     const result = ProviderTransform.options({
       model: mockModel,
-      sessionID,
+      agentID,
       providerOptions: { setCacheKey: false },
     })
     expect(result.promptCacheKey).toBeUndefined()
@@ -59,14 +59,14 @@ describe("ProviderTransform.options - setCacheKey", () => {
   test("should not set promptCacheKey when providerOptions is undefined", () => {
     const result = ProviderTransform.options({
       model: mockModel,
-      sessionID,
+      agentID,
       providerOptions: undefined,
     })
     expect(result.promptCacheKey).toBeUndefined()
   })
 
   test("should not set promptCacheKey when providerOptions does not have setCacheKey", () => {
-    const result = ProviderTransform.options({ model: mockModel, sessionID, providerOptions: {} })
+    const result = ProviderTransform.options({ model: mockModel, agentID, providerOptions: {} })
     expect(result.promptCacheKey).toBeUndefined()
   })
 
@@ -80,8 +80,8 @@ describe("ProviderTransform.options - setCacheKey", () => {
         npm: "@ai-sdk/openai",
       },
     }
-    const result = ProviderTransform.options({ model: openaiModel, sessionID, providerOptions: {} })
-    expect(result.promptCacheKey).toBe(sessionID)
+    const result = ProviderTransform.options({ model: openaiModel, agentID, providerOptions: {} })
+    expect(result.promptCacheKey).toBe(agentID)
   })
 
   test("should set store=false for openai provider", () => {
@@ -96,7 +96,7 @@ describe("ProviderTransform.options - setCacheKey", () => {
     }
     const result = ProviderTransform.options({
       model: openaiModel,
-      sessionID,
+      agentID,
       providerOptions: {},
     })
     expect(result.store).toBe(false)
@@ -104,7 +104,7 @@ describe("ProviderTransform.options - setCacheKey", () => {
 })
 
 describe("ProviderTransform.options - gpt-5 textVerbosity", () => {
-  const sessionID = "test-session-123"
+  const agentID = "test-session-123"
 
   const createGpt5Model = (apiId: string) =>
     ({
@@ -134,49 +134,49 @@ describe("ProviderTransform.options - gpt-5 textVerbosity", () => {
 
   test("gpt-5.2 should have textVerbosity set to low", () => {
     const model = createGpt5Model("gpt-5.2")
-    const result = ProviderTransform.options({ model, sessionID, providerOptions: {} })
+    const result = ProviderTransform.options({ model, agentID, providerOptions: {} })
     expect(result.textVerbosity).toBe("low")
   })
 
   test("gpt-5.1 should have textVerbosity set to low", () => {
     const model = createGpt5Model("gpt-5.1")
-    const result = ProviderTransform.options({ model, sessionID, providerOptions: {} })
+    const result = ProviderTransform.options({ model, agentID, providerOptions: {} })
     expect(result.textVerbosity).toBe("low")
   })
 
   test("gpt-5.2-chat-latest should NOT have textVerbosity set (only supports medium)", () => {
     const model = createGpt5Model("gpt-5.2-chat-latest")
-    const result = ProviderTransform.options({ model, sessionID, providerOptions: {} })
+    const result = ProviderTransform.options({ model, agentID, providerOptions: {} })
     expect(result.textVerbosity).toBeUndefined()
   })
 
   test("gpt-5.1-chat-latest should NOT have textVerbosity set (only supports medium)", () => {
     const model = createGpt5Model("gpt-5.1-chat-latest")
-    const result = ProviderTransform.options({ model, sessionID, providerOptions: {} })
+    const result = ProviderTransform.options({ model, agentID, providerOptions: {} })
     expect(result.textVerbosity).toBeUndefined()
   })
 
   test("gpt-5.2-chat should NOT have textVerbosity set", () => {
     const model = createGpt5Model("gpt-5.2-chat")
-    const result = ProviderTransform.options({ model, sessionID, providerOptions: {} })
+    const result = ProviderTransform.options({ model, agentID, providerOptions: {} })
     expect(result.textVerbosity).toBeUndefined()
   })
 
   test("gpt-5-chat should NOT have textVerbosity set", () => {
     const model = createGpt5Model("gpt-5-chat")
-    const result = ProviderTransform.options({ model, sessionID, providerOptions: {} })
+    const result = ProviderTransform.options({ model, agentID, providerOptions: {} })
     expect(result.textVerbosity).toBeUndefined()
   })
 
   test("gpt-5.2-codex should NOT have textVerbosity set (codex models excluded)", () => {
     const model = createGpt5Model("gpt-5.2-codex")
-    const result = ProviderTransform.options({ model, sessionID, providerOptions: {} })
+    const result = ProviderTransform.options({ model, agentID, providerOptions: {} })
     expect(result.textVerbosity).toBeUndefined()
   })
 })
 
 describe("ProviderTransform.options - gateway", () => {
-  const sessionID = "test-session-123"
+  const agentID = "test-session-123"
 
   const createModel = (id: string) =>
     ({
@@ -214,7 +214,7 @@ describe("ProviderTransform.options - gateway", () => {
 
   test("puts gateway defaults under gateway key", () => {
     const model = createModel("anthropic/claude-sonnet-4")
-    const result = ProviderTransform.options({ model, sessionID, providerOptions: {} })
+    const result = ProviderTransform.options({ model, agentID, providerOptions: {} })
     expect(result).toEqual({
       gateway: {
         caching: "auto",

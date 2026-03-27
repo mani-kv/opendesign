@@ -758,7 +758,7 @@ export namespace MessageV2 {
         )
         for (const row of partRows) {
           const part = {
-            ...row.data,
+            ...(row.data as Record<string, any>),
             id: row.id,
             agentID: row.agent_id,
             messageID: row.message_id,
@@ -770,7 +770,7 @@ export namespace MessageV2 {
       }
 
       for (const row of rows) {
-        const info = { ...row.data, id: row.id, agentID: row.agent_id } as MessageV2.Info
+        const info = { ...(row.data as Record<string, any>), id: row.id, agentID: row.agent_id } as MessageV2.Info
         yield {
           info,
           parts: partsByMessage.get(row.id) ?? [],
@@ -787,7 +787,7 @@ export namespace MessageV2 {
       db.select().from(PartTable).where(eq(PartTable.message_id, message_id)).orderBy(PartTable.id).all(),
     )
     return rows.map(
-      (row) => ({ ...row.data, id: row.id, agentID: row.agent_id, messageID: row.message_id }) as MessageV2.Part,
+      (row) => ({ ...(row.data as Record<string, any>), id: row.id, agentID: row.agent_id, messageID: row.message_id }) as MessageV2.Part,
     )
   })
 
@@ -799,7 +799,7 @@ export namespace MessageV2 {
     async (input): Promise<WithParts> => {
       const row = Database.use((db) => db.select().from(MessageTable).where(eq(MessageTable.id, input.messageID)).get())
       if (!row) throw new Error(`Message not found: ${input.messageID}`)
-      const info = { ...row.data, id: row.id, agentID: row.agent_id } as MessageV2.Info
+      const info = { ...(row.data as Record<string, any>), id: row.id, agentID: row.agent_id } as MessageV2.Info
       return {
         info,
         parts: await parts(input.messageID),

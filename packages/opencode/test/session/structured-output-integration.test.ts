@@ -28,7 +28,7 @@ describe("StructuredOutput Integration", () => {
         const session = await Session.create({ title: "Structured Output Test" })
 
         const result = await AgentPrompt.prompt({
-          sessionID: session.id,
+          agentID: session.id,
           parts: [
             {
               type: "text",
@@ -76,7 +76,7 @@ describe("StructuredOutput Integration", () => {
         const session = await Session.create({ title: "Nested Schema Test" })
 
         const result = await AgentPrompt.prompt({
-          sessionID: session.id,
+          agentID: session.id,
           parts: [
             {
               type: "text",
@@ -139,7 +139,7 @@ describe("StructuredOutput Integration", () => {
         const session = await Session.create({ title: "Text Output Test" })
 
         const result = await AgentPrompt.prompt({
-          sessionID: session.id,
+          agentID: session.id,
           parts: [
             {
               type: "text",
@@ -175,7 +175,7 @@ describe("StructuredOutput Integration", () => {
         const session = await Session.create({ title: "OutputFormat Storage Test" })
 
         await AgentPrompt.prompt({
-          sessionID: session.id,
+          agentID: session.id,
           parts: [
             {
               type: "text",
@@ -196,7 +196,7 @@ describe("StructuredOutput Integration", () => {
         })
 
         // Get all messages from session
-        const messages = await Session.messages({ sessionID: session.id })
+        const messages = await Session.messages({ agentID: session.id })
         const userMessage = messages.find((m) => m.info.role === "user")
 
         // Verify outputFormat was stored on user message

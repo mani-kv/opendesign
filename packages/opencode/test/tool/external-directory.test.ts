@@ -6,7 +6,7 @@ import { assertExternalDirectory } from "../../src/tool/external-directory"
 import type { PermissionNext } from "../../src/permission/next"
 
 const baseCtx: Omit<Tool.Context, "ask"> = {
-  sessionID: "test",
+  agentID: "test",
   messageID: "",
   callID: "",
   agent: "prototype",
@@ -17,7 +17,7 @@ const baseCtx: Omit<Tool.Context, "ask"> = {
 
 describe("tool.assertExternalDirectory", () => {
   test("no-ops for empty target", async () => {
-    const requests: Array<Omit<PermissionNext.Request, "id" | "sessionID" | "tool">> = []
+    const requests: Array<Omit<PermissionNext.Request, "id" | "agentID" | "tool">> = []
     const ctx: Tool.Context = {
       ...baseCtx,
       ask: async (req) => {
@@ -36,7 +36,7 @@ describe("tool.assertExternalDirectory", () => {
   })
 
   test("no-ops for paths inside Instance.directory", async () => {
-    const requests: Array<Omit<PermissionNext.Request, "id" | "sessionID" | "tool">> = []
+    const requests: Array<Omit<PermissionNext.Request, "id" | "agentID" | "tool">> = []
     const ctx: Tool.Context = {
       ...baseCtx,
       ask: async (req) => {
@@ -55,7 +55,7 @@ describe("tool.assertExternalDirectory", () => {
   })
 
   test("asks with a single canonical glob", async () => {
-    const requests: Array<Omit<PermissionNext.Request, "id" | "sessionID" | "tool">> = []
+    const requests: Array<Omit<PermissionNext.Request, "id" | "agentID" | "tool">> = []
     const ctx: Tool.Context = {
       ...baseCtx,
       ask: async (req) => {
@@ -81,7 +81,7 @@ describe("tool.assertExternalDirectory", () => {
   })
 
   test("uses target directory when kind=directory", async () => {
-    const requests: Array<Omit<PermissionNext.Request, "id" | "sessionID" | "tool">> = []
+    const requests: Array<Omit<PermissionNext.Request, "id" | "agentID" | "tool">> = []
     const ctx: Tool.Context = {
       ...baseCtx,
       ask: async (req) => {
@@ -107,7 +107,7 @@ describe("tool.assertExternalDirectory", () => {
   })
 
   test("skips prompting when bypass=true", async () => {
-    const requests: Array<Omit<PermissionNext.Request, "id" | "sessionID" | "tool">> = []
+    const requests: Array<Omit<PermissionNext.Request, "id" | "agentID" | "tool">> = []
     const ctx: Tool.Context = {
       ...baseCtx,
       ask: async (req) => {

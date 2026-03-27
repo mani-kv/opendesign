@@ -546,6 +546,7 @@ export const GithubRunCommand = cmd({
         // Setup opencode session
         const repoData = await fetchRepo()
         session = await Session.create({
+          featureID: Instance.project.id,
           permission: [
             {
               permission: "question",
@@ -890,7 +891,7 @@ export const GithubRunCommand = cmd({
 
         let text = ""
         Bus.subscribe(MessageV2.Event.PartUpdated, async (evt) => {
-          if (evt.properties.part.sessionID !== session.id) return
+          if (evt.properties.part.agentID !== session.id) return
           //if (evt.properties.part.messageID === messageID) return
           const part = evt.properties.part
 
@@ -933,7 +934,7 @@ export const GithubRunCommand = cmd({
         console.log("Sending message to opencode...")
 
         const result = await SessionPrompt.prompt({
-          sessionID: session.id,
+          agentID: session.id,
           messageID: Identifier.ascending("message"),
           variant,
           model: {
@@ -987,7 +988,7 @@ export const GithubRunCommand = cmd({
         // No text part (tool-only or reasoning-only) - ask agent to summarize
         console.log("Requesting summary from agent...")
         const summary = await SessionPrompt.prompt({
-          sessionID: session.id,
+          agentID: session.id,
           messageID: Identifier.ascending("message"),
           variant,
           model: {

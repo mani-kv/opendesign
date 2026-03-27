@@ -30,7 +30,7 @@ describe("session.prompt missing file", () => {
 
         const missing = path.join(tmp.path, "does-not-exist.ts")
         const msg = await AgentPrompt.prompt({
-          sessionID: session.id,
+          agentID: session.id,
           agent: "prototype",
           noReply: true,
           parts: [
@@ -75,7 +75,7 @@ describe("session.prompt missing file", () => {
 
         const missing = path.join(tmp.path, "still-missing.ts")
         const msg = await AgentPrompt.prompt({
-          sessionID: session.id,
+          agentID: session.id,
           agent: "prototype",
           noReply: true,
           parts: [
@@ -92,7 +92,7 @@ describe("session.prompt missing file", () => {
         if (msg.info.role !== "user") throw new Error("expected user message")
 
         const stored = await MessageV2.get({
-          sessionID: session.id,
+          agentID: session.id,
           messageID: msg.info.id,
         })
         const text = stored.parts.filter((part) => part.type === "text").map((part) => part.text)
@@ -132,11 +132,11 @@ describe("session.prompt special characters", () => {
         expect(decodedPath).toBe(path.join(tmp.path, "file#name.txt"))
 
         const message = await AgentPrompt.prompt({
-          sessionID: session.id,
+          agentID: session.id,
           parts,
           noReply: true,
         })
-        const stored = await MessageV2.get({ sessionID: session.id, messageID: message.info.id })
+        const stored = await MessageV2.get({ agentID: session.id, messageID: message.info.id })
         const textParts = stored.parts.filter((part) => part.type === "text")
         const hasContent = textParts.some((part) => part.text.includes("special content"))
         expect(hasContent).toBe(true)
@@ -171,7 +171,7 @@ describe("session.prompt agent variant", () => {
           const session = await Session.create({})
 
           const other = await AgentPrompt.prompt({
-            sessionID: session.id,
+            agentID: session.id,
             agent: "prototype",
             model: { providerID: "opencode", modelID: "kimi-k2.5-free" },
             noReply: true,
@@ -181,7 +181,7 @@ describe("session.prompt agent variant", () => {
           expect(other.info.variant).toBeUndefined()
 
           const match = await AgentPrompt.prompt({
-            sessionID: session.id,
+            agentID: session.id,
             agent: "prototype",
             noReply: true,
             parts: [{ type: "text", text: "hello again" }],
@@ -191,7 +191,7 @@ describe("session.prompt agent variant", () => {
           expect(match.info.variant).toBe("xhigh")
 
           const override = await AgentPrompt.prompt({
-            sessionID: session.id,
+            agentID: session.id,
             agent: "prototype",
             noReply: true,
             variant: "high",

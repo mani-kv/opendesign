@@ -57,7 +57,7 @@ export namespace AgentSession {
       directory: row.directory,
       title: row.title,
       version: row.version,
-      permission: row.permission ?? undefined,
+      permission: (row.permission as PermissionNext.Ruleset) ?? undefined,
       time: {
         created: row.time_created,
         updated: row.time_updated,
@@ -170,7 +170,7 @@ export namespace AgentSession {
   export const create = fn(
     z
       .object({
-        featureID: z.string(),
+        featureID: z.string().optional(),
         annotationID: z.string().optional(),
         title: z.string().optional(),
         permission: Info.shape.permission,
@@ -481,6 +481,14 @@ export namespace AgentSession {
       const product = products.get(row.feature_id) ?? null
       yield { ...fromRow(row), product }
     }
+  }
+
+  // TODO: summary columns not yet on AgentTable - no-op for now
+  export async function setSummary(_input: { agentID: string; summary: { additions: number; deletions: number; files: number } }) {}
+
+  // TODO: share not yet implemented for agents
+  export async function share(_agentID: string) {
+    return undefined as string | undefined
   }
 
   export const remove = fn(Identifier.schema("agent"), async (agentID) => {

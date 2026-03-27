@@ -28,7 +28,7 @@ export namespace AgentRevert {
     let lastUser: MessageV2.User | undefined
     const agent = await AgentSession.get(input.agentID)
 
-    let revertInfo: typeof agent extends { revert?: infer R } ? R : never
+    let revertInfo: { messageID: string; partID: string | undefined } | undefined
     const patches: Snapshot.Patch[] = []
     for (const msg of all) {
       if (msg.info.role === "user") lastUser = msg.info
@@ -65,6 +65,11 @@ export namespace AgentRevert {
       })
     }
     return agent
+  }
+
+  // TODO: unrevert not yet implemented for new agent architecture
+  export async function unrevert(input: { agentID: string }) {
+    return AgentSession.get(input.agentID)
   }
 
   export async function cleanup(_agent: AgentSession.Info) {

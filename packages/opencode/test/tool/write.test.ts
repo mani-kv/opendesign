@@ -6,7 +6,7 @@ import { Instance } from "../../src/project/instance"
 import { tmpdir } from "../fixture/fixture"
 
 const ctx = {
-  sessionID: "test-write-session",
+  agentID: "test-write-session",
   messageID: "",
   callID: "",
   agent: "prototype",
@@ -98,7 +98,7 @@ describe("tool.write", () => {
         directory: tmp.path,
         fn: async () => {
           const { FileTime } = await import("../../src/file/time")
-          FileTime.read(ctx.sessionID, filepath)
+          FileTime.read(ctx.agentID, filepath)
 
           const write = await WriteTool.init()
           const result = await write.execute(
@@ -127,7 +127,7 @@ describe("tool.write", () => {
         directory: tmp.path,
         fn: async () => {
           const { FileTime } = await import("../../src/file/time")
-          FileTime.read(ctx.sessionID, filepath)
+          FileTime.read(ctx.agentID, filepath)
 
           const write = await WriteTool.init()
           const result = await write.execute(
@@ -305,7 +305,7 @@ describe("tool.write", () => {
         directory: tmp.path,
         fn: async () => {
           const { FileTime } = await import("../../src/file/time")
-          FileTime.read(ctx.sessionID, readonlyPath)
+          FileTime.read(ctx.agentID, readonlyPath)
 
           const write = await WriteTool.init()
           await expect(

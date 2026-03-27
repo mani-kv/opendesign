@@ -7,7 +7,7 @@ import { tmpdir } from "../fixture/fixture"
 import { FileTime } from "../../src/file/time"
 
 const ctx = {
-  sessionID: "test-edit-session",
+  agentID: "test-edit-session",
   messageID: "",
   callID: "",
   agent: "prototype",
@@ -110,7 +110,7 @@ describe("tool.edit", () => {
       await Instance.provide({
         directory: tmp.path,
         fn: async () => {
-          FileTime.read(ctx.sessionID, filepath)
+          FileTime.read(ctx.agentID, filepath)
 
           const edit = await EditTool.init()
           const result = await edit.execute(
@@ -137,7 +137,7 @@ describe("tool.edit", () => {
       await Instance.provide({
         directory: tmp.path,
         fn: async () => {
-          FileTime.read(ctx.sessionID, filepath)
+          FileTime.read(ctx.agentID, filepath)
 
           const edit = await EditTool.init()
           await expect(
@@ -185,7 +185,7 @@ describe("tool.edit", () => {
       await Instance.provide({
         directory: tmp.path,
         fn: async () => {
-          FileTime.read(ctx.sessionID, filepath)
+          FileTime.read(ctx.agentID, filepath)
 
           const edit = await EditTool.init()
           await expect(
@@ -234,7 +234,7 @@ describe("tool.edit", () => {
         directory: tmp.path,
         fn: async () => {
           // Read first
-          FileTime.read(ctx.sessionID, filepath)
+          FileTime.read(ctx.agentID, filepath)
 
           // Wait a bit to ensure different timestamps
           await new Promise((resolve) => setTimeout(resolve, 100))
@@ -266,7 +266,7 @@ describe("tool.edit", () => {
       await Instance.provide({
         directory: tmp.path,
         fn: async () => {
-          FileTime.read(ctx.sessionID, filepath)
+          FileTime.read(ctx.agentID, filepath)
 
           const edit = await EditTool.init()
           await edit.execute(
@@ -293,7 +293,7 @@ describe("tool.edit", () => {
       await Instance.provide({
         directory: tmp.path,
         fn: async () => {
-          FileTime.read(ctx.sessionID, filepath)
+          FileTime.read(ctx.agentID, filepath)
 
           const { Bus } = await import("../../src/bus")
           const { File } = await import("../../src/file")
@@ -331,7 +331,7 @@ describe("tool.edit", () => {
       await Instance.provide({
         directory: tmp.path,
         fn: async () => {
-          FileTime.read(ctx.sessionID, filepath)
+          FileTime.read(ctx.agentID, filepath)
 
           const edit = await EditTool.init()
           await edit.execute(
@@ -357,7 +357,7 @@ describe("tool.edit", () => {
       await Instance.provide({
         directory: tmp.path,
         fn: async () => {
-          FileTime.read(ctx.sessionID, filepath)
+          FileTime.read(ctx.agentID, filepath)
 
           const edit = await EditTool.init()
           await edit.execute(
@@ -406,7 +406,7 @@ describe("tool.edit", () => {
       await Instance.provide({
         directory: tmp.path,
         fn: async () => {
-          FileTime.read(ctx.sessionID, dirpath)
+          FileTime.read(ctx.agentID, dirpath)
 
           const edit = await EditTool.init()
           await expect(
@@ -431,7 +431,7 @@ describe("tool.edit", () => {
       await Instance.provide({
         directory: tmp.path,
         fn: async () => {
-          FileTime.read(ctx.sessionID, filepath)
+          FileTime.read(ctx.agentID, filepath)
 
           const edit = await EditTool.init()
           const result = await edit.execute(
@@ -502,7 +502,7 @@ describe("tool.edit", () => {
         fn: async () => {
           const edit = await EditTool.init()
           const filePath = path.join(tmp.path, "test.txt")
-          FileTime.read(ctx.sessionID, filePath)
+          FileTime.read(ctx.agentID, filePath)
           await edit.execute(
             {
               filePath,
@@ -643,7 +643,7 @@ describe("tool.edit", () => {
       await Instance.provide({
         directory: tmp.path,
         fn: async () => {
-          FileTime.read(ctx.sessionID, filepath)
+          FileTime.read(ctx.agentID, filepath)
 
           const edit = await EditTool.init()
 
@@ -658,7 +658,7 @@ describe("tool.edit", () => {
           )
 
           // Need to read again since FileTime tracks per-session
-          FileTime.read(ctx.sessionID, filepath)
+          FileTime.read(ctx.agentID, filepath)
 
           const promise2 = edit.execute(
             {

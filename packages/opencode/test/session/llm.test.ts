@@ -265,7 +265,7 @@ describe("session.llm.stream", () => {
       directory: tmp.path,
       fn: async () => {
         const resolved = await Provider.getModel(providerID, model.id)
-        const sessionID = "session-test-1"
+        const agentID = "session-test-1"
         const agent = {
           name: "test",
           mode: "primary",
@@ -277,7 +277,7 @@ describe("session.llm.stream", () => {
 
         const user = {
           id: "user-1",
-          sessionID,
+          agentID,
           role: "user",
           time: { created: Date.now() },
           agent: agent.name,
@@ -287,7 +287,7 @@ describe("session.llm.stream", () => {
 
         const stream = await LLM.stream({
           user,
-          sessionID,
+          agentID,
           model: resolved,
           agent,
           system: ["You are a helpful assistant."],
@@ -395,7 +395,7 @@ describe("session.llm.stream", () => {
       directory: tmp.path,
       fn: async () => {
         const resolved = await Provider.getModel("openai", model.id)
-        const sessionID = "session-test-2"
+        const agentID = "session-test-2"
         const agent = {
           name: "test",
           mode: "primary",
@@ -406,7 +406,7 @@ describe("session.llm.stream", () => {
 
         const user = {
           id: "user-2",
-          sessionID,
+          agentID,
           role: "user",
           time: { created: Date.now() },
           agent: agent.name,
@@ -416,7 +416,7 @@ describe("session.llm.stream", () => {
 
         const stream = await LLM.stream({
           user,
-          sessionID,
+          agentID,
           model: resolved,
           agent,
           system: ["You are a helpful assistant."],
@@ -517,7 +517,7 @@ describe("session.llm.stream", () => {
       directory: tmp.path,
       fn: async () => {
         const resolved = await Provider.getModel(providerID, model.id)
-        const sessionID = "session-test-3"
+        const agentID = "session-test-3"
         const agent = {
           name: "test",
           mode: "primary",
@@ -529,7 +529,7 @@ describe("session.llm.stream", () => {
 
         const user = {
           id: "user-3",
-          sessionID,
+          agentID,
           role: "user",
           time: { created: Date.now() },
           agent: agent.name,
@@ -538,7 +538,7 @@ describe("session.llm.stream", () => {
 
         const stream = await LLM.stream({
           user,
-          sessionID,
+          agentID,
           model: resolved,
           agent,
           system: ["You are a helpful assistant."],
@@ -618,7 +618,7 @@ describe("session.llm.stream", () => {
       directory: tmp.path,
       fn: async () => {
         const resolved = await Provider.getModel(providerID, model.id)
-        const sessionID = "session-test-4"
+        const agentID = "session-test-4"
         const agent = {
           name: "test",
           mode: "primary",
@@ -630,7 +630,7 @@ describe("session.llm.stream", () => {
 
         const user = {
           id: "user-4",
-          sessionID,
+          agentID,
           role: "user",
           time: { created: Date.now() },
           agent: agent.name,
@@ -639,7 +639,7 @@ describe("session.llm.stream", () => {
 
         const stream = await LLM.stream({
           user,
-          sessionID,
+          agentID,
           model: resolved,
           agent,
           system: ["You are a helpful assistant."],

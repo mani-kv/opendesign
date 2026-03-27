@@ -8,7 +8,7 @@ import { SkillTool } from "../../src/tool/skill"
 import { tmpdir } from "../fixture/fixture"
 
 const baseCtx: Omit<Tool.Context, "ask"> = {
-  sessionID: "test",
+  agentID: "test",
   messageID: "",
   callID: "",
   agent: "prototype",
@@ -82,7 +82,7 @@ Use this skill.
         directory: tmp.path,
         fn: async () => {
           const tool = await SkillTool.init()
-          const requests: Array<Omit<PermissionNext.Request, "id" | "sessionID" | "tool">> = []
+          const requests: Array<Omit<PermissionNext.Request, "id" | "agentID" | "tool">> = []
           const ctx: Tool.Context = {
             ...baseCtx,
             ask: async (req) => {

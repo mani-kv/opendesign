@@ -6,7 +6,7 @@ import { WebFetchTool } from "../../src/tool/webfetch"
 const projectRoot = path.join(import.meta.dir, "../..")
 
 const ctx = {
-  sessionID: "test",
+  agentID: "test",
   messageID: "message",
   callID: "",
   agent: "prototype",
@@ -47,7 +47,7 @@ describe("tool.webfetch", () => {
             expect(result.attachments?.[0].mime).toBe("image/png")
             expect(result.attachments?.[0].url.startsWith("data:image/png;base64,")).toBe(true)
             expect(result.attachments?.[0]).not.toHaveProperty("id")
-            expect(result.attachments?.[0]).not.toHaveProperty("sessionID")
+            expect(result.attachments?.[0]).not.toHaveProperty("agentID")
             expect(result.attachments?.[0]).not.toHaveProperty("messageID")
           },
         })

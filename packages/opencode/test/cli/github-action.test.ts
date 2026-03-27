@@ -6,7 +6,7 @@ import type { MessageV2 } from "../../src/agent/message-v2"
 function createTextPart(text: string): MessageV2.Part {
   return {
     id: "1",
-    sessionID: "s",
+    agentID: "s",
     messageID: "m",
     type: "text" as const,
     text,
@@ -16,7 +16,7 @@ function createTextPart(text: string): MessageV2.Part {
 function createReasoningPart(text: string): MessageV2.Part {
   return {
     id: "1",
-    sessionID: "s",
+    agentID: "s",
     messageID: "m",
     type: "reasoning" as const,
     text,
@@ -28,7 +28,7 @@ function createToolPart(tool: string, title: string, status: "completed" | "runn
   if (status === "completed") {
     return {
       id: "1",
-      sessionID: "s",
+      agentID: "s",
       messageID: "m",
       type: "tool" as const,
       callID: "c1",
@@ -45,7 +45,7 @@ function createToolPart(tool: string, title: string, status: "completed" | "runn
   }
   return {
     id: "1",
-    sessionID: "s",
+    agentID: "s",
     messageID: "m",
     type: "tool" as const,
     callID: "c1",
@@ -61,7 +61,7 @@ function createToolPart(tool: string, title: string, status: "completed" | "runn
 function createStepStartPart(): MessageV2.Part {
   return {
     id: "1",
-    sessionID: "s",
+    agentID: "s",
     messageID: "m",
     type: "step-start" as const,
   }
@@ -70,7 +70,7 @@ function createStepStartPart(): MessageV2.Part {
 function createStepFinishPart(): MessageV2.Part {
   return {
     id: "1",
-    sessionID: "s",
+    agentID: "s",
     messageID: "m",
     type: "step-finish" as const,
     reason: "done",

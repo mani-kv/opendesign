@@ -14,7 +14,7 @@ export namespace Command {
       "command.executed",
       z.object({
         name: z.string(),
-        sessionID: Identifier.schema("session"),
+        agentID: Identifier.schema("agent"),
         arguments: z.string(),
         messageID: Identifier.schema("message"),
       }),

@@ -68,31 +68,31 @@ export namespace SessionSummary {
 
   export const summarize = fn(
     z.object({
-      sessionID: z.string(),
+      agentID: z.string(),
       messageID: z.string(),
     }),
     async (input) => {
-      const all = await AgentSession.messages({ sessionID: input.sessionID })
+      const all = await AgentSession.messages({ agentID: input.agentID })
       await Promise.all([
-        summarizeSession({ sessionID: input.sessionID, messages: all }),
+        summarizeSession({ agentID: input.agentID, messages: all }),
         summarizeMessage({ messageID: input.messageID, messages: all }),
       ])
     },
   )
 
-  async function summarizeSession(input: { sessionID: string; messages: MessageV2.WithParts[] }) {
+  async function summarizeSession(input: { agentID: string; messages: MessageV2.WithParts[] }) {
     const diffs = await computeDiff({ messages: input.messages })
     await AgentSession.setSummary({
-      sessionID: input.sessionID,
+      agentID: input.agentID,
       summary: {
         additions: diffs.reduce((sum, x) => sum + x.additions, 0),
         deletions: diffs.reduce((sum, x) => sum + x.deletions, 0),
         files: diffs.length,
       },
     })
-    await Storage.write(["session_diff", input.sessionID], diffs)
+    await Storage.write(["session_diff", input.agentID], diffs)
     Bus.publish(AgentSession.Event.Diff, {
-      sessionID: input.sessionID,
+      agentID: input.agentID,
       diff: diffs,
     })
   }
@@ -113,11 +113,11 @@ export namespace SessionSummary {
 
   export const diff = fn(
     z.object({
-      sessionID: Identifier.schema("session"),
+      agentID: Identifier.schema("agent"),
       messageID: Identifier.schema("message").optional(),
     }),
     async (input) => {
-      const diffs = await Storage.read<Snapshot.FileDiff[]>(["session_diff", input.sessionID]).catch(() => [])
+      const diffs = await Storage.read<Snapshot.FileDiff[]>(["session_diff", input.agentID]).catch(() => [])
       const next = diffs.map((item) => {
         const file = unquoteGitPath(item.file)
         if (file === item.file) return item
@@ -127,7 +127,7 @@ export namespace SessionSummary {
         }
       })
       const changed = next.some((item, i) => item.file !== diffs[i]?.file)
-      if (changed) Storage.write(["session_diff", input.sessionID], next).catch(() => {})
+      if (changed) Storage.write(["session_diff", input.agentID], next).catch(() => {})
       return next
     },
   )

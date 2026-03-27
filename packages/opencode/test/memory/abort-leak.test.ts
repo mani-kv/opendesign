@@ -6,7 +6,7 @@ import { WebFetchTool } from "../../src/tool/webfetch"
 const projectRoot = path.join(__dirname, "../..")
 
 const ctx = {
-  sessionID: "test",
+  agentID: "test",
   messageID: "",
   callID: "",
   agent: "prototype",
