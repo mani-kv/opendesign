@@ -339,3 +339,37 @@ After Phase 2 completes, an AI agent generates the initial Sandpack prototype:
 - **Component extraction** — Create reusable components from approved variations, add to design system.
 - **Scenario matrix** — Generate a grid of variations across multiple dimensions (persona × state × mode).
 - **Cross-Product design system sharing** — UI for linking design systems across Products and managing shared vs. forked tokens.
+
+## Long-Term Vision
+
+### Full Product Prototyping
+
+Over time, a Product's entire UI gets prototyped through this workflow. Each Feature contributes approved prototypes back to the Product's main branch, building up a complete, interactive representation of the product. The mono repo accumulates all design decisions, component implementations, and token configurations — becoming the living source of truth for how the product looks and behaves.
+
+### Files & Context System
+
+The existing Files tab evolves into a structured context system with scoped levels:
+
+- **Global context** — Organization-wide guidelines, brand rules, accessibility standards. Applied to all Products.
+- **Product context** — Product-specific PRDs, architecture docs, user research, design principles. Applied to all Features within the Product.
+- **Feature context** — Feature-specific requirements, user stories, edge cases, stakeholder feedback.
+
+**Context delivery to agents:**
+- **Rules and guidelines** (small, critical) → Injected directly into agent context window as system instructions.
+- **Reference documents** (large, supplementary) → Indexed and stored in RAG. Agents query on-demand when they need specific information (e.g., "what does the user research say about checkout abandonment?").
+
+This separation ensures agents have the rules they must follow in their context window without bloating it with large reference documents.
+
+### MCP as Integration Layer
+
+MCPs serve as the general integration layer beyond Figma:
+
+- **Jira/Linear** — Import tickets and requirements as Feature context. Agents can reference acceptance criteria while prototyping.
+- **Storybook** — Sync component documentation and usage examples alongside design system components.
+- **Analytics** — Pull usage data to inform design decisions (e.g., "users drop off at step 3 of checkout").
+- **CMS** — Pull real content for prototypes instead of placeholder text.
+- **GitHub/GitLab** — Sync with existing codebases for component parity checking.
+
+Users configure MCPs at the Product level. The system doesn't prescribe which integrations to use — it provides the MCP infrastructure and users connect what they need.
+
+These are P2 features. The MVP focuses on Figma MCP as the primary integration, with the architecture designed to support additional MCPs without structural changes.
