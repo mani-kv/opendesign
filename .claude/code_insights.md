@@ -224,4 +224,44 @@ Accumulated knowledge about this codebase. Read before starting any task. Update
 
 - **Task 10 cleanup** (2026-03-23): Removed old REST API selection tracking code. Deleted `figma-bridge.ts` preload (webview URL tracking via IPC), `figma-mcp-server.ts` (standalone MCP server, replaced by `packages/opendesign-figma-mcp`). Simplified `figma-selection.ts` to pure state + listeners (no REST client, debounce, thumbnail fetching, or BrowserWindow dependency). Removed `FigmaRestClient` import from `main/index.ts` (the one in `packages/desktop-electron` is now orphaned — can be deleted if no other consumer). Cleaned `preload/types.ts` and `preload/index.ts` of `figmaBridgePreload`, `figmaNotifyUrl`, `onFigmaThumbnail`. Simplified `figma-tab-content.tsx` to use a single `handleNav` for both `did-navigate` and `did-navigate-in-page`.
 
-_Last updated: 2026-03-23 — Task 10: Remove old REST API selection tracking and figma-bridge preload_
+---
+
+## AgentSession namespace — Session→Agent transformation (2026-03-26)
+
+- **Layer 1 of DB re-architecture**: `packages/opencode/src/agent/` now contains the new `AgentSession` namespace (replaces `Session`).
+- Files: `index.ts` (AgentSession namespace), `message-v2.ts` (MessageV2 with agentID), `llm.ts` (LLM streaming), `prompt.ts` (AgentPrompt), `revert.ts` (AgentRevert).
+- Schema mapping: `AgentTable` has `feature_id` (replaces `project_id`), `status`, `color`, `branch`, `annotation_id`. Removed: `slug`, `parent_id`, `workspace_id`, `share_url`, `summary_*`, `revert` JSON column, `time_compacting`, `time_archived`.
+- The old `agent/agent.ts` is the agent **definition** module (Agent namespace — types like "general", "title", "compaction"). The new `agent/index.ts` is the agent **session** module (AgentSession namespace — CRUD, messages, parts). These coexist but have different names.
+- `session/` directory is **DELETED** (Layer 5 complete). All modules moved to `agent/`.
+- `AgentRevert.cleanup()` is a no-op placeholder — the old revert/snapshot columns were removed from AgentTable schema.
+
+## Tool context and plugin hooks — sessionID→agentID rename (2026-03-26)
+
+- **Tool.Context type** (`tool/tool.ts`): `sessionID` field renamed to `agentID`. All tool implementations updated.
+- **PermissionNext.Request** (`permission/next.ts`): `sessionID` renamed to `agentID` in both the Request schema and the Replied event.
+- **Plugin Hooks** (`packages/plugin/src/index.ts`): All hook input types renamed `sessionID`→`agentID` (chat.message, chat.params, chat.headers, command.execute.before, tool.execute.before/after, shell.env, experimental.*).
+- **Plugin ToolContext** (`packages/plugin/src/tool.ts`): `sessionID`→`agentID`.
+- **Cascade concern**: The old `permission/index.ts` (legacy permission module), `acp/agent.ts`, `cli/cmd/run.ts`, and several server routes still use `sessionID`. These need separate migration.
+
+## Layer 5: session/ → agent/ final migration (2026-03-26)
+
+- **Moved modules**: `compaction.ts`, `instruction.ts`, `processor.ts`, `status.ts`, `summary.ts`, `system.ts`, `todo.ts`, `retry.ts`, `message.ts` → all now in `agent/`.
+- **Moved prompt files**: All `.txt` files from `session/prompt/` copied to `agent/prompt/` (anthropic, beast, codex_header, gemini, max-steps, plan-reminder-anthropic, qwen, trinity, copilot-gpt-5, anthropic-20250930).
+- **New file**: `agent/todo.sql.ts` — TodoTable schema referencing AgentTable (column `agent_id` replaces `session_id`).
+- **Deleted**: entire `session/` directory (session.sql.ts, session-canvas.sql.ts, session-canvas.ts, index.ts, message-v2.ts, llm.ts, prompt.ts, revert.ts, plus all moved files).
+- **Canvas routes removed**: GET/PUT `/:agentID/canvas` handlers removed from `server/routes/agent-session.ts`. SessionCanvas import dropped.
+- **`permission/next.ts`**: Now imports `PermissionTable` from `@/permission/permission.sql` (was `@/session/session.sql`).
+- **`storage/json-migration.ts`**: Imports updated but this module writes to OLD table shapes — marked with TODO for removal/rewrite.
+- **Web package**: `Share.tsx` and `part.tsx` updated to import from `opencode/agent/` instead of `opencode/session/`.
+- **Test files**: All `test/session/*.test.ts` and `test/server/*.test.ts` imports updated to `../../src/agent/`.
+- **Internal import convention**: Moved files that referenced `Session` from `"."` now use `AgentSession` from `"."`. Files that called `Session.updateMessage()` etc. now call `AgentSession.updateMessage()`.
+
+_Last updated: 2026-03-26 — Layer 5: session/ directory fully deleted, all modules in agent/_
+
+## Database Migration — OpenDesign v2 schema (2026-03-26)
+
+- **Migration file**: `packages/opencode/migration/20260326000000_opendesign_v2/migration.sql` — drops old tables (`todo`, `part`, `message`, `session_share`, `session_canvas`, `permission`, `session`, `workspace`) and creates new tables (`product`, `design_system`, `product_design_system`, `feature`, `annotation`, `agent`, `message`, `part`, `variation`, `checkpoint`, `todo`, `permission`).
+- **`project` table kept**: Still used by `project.ts` for directory/VCS discovery. NOT dropped, NOT renamed. `ProjectTable` added to `storage/schema.ts` barrel export.
+- **`migrateFromGlobal` gutted**: Was querying `AgentTable.feature_id = "global"` which is invalid in new schema. Now a no-op.
+- **Migration system**: Custom `migrations()` in `db.ts` reads `migration.sql` from timestamped dirs. Sorted by timestamp. `snapshot.json` is not used at runtime (only by Drizzle Kit).
+- **Data loss accepted**: Old session/workspace data is dropped. No data migration.

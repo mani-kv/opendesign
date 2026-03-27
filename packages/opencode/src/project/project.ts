@@ -3,10 +3,8 @@ import { Filesystem } from "../util/filesystem"
 import path from "path"
 import { Database, eq } from "../storage/db"
 import { ProjectTable } from "./project.sql"
-import { AgentTable } from "../agent/agent.sql"
 import { Log } from "../util/log"
 import { Flag } from "@/flag/flag"
-import { work } from "../util/queue"
 import { fn } from "@opencode-ai/util/fn"
 import { BusEvent } from "@/bus/bus-event"
 import { iife } from "@/util/iife"
@@ -308,26 +306,9 @@ export namespace Project {
     return
   }
 
-  async function migrateFromGlobal(id: string, worktree: string) {
-    const row = Database.use((db) => db.select().from(ProjectTable).where(eq(ProjectTable.id, "global")).get())
-    if (!row) return
-
-    const sessions = Database.use((db) =>
-      db.select().from(AgentTable).where(eq(AgentTable.feature_id, "global")).all(),
-    )
-    if (sessions.length === 0) return
-
-    log.info("migrating agents from global", { newProjectID: id, worktree, count: sessions.length })
-
-    await work(10, sessions, async (row) => {
-      // Skip agents that belong to a different directory
-      if (row.directory && row.directory !== worktree) return
-
-      log.info("migrating agent", { agentID: row.id, from: "global", to: id })
-      Database.use((db) => db.update(AgentTable).set({ feature_id: id }).where(eq(AgentTable.id, row.id)).run())
-    }).catch((error) => {
-      log.error("failed to migrate sessions from global to project", { error, projectId: id })
-    })
+  async function migrateFromGlobal(_id: string, _worktree: string) {
+    // Legacy migration from global project to per-project sessions.
+    // No longer applicable in OpenDesign v2 where agents belong to features.
   }
 
   export function setInitialized(id: string) {
