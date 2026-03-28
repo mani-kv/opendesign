@@ -1,6 +1,9 @@
 import { describe, expect, test } from "bun:test"
-import type { PermissionRequest,  Agent } from "@opencode-ai/sdk/v2/client"
+import type { PermissionRequest, Agent } from "@opencode-ai/sdk/v2/client"
 import { trimSessions } from "./session-trim"
+
+// Use a large epoch so SESSION_RECENT_WINDOW (4h = 14_400_000ms) is meaningful
+const BASE_NOW = 100_000_000_000
 
 const session = (input: { id: string; created: number; updated?: number }) =>
   ({
@@ -13,45 +16,56 @@ const session = (input: { id: string; created: number; updated?: number }) =>
 
 describe("trimSessions", () => {
   test("keeps base roots and recent roots beyond the limit", () => {
-    const now = 1_000_000
+    const now = BASE_NOW
+    const recent = now - 1_000 // 1 second ago — within 4h window
+    const old = now - 50_000_000 // ~14h ago — outside 4h window
     const list = [
-      session({ id: "a", created: now - 100_000 }),
-      session({ id: "b", created: now - 90_000 }),
-      session({ id: "c", created: now - 80_000 }),
-      session({ id: "d", created: now - 70_000, updated: now - 1_000 }),
-      session({ id: "e", created: now - 60_000 }),
+      session({ id: "a", created: old }),
+      session({ id: "b", created: old }),
+      session({ id: "c", created: old }),
+      session({ id: "d", created: old, updated: recent }), // recently updated
+      session({ id: "e", created: old }),
     ]
 
     const result = trimSessions(list, { limit: 2, permission: {}, now })
-    expect(result.map((x) => x.id)).toEqual(["a", "b", "c", "d"])
+    // base: ["a", "b"], recent (updated within 4h): ["d"]
+    expect(result.map((x) => x.id)).toEqual(["a", "b", "d"])
   })
 
-  test("keeps children when root is kept, permission exists, or child is recent", () => {
-    const now = 1_000_000
+  test("keeps only base sessions when no sessions are recent", () => {
+    const now = BASE_NOW
+    const old = now - 50_000_000
     const list = [
-      session({ id: "root-1", created: now - 1000 }),
-      session({ id: "root-2", created: now - 2000 }),
-      session({ id: "z-root", created: now - 30_000_000 }),
-      session({ id: "child-kept-by-root", created: now - 20_000_000 }),
-      session({ id: "child-kept-by-permission", created: now - 20_000_000 }),
-      session({ id: "child-kept-by-recency", created: now - 500 }),
-      session({ id: "child-trimmed", created: now - 20_000_000 }),
+      session({ id: "a", created: old }),
+      session({ id: "b", created: old }),
+      session({ id: "c", created: old }),
+      session({ id: "d", created: old }),
+      session({ id: "e", created: old }),
+    ]
+
+    const result = trimSessions(list, { limit: 2, permission: {}, now })
+    expect(result.map((x) => x.id)).toEqual(["a", "b"])
+  })
+
+  test("permission parameter is accepted (backwards compat)", () => {
+    const now = BASE_NOW
+    const old = now - 50_000_000
+    const list = [
+      session({ id: "root-1", created: now - 1_000 }),
+      session({ id: "root-2", created: now - 2_000 }),
+      session({ id: "old-1", created: old }),
+      session({ id: "old-2", created: old }),
     ]
 
     const result = trimSessions(list, {
       limit: 2,
       permission: {
-        "child-kept-by-permission": [{ id: "perm-1" } as PermissionRequest],
+        "old-1": [{ id: "perm-1" } as PermissionRequest],
       },
       now,
     })
 
-    expect(result.map((x) => x.id)).toEqual([
-      "child-kept-by-permission",
-      "child-kept-by-recency",
-      "child-kept-by-root",
-      "root-1",
-      "root-2",
-    ])
+    // base: ["old-1", "old-2"], recent: ["root-1", "root-2"]
+    expect(result.map((x) => x.id)).toEqual(["old-1", "old-2", "root-1", "root-2"])
   })
 })

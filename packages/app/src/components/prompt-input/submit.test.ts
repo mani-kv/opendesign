@@ -25,7 +25,7 @@ const promptValue: Prompt = [{ type: "text", content: "ls", start: 0, end: 2 }]
 const clientFor = (directory: string) => {
   createdClients.push(directory)
   return {
-    session: {
+    agent: {
       create: async () => {
         createdSessions.push(directory)
         return { data: { id: `session-${createdSessions.length}` } }

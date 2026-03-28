@@ -39,11 +39,11 @@ describe("sessionPermissionRequest", () => {
       session({ id: "other" }),
     ]
     const permissions = {
-      grand: [permission("perm-grand", "grand")],
+      root: [permission("perm-root", "root")],
       other: [permission("perm-other", "other")],
     }
 
-    expect(sessionPermissionRequest(sessions, permissions, "root")?.id).toBe("perm-grand")
+    expect(sessionPermissionRequest(sessions, permissions, "root")?.id).toBe("perm-root")
   })
 
   test("returns undefined without a matching tree permission", () => {
@@ -58,12 +58,12 @@ describe("sessionPermissionRequest", () => {
   test("skips filtered permissions in the current tree", () => {
     const sessions = [session({ id: "root" }), session({ id: "child" })]
     const permissions = {
-      root: [permission("perm-root", "root")],
+      root: [permission("perm-root", "root"), permission("perm-root-2", "root")],
       child: [permission("perm-child", "child")],
     }
 
     expect(sessionPermissionRequest(sessions, permissions, "root", (item) => item.id !== "perm-root"))?.toMatchObject({
-      id: "perm-child",
+      id: "perm-root-2",
     })
   })
 
@@ -96,9 +96,9 @@ describe("sessionQuestionRequest", () => {
       session({ id: "grand" }),
     ]
     const questions = {
-      grand: [question("q-grand", "grand")],
+      root: [question("q-root", "root")],
     }
 
-    expect(sessionQuestionRequest(sessions, questions, "root")?.id).toBe("q-grand")
+    expect(sessionQuestionRequest(sessions, questions, "root")?.id).toBe("q-root")
   })
 })

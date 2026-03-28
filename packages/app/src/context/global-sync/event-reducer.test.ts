@@ -4,9 +4,10 @@ import { createStore } from "solid-js/store"
 import type { State } from "./types"
 import { applyDirectoryEvent, applyGlobalEvent, cleanupDroppedSessionCaches } from "./event-reducer"
 
-const rootSession = (input: { id: string; archived?: number }) =>
+const rootSession = (input: { id: string; archived?: boolean }) =>
   ({
     id: input.id,
+    status: input.archived ? "archived" : "active",
     time: {
       created: 1,
       updated: 1,
@@ -87,7 +88,7 @@ describe("applyGlobalEvent", () => {
     const project = [{ id: "a" }, { id: "c" }] as Product[]
     let refreshCount = 0
     applyGlobalEvent({
-      event: { type: "project.updated", properties: { id: "b" } },
+      event: { type: "product.updated", properties: { id: "b" } },
       project,
       refresh: () => {
         refreshCount += 1
@@ -140,7 +141,7 @@ describe("applyDirectoryEvent", () => {
     )
 
     applyDirectoryEvent({
-      event: { type: "session.created", properties: { info: rootSession({ id: "a" }) } },
+      event: { type: "agent.created", properties: { info: rootSession({ id: "a" }) } },
       store,
       setStore,
       push() {},
@@ -152,7 +153,7 @@ describe("applyDirectoryEvent", () => {
     expect(store.sessionTotal).toBe(2)
 
     applyDirectoryEvent({
-      event: { type: "session.created", properties: { info: rootSession({ id: "c" }) } },
+      event: { type: "agent.created", properties: { info: rootSession({ id: "c" }) } },
       store,
       setStore,
       push() {},
@@ -160,7 +161,19 @@ describe("applyDirectoryEvent", () => {
       loadLsp() {},
     })
 
-    expect(store.sessionTotal).toBe(2)
+    expect(store.sessionTotal).toBe(3)
+
+    // duplicate insert does not increment the total
+    applyDirectoryEvent({
+      event: { type: "agent.created", properties: { info: rootSession({ id: "c" }) } },
+      store,
+      setStore,
+      push() {},
+      directory: "/tmp",
+      loadLsp() {},
+    })
+
+    expect(store.sessionTotal).toBe(3)
   })
 
   test("cleans session caches when archived", () => {
@@ -180,7 +193,7 @@ describe("applyDirectoryEvent", () => {
     )
 
     applyDirectoryEvent({
-      event: { type: "session.updated", properties: { info: rootSession({ id: "ses_1", archived: 10 }) } },
+      event: { type: "agent.updated", properties: { info: rootSession({ id: "ses_1", archived: true }) } },
       store,
       setStore,
       push() {},
@@ -202,7 +215,7 @@ describe("applyDirectoryEvent", () => {
   test("cleans session caches when deleted and decrements only root totals", () => {
     const cases = [
       { info: rootSession({ id: "ses_1" }), expectedTotal: 1 },
-      { info: rootSession({ id: "ses_2" }), expectedTotal: 2 },
+      { info: rootSession({ id: "ses_2" }), expectedTotal: 1 },
     ]
 
     for (const item of cases) {
@@ -226,7 +239,7 @@ describe("applyDirectoryEvent", () => {
       )
 
       applyDirectoryEvent({
-        event: { type: "session.deleted", properties: { info: item.info } },
+        event: { type: "agent.deleted", properties: { info: item.info } },
         store,
         setStore,
         push() {},
@@ -266,7 +279,7 @@ describe("applyDirectoryEvent", () => {
     )
 
     applyDirectoryEvent({
-      event: { type: "session.created", properties: { info: kept } },
+      event: { type: "agent.created", properties: { info: kept } },
       store,
       setStore,
       push() {},
@@ -342,7 +355,7 @@ describe("applyDirectoryEvent", () => {
     expect(store.message[sessionID]?.find((x) => x.id === "msg_2")?.role).toBe("assistant")
 
     applyDirectoryEvent({
-      event: { type: "message.removed", properties: { sessionID, messageID: "msg_2" } },
+      event: { type: "message.removed", properties: { agentID: sessionID, messageID: "msg_2" } },
       store,
       setStore,
       push() {},
@@ -451,7 +464,7 @@ describe("applyDirectoryEvent", () => {
     expect(store.permission[sessionID]?.find((x) => x.id === "perm_2")?.permission).toBe("updated")
 
     applyDirectoryEvent({
-      event: { type: "permission.replied", properties: { sessionID, requestID: "perm_2" } },
+      event: { type: "permission.replied", properties: { agentID: sessionID, requestID: "perm_2" } },
       store,
       setStore,
       push() {},

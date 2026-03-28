@@ -116,6 +116,17 @@ export function applyDirectoryEvent(input: {
     }
     case "agent.updated": {
       const info = (event.properties as { info: Agent }).info
+      if (info.status === "archived") {
+        const result = Binary.search(input.store.session, info.id, (s) => s.id)
+        if (result.found) {
+          const nextSessions = input.store.session.slice()
+          nextSessions.splice(result.index, 1)
+          input.setStore("session", nextSessions)
+          input.setStore("sessionTotal", (value) => Math.max(0, value - 1))
+        }
+        cleanupSessionCaches(input.setStore, info.id, input.setSessionTodo)
+        break
+      }
       const result = Binary.search(input.store.session, info.id, (s) => s.id)
       if (result.found) {
         input.setStore("session", result.index, reconcile(info))
