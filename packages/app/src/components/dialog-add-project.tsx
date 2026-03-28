@@ -42,7 +42,7 @@ export function DialogAddProject(props: { workspaceId: string; onAdded?: (id: st
       const projectId = uuid()
       const dir = projectDir(home, projectId)
       const client = globalSDK.createClient({ directory: dir })
-      const res = await client.session.create({ title: name })
+      const res = await client.agent.create({ title: name })
       const session = res.data
       if (!session?.id) throw new Error("No session created")
       workspace.projects.add(props.workspaceId, name, session.id, projectId)

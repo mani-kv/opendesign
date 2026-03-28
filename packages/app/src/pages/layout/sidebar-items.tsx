@@ -1,4 +1,4 @@
-import type { Message, Session, TextPart, UserMessage } from "@opencode-ai/sdk/v2/client"
+import type { Agent, Message, TextPart, UserMessage } from "@opencode-ai/sdk/v2/client"
 import { Avatar } from "@opencode-ai/ui/avatar"
 import { HoverCard } from "@opencode-ai/ui/hover-card"
 import { Icon } from "@opencode-ai/ui/icon"
@@ -66,7 +66,7 @@ export const ProjectIcon = (props: { project: LocalProject; class?: string; noti
 }
 
 export type SessionItemProps = {
-  session: Session
+  session: Agent
   slug: string
   mobile?: boolean
   dense?: boolean
@@ -75,15 +75,15 @@ export type SessionItemProps = {
   sidebarExpanded: Accessor<boolean>
   sidebarHovering: Accessor<boolean>
   nav: Accessor<HTMLElement | undefined>
-  hoverSession: Accessor<string | undefined>
-  setHoverSession: (id: string | undefined) => void
+  hoverAgent: Accessor<string | undefined>
+  setHoverAgent: (id: string | undefined) => void
   clearHoverProjectSoon: () => void
-  prefetchSession: (session: Session, priority?: "high" | "low") => void
-  archiveSession: (session: Session) => Promise<void>
+  prefetchAgent: (session: Agent, priority?: "high" | "low") => void
+  archiveAgent: (session: Agent) => Promise<void>
 }
 
 const SessionRow = (props: {
-  session: Session
+  session: Agent
   slug: string
   mobile?: boolean
   dense?: boolean
@@ -92,10 +92,10 @@ const SessionRow = (props: {
   hasPermissions: Accessor<boolean>
   hasError: Accessor<boolean>
   unseenCount: Accessor<number>
-  setHoverSession: (id: string | undefined) => void
+  setHoverAgent: (id: string | undefined) => void
   clearHoverProjectSoon: () => void
   sidebarOpened: Accessor<boolean>
-  prefetchSession: (session: Session, priority?: "high" | "low") => void
+  prefetchAgent: (session: Agent, priority?: "high" | "low") => void
   scheduleHoverPrefetch: () => void
   cancelHoverPrefetch: () => void
 }): JSX.Element => (
@@ -106,9 +106,9 @@ const SessionRow = (props: {
     onPointerLeave={props.cancelHoverPrefetch}
     onMouseEnter={props.scheduleHoverPrefetch}
     onMouseLeave={props.cancelHoverPrefetch}
-    onFocus={() => props.prefetchSession(props.session, "high")}
+    onFocus={() => props.prefetchAgent(props.session, "high")}
     onClick={() => {
-      props.setHoverSession(undefined)
+      props.setHoverAgent(undefined)
       if (props.sidebarOpened()) return
       props.clearHoverProjectSoon()
     }}
@@ -143,15 +143,15 @@ const SessionRow = (props: {
 const SessionHoverPreview = (props: {
   mobile?: boolean
   nav: Accessor<HTMLElement | undefined>
-  hoverSession: Accessor<string | undefined>
-  session: Session
+  hoverAgent: Accessor<string | undefined>
+  session: Agent
   sidebarHovering: Accessor<boolean>
   hoverReady: Accessor<boolean>
   hoverMessages: Accessor<UserMessage[] | undefined>
   language: ReturnType<typeof useLanguage>
   isActive: Accessor<boolean>
   slug: string
-  setHoverSession: (id: string | undefined) => void
+  setHoverAgent: (id: string | undefined) => void
   messageLabel: (message: Message) => string | undefined
   onMessageSelect: (message: Message) => void
   trigger: JSX.Element
@@ -163,8 +163,8 @@ const SessionHoverPreview = (props: {
     gutter={16}
     shift={-2}
     trigger={props.trigger}
-    open={props.hoverSession() === props.session.id}
-    onOpenChange={(open) => props.setHoverSession(open ? props.session.id : undefined)}
+    open={props.hoverAgent() === props.session.id}
+    onOpenChange={(open) => props.setHoverAgent(open ? props.session.id : undefined)}
   >
     <Show
       when={props.hoverReady()}
@@ -218,8 +218,8 @@ export const SessionItem = (props: SessionItemProps): JSX.Element => {
     }
     if (!user?.agent) return undefined
 
-    const agent = sessionStore.agent.find((a) => a.name === user.agent)
-    return agentColor(user.agent, agent?.color)
+    const agent = sessionStore.agentDef.find((a: any) => a.name === user.agent)
+    return agentColor(user.agent, (agent as any)?.color)
   })
 
   const hoverMessages = createMemo(() =>
@@ -242,7 +242,7 @@ export const SessionItem = (props: SessionItemProps): JSX.Element => {
     if (hoverPrefetch.current !== undefined) return
     hoverPrefetch.current = setTimeout(() => {
       hoverPrefetch.current = undefined
-      props.prefetchSession(props.session)
+      props.prefetchAgent(props.session)
     }, 200)
   }
 
@@ -264,10 +264,10 @@ export const SessionItem = (props: SessionItemProps): JSX.Element => {
       hasPermissions={hasPermissions}
       hasError={hasError}
       unseenCount={unseenCount}
-      setHoverSession={props.setHoverSession}
+      setHoverAgent={props.setHoverAgent}
       clearHoverProjectSoon={props.clearHoverProjectSoon}
       sidebarOpened={layout.sidebar.opened}
-      prefetchSession={props.prefetchSession}
+      prefetchAgent={props.prefetchAgent}
       scheduleHoverPrefetch={scheduleHoverPrefetch}
       cancelHoverPrefetch={cancelHoverPrefetch}
     />
@@ -290,7 +290,7 @@ export const SessionItem = (props: SessionItemProps): JSX.Element => {
         <SessionHoverPreview
           mobile={props.mobile}
           nav={props.nav}
-          hoverSession={props.hoverSession}
+          hoverAgent={props.hoverAgent}
           session={props.session}
           sidebarHovering={props.sidebarHovering}
           hoverReady={hoverReady}
@@ -298,7 +298,7 @@ export const SessionItem = (props: SessionItemProps): JSX.Element => {
           language={language}
           isActive={isActive}
           slug={props.slug}
-          setHoverSession={props.setHoverSession}
+          setHoverAgent={props.setHoverAgent}
           messageLabel={messageLabel}
           onMessageSelect={(message) => {
             if (!isActive())
@@ -328,7 +328,7 @@ export const SessionItem = (props: SessionItemProps): JSX.Element => {
             onClick={(event) => {
               event.preventDefault()
               event.stopPropagation()
-              void props.archiveSession(props.session)
+              void props.archiveAgent(props.session)
             }}
           />
         </Tooltip>
@@ -343,7 +343,7 @@ export const NewSessionItem = (props: {
   dense?: boolean
   sidebarExpanded: Accessor<boolean>
   clearHoverProjectSoon: () => void
-  setHoverSession: (id: string | undefined) => void
+  setHoverAgent: (id: string | undefined) => void
 }): JSX.Element => {
   const layout = useLayout()
   const language = useLanguage()
@@ -355,7 +355,7 @@ export const NewSessionItem = (props: {
       end
       class={`flex items-center justify-between gap-3 min-w-0 text-left w-full focus:outline-none ${props.dense ? "py-0.5" : "py-1"}`}
       onClick={() => {
-        props.setHoverSession(undefined)
+        props.setHoverAgent(undefined)
         if (layout.sidebar.opened()) return
         props.clearHoverProjectSoon()
       }}
@@ -397,3 +397,8 @@ export const SessionSkeleton = (props: { count?: number }): JSX.Element => {
     </div>
   )
 }
+
+// Aliases for sidebar-workspace.tsx which uses Agent naming
+export const NewAgentItem = NewSessionItem
+export const AgentItem = SessionItem
+export const AgentSkeleton = SessionSkeleton

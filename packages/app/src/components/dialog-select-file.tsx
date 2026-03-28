@@ -199,17 +199,16 @@ function createSessionEntries(props: {
     state.inflight = Promise.all(
       dirs.map((directory) => {
         const description = props.label(directory)
-        return props.globalSDK.client.session
-          .list({ directory, roots: true })
-          .then((x) =>
+        return props.globalSDK.client.agent
+          .list({ directory } as any)
+          .then((x: any) =>
             (x.data ?? [])
-              .filter((s) => !!s?.id)
-              .map((s) => ({
+              .filter((s: any) => !!s?.id)
+              .map((s: any) => ({
                 id: s.id,
                 title: s.title ?? props.language.t("command.session.new"),
                 description,
                 directory,
-                archived: s.time?.archived,
                 updated: s.time?.updated,
               })),
           )
@@ -220,7 +219,6 @@ function createSessionEntries(props: {
                 title: string
                 description: string
                 directory: string
-                archived?: number
                 updated?: number
               }[],
           )

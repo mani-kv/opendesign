@@ -182,7 +182,7 @@ Accumulated knowledge about this codebase. Read before starting any task. Update
 - Exports `createSandpackSrcdoc(files, entry?)` returning an HTML srcdoc string.
 - Runtime loads React 18 + ReactDOM + Babel standalone from unpkg CDN; the `window.load` event guards boot so scripts are ready before `boot()` runs.
 - Module system: `loadModule(path)` → Babel-transforms JS/JSX/TS/TSX → `new Function(…)` CommonJS execution; CSS files are injected as `<style id="css-*">` tags.
-- Path resolution: exact match first, then tries 8 extension suffixes (.js/.jsx/.ts/.tsx + /index.* variants).
+- Path resolution: exact match first, then tries 8 extension suffixes (.js/.jsx/.ts/.tsx + /index.\* variants).
 - CSS files are pre-injected in key-order before entry module loads, so `tokens.css` custom properties are available to components.
 - `sandpack:update-files` postMessage clears module cache + removes injected CSS tags, then re-boots — full hot-reload.
 - `SANDPACK_SRCDOC` constant kept for backward compat = `createSandpackSrcdoc({})`.
@@ -239,7 +239,7 @@ Accumulated knowledge about this codebase. Read before starting any task. Update
 
 - **Tool.Context type** (`tool/tool.ts`): `sessionID` field renamed to `agentID`. All tool implementations updated.
 - **PermissionNext.Request** (`permission/next.ts`): `sessionID` renamed to `agentID` in both the Request schema and the Replied event.
-- **Plugin Hooks** (`packages/plugin/src/index.ts`): All hook input types renamed `sessionID`→`agentID` (chat.message, chat.params, chat.headers, command.execute.before, tool.execute.before/after, shell.env, experimental.*).
+- **Plugin Hooks** (`packages/plugin/src/index.ts`): All hook input types renamed `sessionID`→`agentID` (chat.message, chat.params, chat.headers, command.execute.before, tool.execute.before/after, shell.env, experimental.\*).
 - **Plugin ToolContext** (`packages/plugin/src/tool.ts`): `sessionID`→`agentID`.
 - **Cascade concern**: The old `permission/index.ts` (legacy permission module), `acp/agent.ts`, `cli/cmd/run.ts`, and several server routes still use `sessionID`. These need separate migration.
 
@@ -266,3 +266,14 @@ _Last updated: 2026-03-26 — Layer 5: session/ directory fully deleted, all mod
 - **`migrateFromGlobal` gutted**: Was querying `AgentTable.feature_id = "global"` which is invalid in new schema. Now a no-op.
 - **Migration system**: Custom `migrations()` in `db.ts` reads `migration.sql` from timestamped dirs. Sorted by timestamp. `snapshot.json` is not used at runtime (only by Drizzle Kit).
 - **Data loss accepted**: Old session/workspace data is dropped. No data migration.
+
+---
+
+## Frontend Product/Feature Routing (2026-03-27)
+
+- **ProductScopeProvider** (`packages/app/src/context/product-scope.tsx`): Context providing `productId`, `featureId`, `agentId` (from `?agent=` search param), `scopeKey`. Falls back to `useParams()` when no provider wraps the tree.
+- **ProductLayout** (`packages/app/src/pages/product-layout.tsx`): Route layout wrapping children in `ProductScopeProvider`.
+- **Routes**: `/product/:productId/feature/:featureId` added in `app.tsx` alongside existing `/project/...` routes.
+- **AgentChatProvider** (`packages/app/src/context/agent-chat.tsx`): Manages agent message state. SDK methods: `sdk.client.agent.messages({ agentID })` returns `Array<{ info: Message, parts: Part[] }>`, `sdk.client.agent.promptAsync({ agentID, parts })`, `sdk.client.agent.abort({ agentID })`.
+- **FeaturePage** (`packages/app/src/pages/feature.tsx`): Canvas placeholder + conditional agent chat sidebar (shown when `?agent=` param set). Agent tabs + minimal composer.
+- **Pre-existing typecheck errors FIXED** (2026-03-27 — Task 10): All frontend type errors resolved. Key mappings: `client.session.*` → `client.agent.*`, `client.project.*` → `client.product.*`, SDK type `Session` → `Agent`, SDK type `Project` → `Product`, `sessionID` → `agentID` on Message/Part/PermissionRequest. Agent definitions (name, mode, hidden, model, variant) use local `AgentDefInfo` type since SDK codegen collapsed them into the `Agent` instance type. `State.agent` renamed to `State.agentDef`, `State.session` holds `Agent[]` instances. `parentID` and `time.archived` removed from agent logic (not on `Agent` type). `share`/`unshare` SDK methods removed — calls are no-ops. `permission.respond()` → `permission.reply()`. Canvas GET/PUT routes removed — canvas loads empty state.

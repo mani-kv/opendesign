@@ -2,7 +2,7 @@ import type {
   Config,
   OpencodeClient,
   Path,
-  Project,
+  Product,
   ProviderAuthResponse,
   ProviderListResponse,
   Todo,
@@ -40,7 +40,7 @@ type GlobalStore = {
   ready: boolean
   error?: InitError
   path: Path
-  project: Project[]
+  project: Product[]
   session_todo: {
     [sessionID: string]: Todo[]
   }
@@ -63,7 +63,7 @@ function createGlobalSync() {
 
   const [projectCache, setProjectCache, projectInit] = persisted(
     Persist.global("globalSync.project", ["globalSync.project.v1"]),
-    createStore({ value: [] as Project[] }),
+    createStore({ value: [] as Product[] }),
   )
 
   const [globalStore, setGlobalStore] = createStore<GlobalStore>({
@@ -91,7 +91,7 @@ function createGlobalSync() {
     )
   }
 
-  const setProjects = (next: Project[] | ((draft: Project[]) => void)) => {
+  const setProjects = (next: Product[] | ((draft: Product[]) => void)) => {
     projectWritten = true
     if (typeof next === "function") {
       setGlobalStore("project", produce(next))
@@ -104,7 +104,7 @@ function createGlobalSync() {
 
   const setBootStore = ((...input: unknown[]) => {
     if (input[0] === "project" && Array.isArray(input[1])) {
-      setProjects(input[1] as Project[])
+      setProjects(input[1] as Product[])
       return input[1]
     }
     return (setGlobalStore as (...args: unknown[]) => unknown)(...input)
@@ -112,7 +112,7 @@ function createGlobalSync() {
 
   const set = ((...input: unknown[]) => {
     if (input[0] === "project" && (Array.isArray(input[1]) || typeof input[1] === "function")) {
-      setProjects(input[1] as Project[] | ((draft: Project[]) => void))
+      setProjects(input[1] as Product[] | ((draft: Product[]) => void))
       return input[1]
     }
     return (setGlobalStore as (...args: unknown[]) => unknown)(...input)
@@ -199,16 +199,14 @@ function createGlobalSync() {
     const promise = loadRootSessionsWithFallback({
       directory,
       limit,
-      list: (query) => globalSDK.client.session.list(query),
+      list: (query) => globalSDK.client.agent.list(query as any),
     })
       .then((x) => {
         const nonArchived = (x.data ?? [])
           .filter((s) => !!s?.id)
-          .filter((s) => !s.time?.archived)
           .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))
         const limit = store.limit
-        const childSessions = store.session.filter((s) => !!s.parentID)
-        const sessions = trimSessions([...nonArchived, ...childSessions], {
+        const sessions = trimSessions(nonArchived, {
           limit,
           permission: store.permission,
         })

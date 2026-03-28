@@ -53,19 +53,9 @@ export function CanvasTabContent() {
     }
 
     setLoading(true)
-    sdk.client.session.canvas
-      .get({ sessionID: sid })
-      .then((res) => {
-        if (!isActive() || sessionId() !== sid) return
-        const json = res.data?.state ?? EMPTY_CANVAS_JSON
-        loadCanvas(json, sid)
-        afterLoad()
-      })
-      .catch(() => {
-        if (!isActive() || sessionId() !== sid) return
-        loadCanvas(EMPTY_CANVAS_JSON, sid)
-        afterLoad()
-      })
+    // Canvas routes removed from SDK — load empty canvas
+    loadCanvas(EMPTY_CANVAS_JSON, sid)
+    afterLoad()
   }
 
   // React to this project becoming active/inactive.
@@ -88,11 +78,7 @@ export function CanvasTabContent() {
 
   const saveSessionCanvas = (sid: string) => {
     saveCanvas(sid, async (json) => {
-      try {
-        await sdk.client.session.canvas.put({ sessionID: sid, state: json })
-      } catch {
-        // Save failed — cached locally, will retry
-      }
+      // Canvas routes removed from SDK — no-op
     })
   }
 

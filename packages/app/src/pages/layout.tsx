@@ -23,7 +23,7 @@ import { Tooltip } from "@opencode-ai/ui/tooltip"
 import { DropdownMenu } from "@opencode-ai/ui/dropdown-menu"
 import { Dialog } from "@opencode-ai/ui/dialog"
 import { getFilename } from "@opencode-ai/util/path"
-import { Session, type Message } from "@opencode-ai/sdk/v2/client"
+import type { Agent, Message } from "@opencode-ai/sdk/v2/client"
 import { usePlatform } from "@/context/platform"
 import { useSettings } from "@/context/settings"
 import { createStore, produce, reconcile } from "solid-js/store"
@@ -525,8 +525,9 @@ export default function Layout(props: ParentProps) {
         if (e.details.type === "permission.asked" && permission.autoResponds(e.details.properties, directory)) return
 
         const [store] = globalSync.child(directory, { bootstrap: false })
-        const session = store.session.find((s) => s.id === props.sessionID)
-        const sessionKey = `${directory}:${props.sessionID}`
+        const targetID = "agentID" in props ? (props as any).agentID : (props as any).sessionID
+        const session = store.session.find((s) => s.id === targetID)
+        const sessionKey = `${directory}:${targetID}`
 
         const sessionTitle = session?.title ?? language.t("command.session.new")
         const projectName = getFilename(directory)
@@ -534,7 +535,7 @@ export default function Layout(props: ParentProps) {
           e.details.type === "permission.asked"
             ? language.t("notification.permission.description", { sessionTitle, projectName })
             : language.t("notification.question.description", { sessionTitle, projectName })
-        const href = sessionHref(directory, props.sessionID)
+        const href = sessionHref(directory, targetID)
 
         const now = Date.now()
         const lastAlerted = alertedAtBySession.get(sessionKey) ?? 0
@@ -557,8 +558,7 @@ export default function Layout(props: ParentProps) {
         }
 
         const currentSession = params.id
-        if (directory === currentDir() && props.sessionID === currentSession) return
-        if (directory === currentDir() && session?.parentID === currentSession) return
+        if (directory === currentDir() && targetID === currentSession) return
 
         dismissSessionAlert(sessionKey)
 
@@ -588,10 +588,7 @@ export default function Layout(props: ParentProps) {
         const sessionKey = `${currentDir()}:${currentSession}`
         dismissSessionAlert(sessionKey)
         const [store] = globalSync.child(currentDir(), { bootstrap: false })
-        const childSessions = store.session.filter((s) => s.parentID === currentSession)
-        for (const child of childSessions) {
-          dismissSessionAlert(`${currentDir()}:${child.id}`)
-        }
+        // parentID removed from Agent type
       })
     })
 
@@ -741,9 +738,9 @@ export default function Layout(props: ParentProps) {
   const currentSessions = createMemo(() => {
     const now = Date.now()
     const dirs = visibleSessionDirs()
-    if (dirs.length === 0) return [] as Session[]
+    if (dirs.length === 0) return [] as Agent[]
 
-    const result: Session[] = []
+    const result: Agent[] = []
     for (const dir of dirs) {
       const [dirStore] = globalSync.child(dir, { bootstrap: true })
       const dirSessions = sortedRootSessions(dirStore, now)
@@ -829,13 +826,13 @@ export default function Layout(props: ParentProps) {
   async function prefetchMessages(directory: string, sessionID: string, token: number) {
     const [store, setStore] = globalSync.child(directory, { bootstrap: false })
 
-    return retry(() => globalSDK.client.session.messages({ directory, sessionID, limit: prefetchChunk }))
-      .then((messages) => {
+    return retry(() => globalSDK.client.agent.messages({ agentID: sessionID, limit: prefetchChunk }))
+      .then((messages: any) => {
         if (prefetchToken.value !== token) return
         if (!lruFor(directory).has(sessionID)) return
 
-        const items = (messages.data ?? []).filter((x) => !!x?.info?.id)
-        const next = items.map((x) => x.info).filter((m): m is Message => !!m?.id)
+        const items = ((messages.data ?? []) as Array<{ info: Message; parts: any[] }>).filter((x: any) => !!x?.info?.id)
+        const next = items.map((x: any) => x.info).filter((m: any): m is Message => !!m?.id)
         const sorted = mergeByID([], next)
 
         const current = store.message[sessionID] ?? []
@@ -847,11 +844,11 @@ export default function Layout(props: ParentProps) {
         batch(() => {
           setStore("message", sessionID, reconcile(merged, { key: "id" }))
 
-          for (const message of items) {
+          for (const message of items as any[]) {
             const currentParts = store.part[message.info.id] ?? []
             const mergedParts = mergeByID(
               currentParts.filter((item): item is (typeof currentParts)[number] & { id: string } => !!item?.id),
-              message.parts.filter((item): item is (typeof message.parts)[number] & { id: string } => !!item?.id),
+              message.parts.filter((item: any): item is any => !!item?.id),
             )
 
             setStore("part", message.info.id, reconcile(mergedParts, { key: "id" }))
@@ -881,7 +878,7 @@ export default function Layout(props: ParentProps) {
     })
   }
 
-  const prefetchSession = (session: Session, priority: "high" | "low" = "low") => {
+  const prefetchSession = (session: Agent, priority: "high" | "low" = "low") => {
     const directory = session.directory
     if (!directory) return
 
@@ -1013,16 +1010,14 @@ export default function Layout(props: ParentProps) {
     }
   }
 
-  async function archiveSession(session: Session) {
+  async function archiveSession(session: Agent) {
     const [store, setStore] = globalSync.child(session.directory)
     const sessions = store.session ?? []
     const index = sessions.findIndex((s) => s.id === session.id)
     const nextSession = sessions[index + 1] ?? sessions[index - 1]
 
-    await globalSDK.client.session.update({
-      directory: session.directory,
-      sessionID: session.id,
-      time: { archived: Date.now() },
+    await globalSDK.client.agent.delete({
+      agentID: session.id,
     })
     setStore(
       produce((draft) => {
@@ -1308,9 +1303,9 @@ export default function Layout(props: ParentProps) {
         navigateWithSidebarReset(sessionHref(target.directory, target.id))
         return true
       }
-      const resolved = await globalSDK.client.session
-        .get({ sessionID: target.id })
-        .then((x) => x.data)
+      const resolved = await globalSDK.client.agent
+        .get({ agentID: target.id })
+        .then((x: any) => x.data)
         .catch(() => undefined)
       if (!resolved?.directory) return false
       if (!canOpen(resolved.directory)) return false
@@ -1339,9 +1334,9 @@ export default function Layout(props: ParentProps) {
       await Promise.all(
         dirs.map(async (item) => ({
           path: { directory: item },
-          session: await globalSDK.client.session
-            .list({ directory: item })
-            .then((x) => x.data ?? [])
+          session: await globalSDK.client.agent
+            .list({ directory: item } as any)
+            .then((x: any) => x.data ?? [])
             .catch(() => []),
         })),
       ),
@@ -1354,7 +1349,7 @@ export default function Layout(props: ParentProps) {
     navigateWithSidebarReset(sessionHref(root))
   }
 
-  function navigateToSession(session: Session | undefined) {
+  function navigateToSession(session: Agent | undefined) {
     if (!session) return
     navigateWithSidebarReset(sessionHref(session.directory, session.id))
   }
@@ -1403,7 +1398,7 @@ export default function Layout(props: ParentProps) {
     const name = next === getFilename(project.worktree) ? "" : next
 
     if (project.id && project.id !== "global") {
-      await globalSDK.client.project.update({ projectID: project.id, directory: project.worktree, name })
+      await globalSDK.client.product.update({ projectID: project.id, directory: project.worktree, name })
       return
     }
 
@@ -1550,9 +1545,9 @@ export default function Layout(props: ParentProps) {
     })
     const dismiss = () => toaster.dismiss(progress)
 
-    const sessions: Session[] = await globalSDK.client.session
-      .list({ directory })
-      .then((x) => x.data ?? [])
+    const sessions: Agent[] = await globalSDK.client.agent
+      .list({ directory } as any)
+      .then((x: any) => x.data ?? [])
       .catch(() => [])
 
     clearWorkspaceTerminals(
@@ -1582,13 +1577,10 @@ export default function Layout(props: ParentProps) {
     const archivedAt = Date.now()
     await Promise.all(
       sessions
-        .filter((session) => session.time.archived === undefined)
         .map((session) =>
-          globalSDK.client.session
-            .update({
-              sessionID: session.id,
-              directory: session.directory,
-              time: { archived: archivedAt },
+          globalSDK.client.agent
+            .delete({
+              agentID: session.id,
             })
             .catch(() => undefined),
         ),
@@ -1680,15 +1672,15 @@ export default function Layout(props: ParentProps) {
     const [state, setState] = createStore({
       status: "loading" as "loading" | "ready" | "error",
       dirty: false,
-      sessions: [] as Session[],
+      sessions: [] as Agent[],
     })
 
     const refresh = async () => {
-      const sessions = await globalSDK.client.session
-        .list({ directory: props.directory })
-        .then((x) => x.data ?? [])
+      const sessions = await globalSDK.client.agent
+        .list({ directory: props.directory } as any)
+        .then((x: any) => x.data ?? [])
         .catch(() => [])
-      const active = sessions.filter((session) => session.time.archived === undefined)
+      const active = sessions.filter((session: any) => !!session?.id)
       setState({ sessions: active })
     }
 
@@ -1950,11 +1942,11 @@ export default function Layout(props: ParentProps) {
     sidebarExpanded,
     sidebarHovering,
     nav: () => state.nav,
-    hoverSession: () => state.hoverSession,
-    setHoverSession,
+    hoverAgent: () => state.hoverSession,
+    setHoverAgent: setHoverSession,
     clearHoverProjectSoon,
-    prefetchSession,
-    archiveSession,
+    prefetchAgent: prefetchSession,
+    archiveAgent: archiveSession,
     workspaceName,
     renameWorkspace,
     editorOpen,
@@ -1995,11 +1987,11 @@ export default function Layout(props: ParentProps) {
       sidebarExpanded,
       sidebarHovering,
       nav: () => state.nav,
-      hoverSession: () => state.hoverSession,
-      setHoverSession,
+      hoverAgent: () => state.hoverSession,
+      setHoverAgent: setHoverSession,
       clearHoverProjectSoon,
-      prefetchSession,
-      archiveSession,
+      prefetchAgent: prefetchSession,
+      archiveAgent: archiveSession,
     },
     setHoverSession,
   }

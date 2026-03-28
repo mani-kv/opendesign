@@ -67,9 +67,9 @@ export const DialogFork: Component = () => {
       attachmentName: language.t("common.attachment"),
     })
 
-    sdk.client.session
-      .fork({ sessionID, messageID: item.id })
-      .then((forked) => {
+    sdk.client.agent
+      .fork({ agentID: sessionID, messageID: item.id })
+      .then((forked: any) => {
         if (!forked.data) {
           showToast({ title: language.t("common.requestFailed") })
           return

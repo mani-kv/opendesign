@@ -41,10 +41,10 @@ function sessionLineage(session: { id: string; parentID?: string }[], sessionID:
 export function autoRespondsPermission(
   autoAccept: Record<string, boolean>,
   session: { id: string; parentID?: string }[],
-  permission: { sessionID: string },
+  permission: { agentID: string },
   directory?: string,
 ) {
-  const value = sessionLineage(session, permission.sessionID)
+  const value = sessionLineage(session, permission.agentID)
     .map((id) => accepted(autoAccept, id, directory))
     .find((item): item is boolean => item !== undefined)
   return value ?? true

@@ -1,18 +1,17 @@
 import { describe, expect, test } from "bun:test"
-import type { PermissionRequest, QuestionRequest, Session } from "@opencode-ai/sdk/v2/client"
+import type { PermissionRequest, QuestionRequest,  Agent } from "@opencode-ai/sdk/v2/client"
 import { sessionPermissionRequest, sessionQuestionRequest } from "./session-request-tree"
 
-const session = (input: { id: string; parentID?: string }) =>
+const session = (input: { id: string }) =>
   ({
     id: input.id,
-    parentID: input.parentID,
-  }) as Session
+  }) as unknown as Agent
 
-const permission = (id: string, sessionID: string) =>
+const permission = (id: string, agentID: string) =>
   ({
     id,
-    sessionID,
-  }) as PermissionRequest
+    agentID,
+  }) as unknown as PermissionRequest
 
 const question = (id: string, sessionID: string) =>
   ({
@@ -23,7 +22,7 @@ const question = (id: string, sessionID: string) =>
 
 describe("sessionPermissionRequest", () => {
   test("prefers the current session permission", () => {
-    const sessions = [session({ id: "root" }), session({ id: "child", parentID: "root" })]
+    const sessions = [session({ id: "root" }), session({ id: "child" })]
     const permissions = {
       root: [permission("perm-root", "root")],
       child: [permission("perm-child", "child")],
@@ -35,8 +34,8 @@ describe("sessionPermissionRequest", () => {
   test("returns a nested child permission", () => {
     const sessions = [
       session({ id: "root" }),
-      session({ id: "child", parentID: "root" }),
-      session({ id: "grand", parentID: "child" }),
+      session({ id: "child" }),
+      session({ id: "grand" }),
       session({ id: "other" }),
     ]
     const permissions = {
@@ -48,7 +47,7 @@ describe("sessionPermissionRequest", () => {
   })
 
   test("returns undefined without a matching tree permission", () => {
-    const sessions = [session({ id: "root" }), session({ id: "child", parentID: "root" })]
+    const sessions = [session({ id: "root" }), session({ id: "child" })]
     const permissions = {
       other: [permission("perm-other", "other")],
     }
@@ -57,7 +56,7 @@ describe("sessionPermissionRequest", () => {
   })
 
   test("skips filtered permissions in the current tree", () => {
-    const sessions = [session({ id: "root" }), session({ id: "child", parentID: "root" })]
+    const sessions = [session({ id: "root" }), session({ id: "child" })]
     const permissions = {
       root: [permission("perm-root", "root")],
       child: [permission("perm-child", "child")],
@@ -69,7 +68,7 @@ describe("sessionPermissionRequest", () => {
   })
 
   test("returns undefined when all tree permissions are filtered out", () => {
-    const sessions = [session({ id: "root" }), session({ id: "child", parentID: "root" })]
+    const sessions = [session({ id: "root" }), session({ id: "child" })]
     const permissions = {
       root: [permission("perm-root", "root")],
       child: [permission("perm-child", "child")],
@@ -81,7 +80,7 @@ describe("sessionPermissionRequest", () => {
 
 describe("sessionQuestionRequest", () => {
   test("prefers the current session question", () => {
-    const sessions = [session({ id: "root" }), session({ id: "child", parentID: "root" })]
+    const sessions = [session({ id: "root" }), session({ id: "child" })]
     const questions = {
       root: [question("q-root", "root")],
       child: [question("q-child", "child")],
@@ -93,8 +92,8 @@ describe("sessionQuestionRequest", () => {
   test("returns a nested child question", () => {
     const sessions = [
       session({ id: "root" }),
-      session({ id: "child", parentID: "root" }),
-      session({ id: "grand", parentID: "child" }),
+      session({ id: "child" }),
+      session({ id: "grand" }),
     ]
     const questions = {
       grand: [question("q-grand", "grand")],

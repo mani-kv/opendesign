@@ -1,13 +1,13 @@
 import { Binary } from "@opencode-ai/util/binary"
 import { produce, reconcile, type SetStoreFunction, type Store } from "solid-js/store"
 import type {
+  Agent,
   FileDiff,
   Message,
   Part,
   PermissionRequest,
-  Project,
+  Product,
   QuestionRequest,
-  Session,
   SessionStatus,
   Todo,
 } from "@opencode-ai/sdk/v2/client"
@@ -17,8 +17,8 @@ import { dropSessionCaches } from "./session-cache"
 
 export function applyGlobalEvent(input: {
   event: { type: string; properties?: unknown }
-  project: Project[]
-  setGlobalProject: (next: Project[] | ((draft: Project[]) => void)) => void
+  project: Product[]
+  setGlobalProject: (next: Product[] | ((draft: Product[]) => void)) => void
   refresh: () => void
 }) {
   if (input.event.type === "global.disposed" || input.event.type === "server.connected") {
@@ -26,8 +26,8 @@ export function applyGlobalEvent(input: {
     return
   }
 
-  if (input.event.type !== "project.updated") return
-  const properties = input.event.properties as Project
+  if (input.event.type !== "product.updated") return
+  const properties = input.event.properties as Product
   const result = Binary.search(input.project, properties.id, (s) => s.id)
   if (result.found) {
     input.setGlobalProject((draft) => {
@@ -42,14 +42,14 @@ export function applyGlobalEvent(input: {
 
 function cleanupSessionCaches(
   setStore: SetStoreFunction<State>,
-  sessionID: string,
-  setSessionTodo?: (sessionID: string, todos: Todo[] | undefined) => void,
+  agentID: string,
+  setSessionTodo?: (agentID: string, todos: Todo[] | undefined) => void,
 ) {
-  if (!sessionID) return
-  setSessionTodo?.(sessionID, undefined)
+  if (!agentID) return
+  setSessionTodo?.(agentID, undefined)
   setStore(
     produce((draft) => {
-      dropSessionCaches(draft, [sessionID])
+      dropSessionCaches(draft, [agentID])
     }),
   )
 }
@@ -57,8 +57,8 @@ function cleanupSessionCaches(
 export function cleanupDroppedSessionCaches(
   store: Store<State>,
   setStore: SetStoreFunction<State>,
-  next: Session[],
-  setSessionTodo?: (sessionID: string, todos: Todo[] | undefined) => void,
+  next: Agent[],
+  setSessionTodo?: (agentID: string, todos: Todo[] | undefined) => void,
 ) {
   const keep = new Set(next.map((item) => item.id))
   const stale = [
@@ -69,12 +69,12 @@ export function cleanupDroppedSessionCaches(
     ...Object.keys(store.question),
     ...Object.keys(store.session_status),
     ...Object.values(store.part)
-      .map((parts) => parts?.find((part) => !!part?.sessionID)?.sessionID)
-      .filter((sessionID): sessionID is string => !!sessionID),
-  ].filter((sessionID, index, list) => !keep.has(sessionID) && list.indexOf(sessionID) === index)
+      .map((parts) => parts?.find((part) => !!part?.agentID)?.agentID)
+      .filter((agentID): agentID is string => !!agentID),
+  ].filter((agentID, index, list) => !keep.has(agentID) && list.indexOf(agentID) === index)
   if (stale.length === 0) return
-  for (const sessionID of stale) {
-    setSessionTodo?.(sessionID, undefined)
+  for (const agentID of stale) {
+    setSessionTodo?.(agentID, undefined)
   }
   setStore(
     produce((draft) => {
@@ -91,7 +91,7 @@ export function applyDirectoryEvent(input: {
   directory: string
   loadLsp: () => void
   vcsCache?: VcsCache
-  setSessionTodo?: (sessionID: string, todos: Todo[] | undefined) => void
+  setSessionTodo?: (agentID: string, todos: Todo[] | undefined) => void
 }) {
   const event = input.event
   switch (event.type) {
@@ -99,8 +99,8 @@ export function applyDirectoryEvent(input: {
       input.push(input.directory)
       return
     }
-    case "session.created": {
-      const info = (event.properties as { info: Session }).info
+    case "agent.created": {
+      const info = (event.properties as { info: Agent }).info
       const result = Binary.search(input.store.session, info.id, (s) => s.id)
       if (result.found) {
         input.setStore("session", result.index, reconcile(info))
@@ -111,23 +111,12 @@ export function applyDirectoryEvent(input: {
       const trimmed = trimSessions(next, { limit: input.store.limit, permission: input.store.permission })
       input.setStore("session", reconcile(trimmed, { key: "id" }))
       cleanupDroppedSessionCaches(input.store, input.setStore, trimmed, input.setSessionTodo)
-      if (!info.parentID) input.setStore("sessionTotal", (value) => value + 1)
+      input.setStore("sessionTotal", (value) => value + 1)
       break
     }
-    case "session.updated": {
-      const info = (event.properties as { info: Session }).info
+    case "agent.updated": {
+      const info = (event.properties as { info: Agent }).info
       const result = Binary.search(input.store.session, info.id, (s) => s.id)
-      if (info.time.archived) {
-        if (result.found) {
-          const nextSessions = input.store.session.slice()
-          nextSessions.splice(result.index, 1)
-          input.setStore("session", nextSessions)
-        }
-        cleanupSessionCaches(input.setStore, info.id, input.setSessionTodo)
-        if (info.parentID) break
-        input.setStore("sessionTotal", (value) => Math.max(0, value - 1))
-        break
-      }
       if (result.found) {
         input.setStore("session", result.index, reconcile(info))
         break
@@ -139,8 +128,8 @@ export function applyDirectoryEvent(input: {
       cleanupDroppedSessionCaches(input.store, input.setStore, trimmed, input.setSessionTodo)
       break
     }
-    case "session.deleted": {
-      const info = (event.properties as { info: Session }).info
+    case "agent.deleted": {
+      const info = (event.properties as { info: Agent }).info
       const result = Binary.search(input.store.session, info.id, (s) => s.id)
       if (result.found) {
         const nextSessions = input.store.session.slice()
@@ -148,19 +137,18 @@ export function applyDirectoryEvent(input: {
         input.setStore("session", nextSessions)
       }
       cleanupSessionCaches(input.setStore, info.id, input.setSessionTodo)
-      if (info.parentID) break
       input.setStore("sessionTotal", (value) => Math.max(0, value - 1))
       break
     }
-    case "session.diff": {
-      const props = event.properties as { sessionID: string; diff: FileDiff[] }
-      input.setStore("session_diff", props.sessionID, reconcile(props.diff, { key: "file" }))
+    case "agent.diff": {
+      const props = event.properties as { agentID: string; diff: FileDiff[] }
+      input.setStore("session_diff", props.agentID, reconcile(props.diff, { key: "file" }))
       break
     }
     case "todo.updated": {
-      const props = event.properties as { sessionID: string; todos: Todo[] }
-      input.setStore("todo", props.sessionID, reconcile(props.todos, { key: "id" }))
-      input.setSessionTodo?.(props.sessionID, props.todos)
+      const props = event.properties as { agentID: string; todos: Todo[] }
+      input.setStore("todo", props.agentID, reconcile(props.todos, { key: "id" }))
+      input.setSessionTodo?.(props.agentID, props.todos)
       break
     }
     case "session.status": {
@@ -170,30 +158,30 @@ export function applyDirectoryEvent(input: {
     }
     case "message.updated": {
       const info = (event.properties as { info: Message }).info
-      const messages = input.store.message[info.sessionID]
+      const messages = input.store.message[info.agentID]
       if (!messages) {
-        input.setStore("message", info.sessionID, [info])
+        input.setStore("message", info.agentID, [info])
         break
       }
       const result = Binary.search(messages, info.id, (m) => m.id)
       if (result.found) {
-        input.setStore("message", info.sessionID, result.index, reconcile(info))
+        input.setStore("message", info.agentID, result.index, reconcile(info))
         break
       }
       const next = messages.slice()
       next.splice(result.index, 0, info)
-      input.setStore("message", info.sessionID, next)
+      input.setStore("message", info.agentID, next)
       break
     }
     case "message.removed": {
-      const props = event.properties as { sessionID: string; messageID: string }
-      const msgs = input.store.message[props.sessionID]
+      const props = event.properties as { agentID: string; messageID: string }
+      const msgs = input.store.message[props.agentID]
       if (msgs) {
         const result = Binary.search(msgs, props.messageID, (m) => m.id)
         if (result.found) {
           const nextMsgs = msgs.slice()
           nextMsgs.splice(result.index, 1)
-          input.setStore("message", props.sessionID, nextMsgs)
+          input.setStore("message", props.agentID, nextMsgs)
         }
       }
       input.setStore(
@@ -229,7 +217,11 @@ export function applyDirectoryEvent(input: {
         const nextList = parts.slice()
         nextList.splice(result.index, 1)
         if (nextList.length === 0) {
-          input.setStore(produce((draft) => { delete draft.part[props.messageID] }))
+          input.setStore(
+            produce((draft) => {
+              delete draft.part[props.messageID]
+            }),
+          )
         } else {
           input.setStore("part", props.messageID, nextList)
         }
@@ -264,30 +256,30 @@ export function applyDirectoryEvent(input: {
     }
     case "permission.asked": {
       const permission = event.properties as PermissionRequest
-      const permissions = input.store.permission[permission.sessionID]
+      const permissions = input.store.permission[permission.agentID]
       if (!permissions) {
-        input.setStore("permission", permission.sessionID, [permission])
+        input.setStore("permission", permission.agentID, [permission])
         break
       }
       const result = Binary.search(permissions, permission.id, (p) => p.id)
       if (result.found) {
-        input.setStore("permission", permission.sessionID, result.index, reconcile(permission))
+        input.setStore("permission", permission.agentID, result.index, reconcile(permission))
         break
       }
       const nextPerms = permissions.slice()
       nextPerms.splice(result.index, 0, permission)
-      input.setStore("permission", permission.sessionID, nextPerms)
+      input.setStore("permission", permission.agentID, nextPerms)
       break
     }
     case "permission.replied": {
-      const props = event.properties as { sessionID: string; requestID: string }
-      const permissions = input.store.permission[props.sessionID]
+      const props = event.properties as { agentID: string; requestID: string }
+      const permissions = input.store.permission[props.agentID]
       if (!permissions) break
       const result = Binary.search(permissions, props.requestID, (p) => p.id)
       if (!result.found) break
       const nextPerms = permissions.slice()
       nextPerms.splice(result.index, 1)
-      input.setStore("permission", props.sessionID, nextPerms)
+      input.setStore("permission", props.agentID, nextPerms)
       break
     }
     case "question.asked": {

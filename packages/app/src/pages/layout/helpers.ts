@@ -1,5 +1,5 @@
 import { getFilename } from "@opencode-ai/util/path"
-import { type Session } from "@opencode-ai/sdk/v2/client"
+import type { Agent } from "@opencode-ai/sdk/v2/client"
 
 export const workspaceKey = (directory: string) => {
   const drive = directory.match(/^([A-Za-z]:)[\\/]+$/)
@@ -10,7 +10,7 @@ export const workspaceKey = (directory: string) => {
 
 export function sortSessions(now: number) {
   const oneMinuteAgo = now - 60 * 1000
-  return (a: Session, b: Session) => {
+  return (a: Agent, b: Agent) => {
     const aUpdated = a.time.updated ?? a.time.created
     const bUpdated = b.time.updated ?? b.time.created
     const aRecent = aUpdated > oneMinuteAgo
@@ -22,13 +22,13 @@ export function sortSessions(now: number) {
   }
 }
 
-export const isRootVisibleSession = (session: Session, directory: string) =>
-  workspaceKey(session.directory) === workspaceKey(directory) && !session.parentID && !session.time?.archived
+export const isRootVisibleSession = (session: Agent, directory: string) =>
+  workspaceKey(session.directory) === workspaceKey(directory)
 
-export const sortedRootSessions = (store: { session: Session[]; path: { directory: string } }, now: number) =>
+export const sortedRootSessions = (store: { session: Agent[]; path: { directory: string } }, now: number) =>
   store.session.filter((session) => isRootVisibleSession(session, store.path.directory)).sort(sortSessions(now))
 
-export const latestRootSession = (stores: { session: Session[]; path: { directory: string } }[], now: number) =>
+export const latestRootSession = (stores: { session: Agent[]; path: { directory: string } }[], now: number) =>
   stores
     .flatMap((store) => store.session.filter((session) => isRootVisibleSession(session, store.path.directory)))
     .sort(sortSessions(now))[0]
@@ -40,18 +40,9 @@ export function hasProjectPermissions<T>(
   return Object.values(request).some((list) => list?.some(include))
 }
 
-export const childMapByParent = (sessions: Session[]) => {
-  const map = new Map<string, string[]>()
-  for (const session of sessions) {
-    if (!session.parentID) continue
-    const existing = map.get(session.parentID)
-    if (existing) {
-      existing.push(session.id)
-      continue
-    }
-    map.set(session.parentID, [session.id])
-  }
-  return map
+export const childMapByParent = (_sessions: Agent[]) => {
+  // parentID removed from Agent type — return empty map
+  return new Map<string, string[]>()
 }
 
 export function getDraggableId(event: unknown): string | undefined {
@@ -100,3 +91,6 @@ export const effectiveWorkspaceOrder = (local: string, dirs: string[], persisted
 }
 
 export const syncWorkspaceOrder = effectiveWorkspaceOrder
+
+// Aliases for sidebar-workspace.tsx which uses Agent naming
+export const sortedRootAgents = sortedRootSessions

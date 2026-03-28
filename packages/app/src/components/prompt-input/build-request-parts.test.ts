@@ -46,7 +46,7 @@ describe("buildRequestParts", () => {
     ).toBe(true)
 
     expect(result.optimisticParts).toHaveLength(result.requestParts.length)
-    expect(result.optimisticParts.every((part) => part.sessionID === "ses_1" && part.messageID === "msg_1")).toBe(true)
+    expect(result.optimisticParts.every((part) => part.agentID === "ses_1" && part.messageID === "msg_1")).toBe(true)
   })
 
   test("deduplicates context files when prompt already includes same path", () => {

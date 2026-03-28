@@ -12,12 +12,12 @@ import { Icon } from "@opencode-ai/ui/icon"
 import { IconButton } from "@opencode-ai/ui/icon-button"
 import { Spinner } from "@opencode-ai/ui/spinner"
 import { Tooltip } from "@opencode-ai/ui/tooltip"
-import { type Session } from "@opencode-ai/sdk/v2/client"
+import type { Agent } from "@opencode-ai/sdk/v2/client"
 import { type LocalProject } from "@/context/layout"
 import { useGlobalSync } from "@/context/global-sync"
 import { useLanguage } from "@/context/language"
-import { NewSessionItem, SessionItem, SessionSkeleton } from "./sidebar-items"
-import { childMapByParent, sortedRootSessions } from "./helpers"
+import { NewAgentItem, AgentItem, AgentSkeleton } from "./sidebar-items"
+import { childMapByParent, sortedRootAgents } from "./helpers"
 
 type InlineEditorComponent = (props: {
   id: string
@@ -35,11 +35,11 @@ export type WorkspaceSidebarContext = {
   sidebarExpanded: Accessor<boolean>
   sidebarHovering: Accessor<boolean>
   nav: Accessor<HTMLElement | undefined>
-  hoverSession: Accessor<string | undefined>
-  setHoverSession: (id: string | undefined) => void
+  hoverAgent: Accessor<string | undefined>
+  setHoverAgent: (id: string | undefined) => void
   clearHoverProjectSoon: () => void
-  prefetchSession: (session: Session, priority?: "high" | "low") => void
-  archiveSession: (session: Session) => Promise<void>
+  prefetchAgent: (session: Agent, priority?: "high" | "low") => void
+  archiveAgent: (session: Agent) => Promise<void>
   workspaceName: (directory: string, projectId?: string, branch?: string) => string | undefined
   renameWorkspace: (directory: string, next: string, projectId?: string, branch?: string) => void
   editorOpen: (id: string) => boolean
@@ -153,9 +153,9 @@ const WorkspaceActions = (props: {
   showResetWorkspaceDialog: WorkspaceSidebarContext["showResetWorkspaceDialog"]
   showDeleteWorkspaceDialog: WorkspaceSidebarContext["showDeleteWorkspaceDialog"]
   root: string
-  setHoverSession: WorkspaceSidebarContext["setHoverSession"]
+  setHoverAgent: WorkspaceSidebarContext["setHoverAgent"]
   clearHoverProjectSoon: WorkspaceSidebarContext["clearHoverProjectSoon"]
-  navigateToNewSession: () => void
+  navigateToNewAgent: () => void
 }): JSX.Element => (
   <div
     class="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5 transition-opacity"
@@ -227,9 +227,9 @@ const WorkspaceActions = (props: {
           onClick={(event) => {
             event.preventDefault()
             event.stopPropagation()
-            props.setHoverSession(undefined)
+            props.setHoverAgent(undefined)
             props.clearHoverProjectSoon()
-            props.navigateToNewSession()
+            props.navigateToNewAgent()
           }}
         />
       </Tooltip>
@@ -237,13 +237,13 @@ const WorkspaceActions = (props: {
   </div>
 )
 
-const WorkspaceSessionList = (props: {
+const WorkspaceAgentList = (props: {
   slug: Accessor<string>
   mobile?: boolean
   ctx: WorkspaceSidebarContext
   showNew: Accessor<boolean>
   loading: Accessor<boolean>
-  sessions: Accessor<Session[]>
+  sessions: Accessor<Agent[]>
   children: Accessor<Map<string, string[]>>
   hasMore: Accessor<boolean>
   loadMore: () => Promise<void>
@@ -251,20 +251,20 @@ const WorkspaceSessionList = (props: {
 }): JSX.Element => (
   <nav class="flex flex-col gap-1 px-3">
     <Show when={props.showNew()}>
-      <NewSessionItem
+      <NewAgentItem
         slug={props.slug()}
         mobile={props.mobile}
         sidebarExpanded={props.ctx.sidebarExpanded}
         clearHoverProjectSoon={props.ctx.clearHoverProjectSoon}
-        setHoverSession={props.ctx.setHoverSession}
+        setHoverAgent={props.ctx.setHoverAgent}
       />
     </Show>
     <Show when={props.loading()}>
-      <SessionSkeleton />
+      <AgentSkeleton />
     </Show>
     <For each={props.sessions()}>
       {(session) => (
-        <SessionItem
+        <AgentItem
           session={session}
           slug={props.slug()}
           mobile={props.mobile}
@@ -272,11 +272,11 @@ const WorkspaceSessionList = (props: {
           sidebarExpanded={props.ctx.sidebarExpanded}
           sidebarHovering={props.ctx.sidebarHovering}
           nav={props.ctx.nav}
-          hoverSession={props.ctx.hoverSession}
-          setHoverSession={props.ctx.setHoverSession}
+          hoverAgent={props.ctx.hoverAgent}
+          setHoverAgent={props.ctx.setHoverAgent}
           clearHoverProjectSoon={props.ctx.clearHoverProjectSoon}
-          prefetchSession={props.ctx.prefetchSession}
-          archiveSession={props.ctx.archiveSession}
+          prefetchAgent={props.ctx.prefetchAgent}
+          archiveAgent={props.ctx.archiveAgent}
         />
       )}
     </For>
@@ -316,7 +316,7 @@ export const SortableWorkspace = (props: {
     pendingRename: false,
   })
   const slug = createMemo(() => base64Encode(props.directory))
-  const sessions = createMemo(() => sortedRootSessions(workspaceStore, props.sortNow()))
+  const sessions = createMemo(() => sortedRootAgents(workspaceStore, props.sortNow()))
   const children = createMemo(() => childMapByParent(workspaceStore.session))
   const local = createMemo(() => props.directory === props.project.worktree)
   const active = createMemo(() => props.ctx.currentDir() === props.directory)
@@ -435,16 +435,16 @@ export const SortableWorkspace = (props: {
                 showResetWorkspaceDialog={props.ctx.showResetWorkspaceDialog}
                 showDeleteWorkspaceDialog={props.ctx.showDeleteWorkspaceDialog}
                 root={props.project.worktree}
-                setHoverSession={props.ctx.setHoverSession}
+                setHoverAgent={props.ctx.setHoverAgent}
                 clearHoverProjectSoon={props.ctx.clearHoverProjectSoon}
-                navigateToNewSession={() => navigate(`/${slug()}/session`)}
+                navigateToNewAgent={() => navigate(`/${slug()}/session`)}
               />
             </div>
           </div>
         </div>
 
         <Collapsible.Content>
-          <WorkspaceSessionList
+          <WorkspaceAgentList
             slug={slug}
             mobile={props.mobile}
             ctx={props.ctx}
@@ -475,7 +475,7 @@ export const LocalWorkspace = (props: {
     return { store, setStore }
   })
   const slug = createMemo(() => base64Encode(props.project.worktree))
-  const sessions = createMemo(() => sortedRootSessions(workspace().store, props.sortNow()))
+  const sessions = createMemo(() => sortedRootAgents(workspace().store, props.sortNow()))
   const children = createMemo(() => childMapByParent(workspace().store.session))
   const booted = createMemo((prev) => prev || workspace().store.status === "complete", false)
   const loading = createMemo(() => !booted() && sessions().length === 0)
@@ -492,11 +492,11 @@ export const LocalWorkspace = (props: {
     >
       <nav class="flex flex-col gap-1 px-3">
         <Show when={loading()}>
-          <SessionSkeleton />
+          <AgentSkeleton />
         </Show>
         <For each={sessions()}>
           {(session) => (
-            <SessionItem
+            <AgentItem
               session={session}
               slug={slug()}
               mobile={props.mobile}
@@ -504,11 +504,11 @@ export const LocalWorkspace = (props: {
               sidebarExpanded={props.ctx.sidebarExpanded}
               sidebarHovering={props.ctx.sidebarHovering}
               nav={props.ctx.nav}
-              hoverSession={props.ctx.hoverSession}
-              setHoverSession={props.ctx.setHoverSession}
+              hoverAgent={props.ctx.hoverAgent}
+              setHoverAgent={props.ctx.setHoverAgent}
               clearHoverProjectSoon={props.ctx.clearHoverProjectSoon}
-              prefetchSession={props.ctx.prefetchSession}
-              archiveSession={props.ctx.archiveSession}
+              prefetchAgent={props.ctx.prefetchAgent}
+              archiveAgent={props.ctx.archiveAgent}
             />
           )}
         </For>

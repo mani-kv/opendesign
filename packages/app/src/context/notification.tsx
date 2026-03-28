@@ -10,7 +10,7 @@ import { useSettings } from "@/context/settings"
 import { Binary } from "@opencode-ai/util/binary"
 import { base64Encode } from "@opencode-ai/util/encode"
 import { decode64 } from "@/utils/base64"
-import { EventSessionError } from "@opencode-ai/sdk/v2"
+import type { EventAgentError } from "@opencode-ai/sdk/v2"
 import { Persist, persisted } from "@/utils/persist"
 import { playSound, soundSrc } from "@/utils/sound"
 
@@ -28,7 +28,7 @@ type TurnCompleteNotification = NotificationBase & {
 
 type ErrorNotification = NotificationBase & {
   type: "error"
-  error: EventSessionError["properties"]["error"]
+  error: EventAgentError["properties"]["error"]
 }
 
 export type Notification = TurnCompleteNotification | ErrorNotification
@@ -215,8 +215,8 @@ export const { use: useNotification, provider: NotificationProvider } = createSi
       const [syncStore] = globalSync.child(directory, { bootstrap: false })
       const match = Binary.search(syncStore.session, sessionID, (s) => s.id)
       if (match.found) return syncStore.session[match.index]
-      return globalSDK.client.session
-        .get({ directory, sessionID })
+      return globalSDK.client.agent
+        .get({ agentID: sessionID })
         .then((x) => x.data)
         .catch(() => undefined)
     }
@@ -236,7 +236,6 @@ export const { use: useNotification, provider: NotificationProvider } = createSi
       void lookup(directory, sessionID).then((session) => {
         if (meta.disposed) return
         if (!session) return
-        if (session.parentID) return
 
         if (settings.sounds.agentEnabled()) {
           playSound(soundSrc(settings.sounds.agent()))
@@ -259,13 +258,12 @@ export const { use: useNotification, provider: NotificationProvider } = createSi
 
     const handleSessionError = (
       directory: string,
-      event: { properties: { sessionID?: string; error?: EventSessionError["properties"]["error"] } },
+      event: { properties: { agentID?: string; error?: EventAgentError["properties"]["error"] } },
       time: number,
     ) => {
-      const sessionID = event.properties.sessionID
+      const sessionID = event.properties.agentID
       void lookup(directory, sessionID).then((session) => {
         if (meta.disposed) return
-        if (session?.parentID) return
 
         if (settings.sounds.errorsEnabled()) {
           playSound(soundSrc(settings.sounds.errors()))
@@ -292,7 +290,7 @@ export const { use: useNotification, provider: NotificationProvider } = createSi
 
     const unsub = globalSDK.event.listen((e) => {
       const event = e.details
-      if (event.type !== "session.idle" && event.type !== "session.error") return
+      if (event.type !== "session.idle" && event.type !== "agent.error") return
 
       const directory = e.name
       const time = Date.now()

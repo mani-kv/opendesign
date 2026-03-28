@@ -5,7 +5,7 @@ import { resetSessionModel, syncSessionModel } from "./session-model-helpers"
 const message = (input?: Partial<Pick<UserMessage, "agent" | "model" | "variant">>) =>
   ({
     id: "msg",
-    sessionID: "session",
+    agentID: "session",
     role: "user",
     time: { created: 1 },
     agent: input?.agent ?? "prototype",

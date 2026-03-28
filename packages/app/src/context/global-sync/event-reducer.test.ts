@@ -1,43 +1,41 @@
 import { describe, expect, test } from "bun:test"
-import type { Message, Part, PermissionRequest, Project, QuestionRequest, Session } from "@opencode-ai/sdk/v2/client"
+import type { Message, Part, PermissionRequest,  Product, QuestionRequest,  Agent } from "@opencode-ai/sdk/v2/client"
 import { createStore } from "solid-js/store"
 import type { State } from "./types"
 import { applyDirectoryEvent, applyGlobalEvent, cleanupDroppedSessionCaches } from "./event-reducer"
 
-const rootSession = (input: { id: string; parentID?: string; archived?: number }) =>
+const rootSession = (input: { id: string; archived?: number }) =>
   ({
     id: input.id,
-    parentID: input.parentID,
     time: {
       created: 1,
       updated: 1,
-      archived: input.archived,
     },
-  }) as Session
+  }) as unknown as Agent
 
-const userMessage = (id: string, sessionID: string) =>
+const userMessage = (id: string, agentID: string) =>
   ({
     id,
-    sessionID,
+    agentID,
     role: "user",
     time: { created: 1 },
     agent: "assistant",
     model: { providerID: "openai", modelID: "gpt" },
   }) as Message
 
-const textPart = (id: string, sessionID: string, messageID: string) =>
+const textPart = (id: string, agentID: string, messageID: string) =>
   ({
     id,
-    sessionID,
+    agentID,
     messageID,
     type: "text",
     text: id,
   }) as Part
 
-const permissionRequest = (id: string, sessionID: string, title = id) =>
+const permissionRequest = (id: string, agentID: string, title = id) =>
   ({
     id,
-    sessionID,
+    agentID,
     permission: title,
     patterns: ["*"],
     metadata: {},
@@ -86,7 +84,7 @@ const baseState = (input: Partial<State> = {}) =>
 
 describe("applyGlobalEvent", () => {
   test("upserts project.updated in sorted position", () => {
-    const project = [{ id: "a" }, { id: "c" }] as Project[]
+    const project = [{ id: "a" }, { id: "c" }] as Product[]
     let refreshCount = 0
     applyGlobalEvent({
       event: { type: "project.updated", properties: { id: "b" } },
@@ -154,7 +152,7 @@ describe("applyDirectoryEvent", () => {
     expect(store.sessionTotal).toBe(2)
 
     applyDirectoryEvent({
-      event: { type: "session.created", properties: { info: rootSession({ id: "c", parentID: "a" }) } },
+      event: { type: "session.created", properties: { info: rootSession({ id: "c" }) } },
       store,
       setStore,
       push() {},
@@ -204,7 +202,7 @@ describe("applyDirectoryEvent", () => {
   test("cleans session caches when deleted and decrements only root totals", () => {
     const cases = [
       { info: rootSession({ id: "ses_1" }), expectedTotal: 1 },
-      { info: rootSession({ id: "ses_2", parentID: "ses_1" }), expectedTotal: 2 },
+      { info: rootSession({ id: "ses_2" }), expectedTotal: 2 },
     ]
 
     for (const item of cases) {
@@ -213,7 +211,7 @@ describe("applyDirectoryEvent", () => {
         baseState({
           session: [
             rootSession({ id: "ses_1" }),
-            rootSession({ id: "ses_2", parentID: "ses_1" }),
+            rootSession({ id: "ses_2" }),
             rootSession({ id: "ses_3" }),
           ],
           sessionTotal: 2,

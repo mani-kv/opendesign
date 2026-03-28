@@ -7,19 +7,19 @@ import {
   parseNewSessionDeepLink,
 } from "./deep-links"
 import { displayName, errorMessage, getDraggableId, syncWorkspaceOrder, workspaceKey } from "./helpers"
-import { type Session } from "@opencode-ai/sdk/v2/client"
+import type { Agent } from "@opencode-ai/sdk/v2/client"
 import { hasProjectPermissions, latestRootSession } from "./helpers"
 
-const session = (input: Partial<Session> & Pick<Session, "id" | "directory">) =>
+const session = (input: Partial<Agent> & Pick<Agent, "id" | "directory">) =>
   ({
     title: "",
     version: "v2",
     parentID: undefined,
     messageCount: 0,
     permissions: { session: {}, share: {} },
-    time: { created: 0, updated: 0, archived: undefined },
+    time: { created: 0, updated: 0 },
     ...input,
-  }) as Session
+  }) as unknown as Agent
 
 describe("layout deep links", () => {
   test("parses open-project deep links", () => {
@@ -119,7 +119,7 @@ describe("layout workspace helpers", () => {
       [
         {
           path: { directory: "/root" },
-          session: [session({ id: "root", directory: "/root", time: { created: 1, updated: 1, archived: undefined } })],
+          session: [session({ id: "root", directory: "/root", time: { created: 1, updated: 1 } })],
         },
         {
           path: { directory: "/workspace" },
@@ -127,7 +127,7 @@ describe("layout workspace helpers", () => {
             session({
               id: "workspace",
               directory: "/workspace",
-              time: { created: 2, updated: 2, archived: undefined },
+              time: { created: 2, updated: 2 },
             }),
           ],
         },
@@ -170,18 +170,17 @@ describe("layout workspace helpers", () => {
             session({
               id: "archived",
               directory: "/workspace",
-              time: { created: 10, updated: 10, archived: 10 },
+              time: { created: 10, updated: 10,  },
             }),
             session({
               id: "child",
               directory: "/workspace",
-              parentID: "parent",
-              time: { created: 20, updated: 20, archived: undefined },
+              time: { created: 20, updated: 20 },
             }),
             session({
               id: "root",
               directory: "/workspace",
-              time: { created: 30, updated: 30, archived: undefined },
+              time: { created: 30, updated: 30 },
             }),
           ],
         },

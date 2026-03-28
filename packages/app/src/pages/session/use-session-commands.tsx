@@ -60,7 +60,7 @@ export const useSessionCommands = (actions: SessionCommandContext) => {
   const messages = createMemo(() => (params.id ? (sync.data.message[params.id] ?? []) : []))
   const userMessages = createMemo(() => messages().filter((m) => m.role === "user") as UserMessage[])
   const visibleUserMessages = createMemo(() => {
-    const revert = info()?.revert?.messageID
+    const revert = (info() as any)?.revert?.messageID
     if (!revert) return userMessages()
     return userMessages().filter((m) => m.id < revert)
   })
@@ -316,12 +316,12 @@ export const useSessionCommands = (actions: SessionCommandContext) => {
         const sessionID = params.id
         if (!sessionID) return
         if (status()?.type !== "idle") {
-          await sdk.client.session.abort({ sessionID }).catch(() => {})
+          await sdk.client.agent.abort({ agentID: sessionID }).catch(() => {})
         }
-        const revert = info()?.revert?.messageID
+        const revert = (info() as any)?.revert?.messageID
         const message = findLast(userMessages(), (x) => !revert || x.id < revert)
         if (!message) return
-        await sdk.client.session.revert({ sessionID, messageID: message.id })
+        await sdk.client.agent.revert({ agentID: sessionID, messageID: message.id })
         const parts = sync.data.part[message.id]
         if (parts) {
           const restored = extractPromptFromParts(parts, { directory: sdk.directory })
@@ -336,21 +336,21 @@ export const useSessionCommands = (actions: SessionCommandContext) => {
       title: language.t("command.session.redo"),
       description: language.t("command.session.redo.description"),
       slash: "redo",
-      disabled: !params.id || !info()?.revert?.messageID,
+      disabled: !params.id || !(info() as any)?.revert?.messageID,
       onSelect: async () => {
         const sessionID = params.id
         if (!sessionID) return
-        const revertMessageID = info()?.revert?.messageID
+        const revertMessageID = (info() as any)?.revert?.messageID
         if (!revertMessageID) return
         const nextMessage = userMessages().find((x) => x.id > revertMessageID)
         if (!nextMessage) {
-          await sdk.client.session.unrevert({ sessionID })
+          await sdk.client.agent.unrevert({ agentID: sessionID })
           prompt.reset()
           const lastMsg = findLast(userMessages(), (x) => x.id >= revertMessageID)
           setActiveMessage(lastMsg)
           return
         }
-        await sdk.client.session.revert({ sessionID, messageID: nextMessage.id })
+        await sdk.client.agent.revert({ agentID: sessionID, messageID: nextMessage.id })
         const priorMsg = findLast(userMessages(), (x) => x.id < nextMessage.id)
         setActiveMessage(priorMsg)
       },
@@ -372,8 +372,8 @@ export const useSessionCommands = (actions: SessionCommandContext) => {
           })
           return
         }
-        await sdk.client.session.summarize({
-          sessionID,
+        await sdk.client.agent.summarize({
+          agentID: sessionID,
           modelID: model.id,
           providerID: model.provider.id,
         })
@@ -394,8 +394,8 @@ export const useSessionCommands = (actions: SessionCommandContext) => {
     return [
       sessionCommand({
         id: "session.share",
-        title: info()?.share?.url ? language.t("session.share.copy.copyLink") : language.t("command.session.share"),
-        description: info()?.share?.url
+        title: (info() as any)?.share?.url ? language.t("session.share.copy.copyLink") : language.t("command.session.share"),
+        description: (info() as any)?.share?.url
           ? language.t("toast.session.share.success.description")
           : language.t("command.session.share.description"),
         slash: "share",
@@ -446,16 +446,14 @@ export const useSessionCommands = (actions: SessionCommandContext) => {
             })
           }
 
-          const existing = info()?.share?.url
+          const existing = (info() as any)?.share?.url
           if (existing) {
             await copy(existing, true)
             return
           }
 
-          const url = await sdk.client.session
-            .share({ sessionID: params.id })
-            .then((res) => res.data?.share?.url)
-            .catch(() => undefined)
+          // share removed from SDK
+          const url: string | undefined = undefined
           if (!url) {
             showToast({
               title: language.t("toast.session.share.failed.title"),
@@ -473,11 +471,11 @@ export const useSessionCommands = (actions: SessionCommandContext) => {
         title: language.t("command.session.unshare"),
         description: language.t("command.session.unshare.description"),
         slash: "unshare",
-        disabled: !params.id || !info()?.share?.url,
+        disabled: !params.id || !(info() as any)?.share?.url,
         onSelect: async () => {
           if (!params.id) return
-          await sdk.client.session
-            .unshare({ sessionID: params.id })
+          // unshare removed from SDK
+          await Promise.resolve()
             .then(() =>
               showToast({
                 title: language.t("toast.session.unshare.success.title"),

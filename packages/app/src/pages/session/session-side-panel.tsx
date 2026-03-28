@@ -113,15 +113,11 @@ function SplitPanel(props: { panes: string[]; side: "left" | "right"; onActiveCh
       <div class="sticky top-0 z-10 shrink-0 flex items-center border-b border-border-weaker-base">
         <Tabs.List class="min-w-0 w-fit">
           <SortableProvider ids={props.panes}>
-            <For each={props.panes}>
-              {(pane) => <SortablePaneTab pane={pane}>{paneLabel(pane)}</SortablePaneTab>}
-            </For>
+            <For each={props.panes}>{(pane) => <SortablePaneTab pane={pane}>{paneLabel(pane)}</SortablePaneTab>}</For>
           </SortableProvider>
         </Tabs.List>
       </div>
-      <For each={props.panes}>
-        {(pane) => <PaneTabContent pane={pane} />}
-      </For>
+      <For each={props.panes}>{(pane) => <PaneTabContent pane={pane} />}</For>
     </Tabs>
   )
 }
@@ -264,7 +260,6 @@ function FigmaWebviewHost(props: { active: boolean; splitOffset?: number; figmaF
   )
 }
 
-
 export function SessionSidePanel(props: {
   activeDiff?: string
   focusReviewDiff: (path: string) => void
@@ -327,7 +322,7 @@ export function SessionSidePanel(props: {
 
   const info = createMemo(() => (params.id ? sync.session.get(params.id) : undefined))
   const diffs = createMemo(() => (params.id ? (sync.data.session_diff[params.id] ?? []) : []))
-  const reviewCount = createMemo(() => Math.max(info()?.summary?.files ?? 0, diffs().length))
+  const reviewCount = createMemo(() => Math.max((info() as any)?.summary?.files ?? 0, diffs().length))
   const hasReview = createMemo(() => reviewCount() > 0)
   const diffsReady = createMemo(() => {
     const id = params.id
@@ -553,7 +548,12 @@ export function SessionSidePanel(props: {
                   <div class="relative flex-1 flex min-h-0 min-w-0 flex-col">
                     <Switch>
                       <Match when={splitMode() && canSplit()}>
-                        <CanvasFigmaSplit onActiveTabs={(l, r) => { setSplitLeftActive(l); setSplitRightActive(r) }} />
+                        <CanvasFigmaSplit
+                          onActiveTabs={(l, r) => {
+                            setSplitLeftActive(l)
+                            setSplitRightActive(r)
+                          }}
+                        />
                       </Match>
                       <Match when={true}>
                         <Tabs value={activeTab()} onChange={openTab}>
@@ -588,7 +588,10 @@ export function SessionSidePanel(props: {
                                             icon="close-small"
                                             variant="ghost"
                                             class="h-5 w-5 -mr-1"
-                                            onClick={(e: MouseEvent) => { e.stopPropagation(); tabs().close("context") }}
+                                            onClick={(e: MouseEvent) => {
+                                              e.stopPropagation()
+                                              tabs().close("context")
+                                            }}
                                             aria-label={language.t("common.closeTab")}
                                           />
                                         </div>
@@ -702,15 +705,9 @@ export function SessionSidePanel(props: {
               {/* Persistent canvas host — survives split↔tabbed switches. */}
               <Show when={canvasTab()}>
                 <CanvasHost
-                  active={
-                    splitMode() && canSplit()
-                      ? isActiveInSplit("canvas")
-                      : activeTab() === "canvas"
-                  }
+                  active={splitMode() && canSplit() ? isActiveInSplit("canvas") : activeTab() === "canvas"}
                   splitOffset={
-                    splitMode() && canSplit() && isActiveInSplit("canvas")
-                      ? layout.canvasPanel.splitRatio()
-                      : 0
+                    splitMode() && canSplit() && isActiveInSplit("canvas") ? layout.canvasPanel.splitRatio() : 0
                   }
                   canvasFirst={splitMode() && canSplit() && splitLeftActive() === "canvas"}
                 />
@@ -718,15 +715,9 @@ export function SessionSidePanel(props: {
               {/* Persistent figma webview host — same pattern as CanvasHost. */}
               <Show when={figmaTab() && platform.platform !== "web"}>
                 <FigmaWebviewHost
-                  active={
-                    splitMode() && canSplit()
-                      ? isActiveInSplit("figma")
-                      : activeTab() === "figma"
-                  }
+                  active={splitMode() && canSplit() ? isActiveInSplit("figma") : activeTab() === "figma"}
                   splitOffset={
-                    splitMode() && canSplit() && isActiveInSplit("figma")
-                      ? layout.canvasPanel.splitRatio()
-                      : 0
+                    splitMode() && canSplit() && isActiveInSplit("figma") ? layout.canvasPanel.splitRatio() : 0
                   }
                   figmaFirst={splitMode() && canSplit() && splitLeftActive() === "figma"}
                 />

@@ -26,7 +26,7 @@ export function dropSessionCaches(store: SessionCache, sessionIDs: Iterable<stri
 
   for (const key of Object.keys(store.part)) {
     const parts = store.part[key]
-    if (!parts?.some((part) => stale.has(part?.sessionID ?? ""))) continue
+    if (!parts?.some((part) => stale.has(part?.agentID ?? ""))) continue
     delete store.part[key]
   }
 

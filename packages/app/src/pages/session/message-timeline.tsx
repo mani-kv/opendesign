@@ -24,7 +24,12 @@ import { useSettings } from "@/context/settings"
 import { useSDK } from "@/context/sdk"
 import { useSync } from "@/context/sync"
 import { parseCommentNote, readCommentMetadata } from "@/utils/comment-note"
-import { parsePreFlightPlan, scenarioBranchName, type PreFlightPlan, type ScenarioPlan } from "@opencode-ai/opendesign/agent"
+import {
+  parsePreFlightPlan,
+  scenarioBranchName,
+  type PreFlightPlan,
+  type ScenarioPlan,
+} from "@opencode-ai/opendesign/agent"
 import { PlanCard } from "@/components/plan-card"
 import { useAgents } from "@/context/agents"
 
@@ -253,10 +258,16 @@ export function MessageTimeline(props: {
   const [planDismissed, setPlanDismissed] = createSignal(false)
 
   // Reset plan states when switching sessions
-  createEffect(on(sessionKey, () => {
-    setPlanStates({})
-    setPlanDismissed(false)
-  }, { defer: true }))
+  createEffect(
+    on(
+      sessionKey,
+      () => {
+        setPlanStates({})
+        setPlanDismissed(false)
+      },
+      { defer: true },
+    ),
+  )
 
   const lastPlanMessageId = createMemo(() => {
     const msgs = sessionMessages()
@@ -297,15 +308,15 @@ export function MessageTimeline(props: {
 
         // Create a server-side session for this agent
         try {
-          const result = await sdk.client.session.create()
+          const result = await sdk.client.agent.create()
           const session = result.data
           if (session) {
             agents.updateAgent(id, { sessionId: session.id, state: "working" })
 
             // Send the scenario as the first prompt to the agent session
             const prompt = `You are working on the following scenario:\n\n**${scenario.scenario}**${scenario.description ? `\n${scenario.description}` : ""}\n\nGenerate a complete prototype for this scenario.`
-            await sdk.client.session.promptAsync({
-              sessionID: session.id,
+            await sdk.client.agent.promptAsync({
+              agentID: session.id,
               parts: [{ type: "text", text: prompt }],
             })
           }
@@ -377,7 +388,7 @@ export function MessageTimeline(props: {
     return sync.session.get(id)
   })
   const titleValue = createMemo(() => info()?.title)
-  const parentID = createMemo(() => info()?.parentID)
+  const parentID = createMemo(() => (info() as any)?.parentID as string | undefined)
   const showHeader = createMemo(() => !!(titleValue() || parentID()))
   const stageCfg = { init: 1, batch: 3 }
   const staging = createTimelineStaging({
@@ -439,8 +450,8 @@ export function MessageTimeline(props: {
     }
 
     setTitle("saving", true)
-    await sdk.client.session
-      .update({ sessionID: id, title: next })
+    await sdk.client.agent
+      .update({ agentID: id, title: next })
       .then(() => {
         sync.set(
           produce((draft) => {
@@ -481,8 +492,8 @@ export function MessageTimeline(props: {
     const index = sessions.findIndex((s) => s.id === sessionID)
     const nextSession = index === -1 ? undefined : (sessions[index + 1] ?? sessions[index - 1])
 
-    await sdk.client.session
-      .update({ sessionID, time: { archived: Date.now() } })
+    await sdk.client.agent
+      .delete({ agentID: sessionID })
       .then(() => {
         sync.set(
           produce((draft) => {
@@ -490,9 +501,9 @@ export function MessageTimeline(props: {
             if (index !== -1) draft.session.splice(index, 1)
           }),
         )
-        navigateAfterSessionRemoval(sessionID, session.parentID, nextSession?.id)
+        navigateAfterSessionRemoval(sessionID, undefined, nextSession?.id)
       })
-      .catch((err) => {
+      .catch((err: any) => {
         showToast({
           title: language.t("common.requestFailed"),
           description: errorMessage(err),
@@ -504,14 +515,14 @@ export function MessageTimeline(props: {
     const session = sync.session.get(sessionID)
     if (!session) return false
 
-    const sessions = (sync.data.session ?? []).filter((s) => !s.parentID && !s.time?.archived)
+    const sessions = (sync.data.session ?? []).filter((s) => !!s?.id)
     const index = sessions.findIndex((s) => s.id === sessionID)
     const nextSession = index === -1 ? undefined : (sessions[index + 1] ?? sessions[index - 1])
 
-    const result = await sdk.client.session
-      .delete({ sessionID })
-      .then((x) => x.data)
-      .catch((err) => {
+    const result = await sdk.client.agent
+      .delete({ agentID: sessionID })
+      .then((x: any) => x.data)
+      .catch((err: any) => {
         showToast({
           title: language.t("session.delete.failed.title"),
           description: errorMessage(err),
@@ -525,38 +536,12 @@ export function MessageTimeline(props: {
       produce((draft) => {
         const removed = new Set<string>([sessionID])
 
-        const byParent = new Map<string, string[]>()
-        for (const item of draft.session) {
-          const parentID = item.parentID
-          if (!parentID) continue
-          const existing = byParent.get(parentID)
-          if (existing) {
-            existing.push(item.id)
-            continue
-          }
-          byParent.set(parentID, [item.id])
-        }
-
-        const stack = [sessionID]
-        while (stack.length) {
-          const parentID = stack.pop()
-          if (!parentID) continue
-
-          const children = byParent.get(parentID)
-          if (!children) continue
-
-          for (const child of children) {
-            if (removed.has(child)) continue
-            removed.add(child)
-            stack.push(child)
-          }
-        }
-
+        // parentID removed from Agent type — just remove the single session
         draft.session = draft.session.filter((s) => !removed.has(s.id))
       }),
     )
 
-    navigateAfterSessionRemoval(sessionID, session.parentID, nextSession?.id)
+    navigateAfterSessionRemoval(sessionID, undefined, nextSession?.id)
     return true
   }
 

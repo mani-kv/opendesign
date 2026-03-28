@@ -182,11 +182,13 @@ export const { use: useSync, provider: SyncProvider } = createSimpleContext({
 
     const fetchMessages = async (input: { client: typeof sdk.client; sessionID: string; limit: number }) => {
       const messages = await retry(() =>
-        input.client.session.messages({ sessionID: input.sessionID, limit: input.limit }),
+        input.client.agent.messages({ agentID: input.sessionID, limit: input.limit }),
       )
-      const items = (messages.data ?? []).filter((x) => !!x?.info?.id)
-      const session = items.map((x) => x.info).sort((a, b) => cmp(a.id, b.id))
-      const part = items.map((message) => ({ id: message.info.id, part: sortParts(message.parts) }))
+      const items = ((messages.data as Array<{ info: Message; parts: Part[] }>) ?? []).filter(
+        (x: { info: Message; parts: Part[] }) => !!x?.info?.id,
+      )
+      const session = items.map((x: { info: Message; parts: Part[] }) => x.info).sort((a: Message, b: Message) => cmp(a.id, b.id))
+      const part = items.map((message: { info: Message; parts: Part[] }) => ({ id: message.info.id, part: sortParts(message.parts) }))
       return {
         session,
         part,
@@ -218,11 +220,11 @@ export const { use: useSync, provider: SyncProvider } = createSimpleContext({
               // SSE events will reconcile with server state.
             } else {
               // Merge: keep optimistic messages not yet confirmed by server
-              const serverIds = new Set(next.session.map((m) => m.id))
+              const serverIds = new Set(next.session.map((m: Message) => m.id))
               const optimistic = (existing ?? []).filter((m) => !serverIds.has(m.id))
               const merged = next.session.slice()
               for (const m of optimistic) {
-                const pos = Binary.search(merged, m.id, (x) => x.id)
+                const pos = Binary.search(merged, m.id, (x: Message) => x.id)
                 merged.splice(pos.index, 0, m)
               }
               input.setStore("message", input.sessionID, reconcile(merged, { key: "id" }))
@@ -281,7 +283,7 @@ export const { use: useSync, provider: SyncProvider } = createSimpleContext({
         }) {
           const message: Message = {
             id: input.messageID,
-            sessionID: input.sessionID,
+            agentID: input.sessionID,
             role: "user",
             time: { created: Date.now() },
             agent: input.agent,
@@ -310,7 +312,7 @@ export const { use: useSync, provider: SyncProvider } = createSimpleContext({
 
           const sessionReq = hasSession
             ? Promise.resolve()
-            : retry(() => client.session.get({ sessionID })).then((session) => {
+            : retry(() => client.agent.get({ agentID: sessionID })).then((session) => {
                 if (!tracked(directory, sessionID)) return
                 const data = session.data
                 if (!data) return
@@ -347,9 +349,9 @@ export const { use: useSync, provider: SyncProvider } = createSimpleContext({
 
           const key = keyFor(directory, sessionID)
           return runInflight(inflightDiff, key, () =>
-            retry(() => client.session.diff({ sessionID })).then((diff) => {
+            retry(() => client.agent.diff({ agentID: sessionID })).then((diff) => {
               if (!tracked(directory, sessionID)) return
-              setStore("session_diff", sessionID, reconcile(diff.data ?? [], { key: "file" }))
+              setStore("session_diff", sessionID, reconcile((diff.data as any) ?? [], { key: "file" }))
             }),
           )
         },
@@ -373,9 +375,9 @@ export const { use: useSync, provider: SyncProvider } = createSimpleContext({
 
           const key = keyFor(directory, sessionID)
           return runInflight(inflightTodo, key, () =>
-            retry(() => client.session.todo({ sessionID })).then((todo) => {
+            retry(() => client.agent.todo({ agentID: sessionID })).then((todo) => {
               if (!tracked(directory, sessionID)) return
-              const list = todo.data ?? []
+              const list = (todo.data as any) ?? []
               setStore("todo", sessionID, reconcile(list, { key: "id" }))
               globalSync.todo.set(sessionID, list)
             }),
@@ -425,10 +427,10 @@ export const { use: useSync, provider: SyncProvider } = createSimpleContext({
           const client = sdk.client
           const [store, setStore] = globalSync.child(directory)
           setStore("limit", (x) => x + count)
-          await client.session.list().then((x) => {
-            const sessions = (x.data ?? [])
-              .filter((s) => !!s?.id)
-              .sort((a, b) => cmp(a.id, b.id))
+          await client.agent.list().then((x) => {
+            const sessions = ((x.data as any) ?? [])
+              .filter((s: any) => !!s?.id)
+              .sort((a: any, b: any) => cmp(a.id, b.id))
               .slice(0, store.limit)
             setStore("session", reconcile(sessions, { key: "id" }))
           })
@@ -438,7 +440,7 @@ export const { use: useSync, provider: SyncProvider } = createSimpleContext({
           const directory = sdk.directory
           const client = sdk.client
           const [, setStore] = globalSync.child(directory)
-          await client.session.update({ sessionID, time: { archived: Date.now() } })
+          await client.agent.delete({ agentID: sessionID })
           setStore(
             produce((draft) => {
               const match = Binary.search(draft.session, sessionID, (s) => s.id)

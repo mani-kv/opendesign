@@ -1,4 +1,4 @@
-import type { Project, ProviderListResponse } from "@opencode-ai/sdk/v2/client"
+import type { Product, ProviderListResponse } from "@opencode-ai/sdk/v2/client"
 
 export const cmp = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0)
 
@@ -12,7 +12,7 @@ export function normalizeProviderList(input: ProviderListResponse): ProviderList
   }
 }
 
-export function sanitizeProject(project: Project) {
+export function sanitizeProject(project: Product) {
   if (!project.icon?.url && !project.icon?.override) return project
   return {
     ...project,

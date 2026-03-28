@@ -2,18 +2,18 @@ import { describe, expect, test } from "bun:test"
 import type { Message, Part } from "@opencode-ai/sdk/v2/client"
 import { applyOptimisticAdd, applyOptimisticRemove } from "./sync"
 
-const userMessage = (id: string, sessionID: string): Message => ({
+const userMessage = (id: string, agentID: string): Message => ({
   id,
-  sessionID,
+  agentID,
   role: "user",
   time: { created: 1 },
   agent: "assistant",
   model: { providerID: "openai", modelID: "gpt" },
 })
 
-const textPart = (id: string, sessionID: string, messageID: string): Part => ({
+const textPart = (id: string, agentID: string, messageID: string): Part => ({
   id,
-  sessionID,
+  agentID,
   messageID,
   type: "text",
   text: id,

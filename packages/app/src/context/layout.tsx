@@ -5,7 +5,7 @@ import { useGlobalSync } from "./global-sync"
 import { useGlobalSDK } from "./global-sdk"
 import { useServer } from "./server"
 import { usePlatform } from "./platform"
-import { Project } from "@opencode-ai/sdk/v2"
+import type { Product } from "@opencode-ai/sdk/v2"
 import { Persist, persisted, removePersisted } from "@/utils/persist"
 import { decode64 } from "@/utils/base64"
 import { same } from "@/utils/same"
@@ -51,7 +51,7 @@ type TabHandoff = {
   at: number
 }
 
-export type LocalProject = Partial<Project> & { worktree: string; expanded: boolean }
+export type LocalProject = Partial<Product> & { worktree: string; expanded: boolean }
 
 export type ReviewDiffStyle = "unified" | "split"
 
@@ -241,7 +241,8 @@ export const { use: useLayout, provider: LayoutProvider } = createSimpleContext(
             ? [...(canvasPanel.paneOrder as string[])]
             : ["sandbox", "figma"]
           if (!order.includes("sandbox")) order.unshift("sandbox")
-          const splitIndex = typeof canvasPanel.splitIndex === "number" ? canvasPanel.splitIndex : Math.max(1, order.length - 1)
+          const splitIndex =
+            typeof canvasPanel.splitIndex === "number" ? canvasPanel.splitIndex : Math.max(1, order.length - 1)
           return { ...canvasPanel, panes, paneOrder: order, splitIndex }
         }
         return {
@@ -631,7 +632,7 @@ export const { use: useLayout, provider: LayoutProvider } = createSimpleContext(
           continue
         }
 
-        void globalSdk.client.project
+        void globalSdk.client.product
           .update({ projectID: project.id, directory: worktree, icon: { color } })
           .catch(() => {
             if (colorRequested.get(worktree) === color) colorRequested.delete(worktree)
@@ -852,7 +853,10 @@ export const { use: useLayout, provider: LayoutProvider } = createSimpleContext(
           const order = store.canvasPanel?.paneOrder ?? ["sandbox", "figma"]
           const enabledOrder = order.filter((p: string) => (store.canvasPanel?.panes as any)?.[p] !== false)
           if (next === "split" && enabledOrder.length < 2) return
-          const splitIdx = next === "split" ? Math.max(1, enabledOrder.length - 1) : (store.canvasPanel?.splitIndex ?? enabledOrder.length - 1)
+          const splitIdx =
+            next === "split"
+              ? Math.max(1, enabledOrder.length - 1)
+              : (store.canvasPanel?.splitIndex ?? enabledOrder.length - 1)
           if (!store.canvasPanel) {
             setStore("canvasPanel", {
               layout: next,

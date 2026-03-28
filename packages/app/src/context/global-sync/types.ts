@@ -9,16 +9,34 @@ import type {
   Part,
   Path,
   PermissionRequest,
-  Project,
+  Product,
   ProviderListResponse,
   QuestionRequest,
-  Session,
   SessionStatus,
   Todo,
   VcsInfo,
 } from "@opencode-ai/sdk/v2/client"
 import type { Accessor } from "solid-js"
 import type { SetStoreFunction, Store } from "solid-js/store"
+
+/**
+ * Agent definition info — the shape returned by GET /agent-def.
+ * The SDK codegen collapses this into the `Agent` type, but
+ * these fields differ from agent *instance* fields.
+ */
+export type AgentDefInfo = {
+  name: string
+  label?: string
+  description?: string
+  mode: "subagent" | "primary" | "all"
+  hidden?: boolean
+  model?: {
+    providerID: string
+    modelID: string
+  }
+  variant?: string
+  options?: Record<string, unknown>
+}
 
 export type ProjectMeta = {
   name?: string
@@ -33,7 +51,7 @@ export type ProjectMeta = {
 
 export type State = {
   status: "loading" | "partial" | "complete"
-  agent: Agent[]
+  agentDef: AgentDefInfo[]
   command: Command[]
   project: string
   projectMeta: ProjectMeta | undefined
@@ -41,22 +59,22 @@ export type State = {
   provider: ProviderListResponse
   config: Config
   path: Path
-  session: Session[]
+  session: Agent[]
   sessionTotal: number
   session_status: {
-    [sessionID: string]: SessionStatus
+    [agentID: string]: SessionStatus
   }
   session_diff: {
-    [sessionID: string]: FileDiff[]
+    [agentID: string]: FileDiff[]
   }
   todo: {
-    [sessionID: string]: Todo[]
+    [agentID: string]: Todo[]
   }
   permission: {
-    [sessionID: string]: PermissionRequest[]
+    [agentID: string]: PermissionRequest[]
   }
   question: {
-    [sessionID: string]: QuestionRequest[]
+    [agentID: string]: QuestionRequest[]
   }
   mcp: {
     [name: string]: McpStatus
@@ -65,7 +83,7 @@ export type State = {
   vcs: VcsInfo | undefined
   limit: number
   message: {
-    [sessionID: string]: Message[]
+    [agentID: string]: Message[]
   }
   part: {
     [messageID: string]: Part[]
@@ -118,11 +136,11 @@ export type DisposeCheck = {
 export type RootLoadArgs = {
   directory: string
   limit: number
-  list: (query: { directory: string; roots: true; limit?: number }) => Promise<{ data?: Session[] }>
+  list: (query: { directory: string; roots: true; limit?: number }) => Promise<{ data?: Agent[] }>
 }
 
 export type RootLoadResult = {
-  data?: Session[]
+  data?: Agent[]
   limit: number
   limited: boolean
 }

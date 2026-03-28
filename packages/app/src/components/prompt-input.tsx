@@ -1,5 +1,16 @@
 import { useFilteredList } from "@opencode-ai/ui/hooks"
-import { createEffect, on, Component, Show, onCleanup, onMount, Switch, Match, createMemo, createSignal } from "solid-js"
+import {
+  createEffect,
+  on,
+  Component,
+  Show,
+  onCleanup,
+  onMount,
+  Switch,
+  Match,
+  createMemo,
+  createSignal,
+} from "solid-js"
 import { createStore } from "solid-js/store"
 import { createFocusSignal } from "@solid-primitives/active-element"
 import { useLocal } from "@/context/local"
@@ -252,7 +263,9 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
     applyingHistory: false,
   })
 
-  const commentCount = createMemo(() => prompt.context.items().filter((item) => item.type === "file" && !!item.comment?.trim()).length)
+  const commentCount = createMemo(
+    () => prompt.context.items().filter((item) => item.type === "file" && !!item.comment?.trim()).length,
+  )
 
   const contextItems = createMemo(() => prompt.context.items())
 
@@ -380,9 +393,13 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
   onMount(() => {
     console.log("[prompt-input] onMount, platform:", platform.platform)
     if (platform.platform !== "desktop") return
-    const api = (window as unknown as { api?: {
-      onFigmaSelection?: (cb: (sel: any) => void) => () => void
-    } }).api
+    const api = (
+      window as unknown as {
+        api?: {
+          onFigmaSelection?: (cb: (sel: any) => void) => () => void
+        }
+      }
+    ).api
     console.log("[prompt-input] api.onFigmaSelection exists:", !!api?.onFigmaSelection)
     if (!api?.onFigmaSelection) return
 
@@ -499,7 +516,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
   }
 
   const agentList = createMemo(() =>
-    sync.data.agent
+    sync.data.agentDef
       .filter((agent) => !agent.hidden && agent.mode !== "primary")
       .map((agent): AtOption => ({ type: "agent", name: agent.name, display: agent.label ?? agent.name })),
   )

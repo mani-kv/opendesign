@@ -66,7 +66,7 @@ const toOptimisticPart = (part: PromptRequestPart, sessionID: string, messageID:
       ignored: part.ignored,
       time: part.time,
       metadata: part.metadata,
-      sessionID,
+      agentID: sessionID,
       messageID,
     }
   }
@@ -78,7 +78,7 @@ const toOptimisticPart = (part: PromptRequestPart, sessionID: string, messageID:
       filename: part.filename,
       url: part.url,
       source: part.source,
-      sessionID,
+      agentID: sessionID,
       messageID,
     }
   }
@@ -87,7 +87,7 @@ const toOptimisticPart = (part: PromptRequestPart, sessionID: string, messageID:
     type: "agent",
     name: part.name,
     source: part.source,
-    sessionID,
+    agentID: sessionID,
     messageID,
   }
 }
@@ -145,14 +145,18 @@ export function buildRequestParts(input: BuildRequestPartsInput) {
         item.fileKey ? `File: ${item.fileKey}` : null,
         item.nodeId ? `Node ID: ${item.nodeId}` : null,
         item.url ? `URL: ${item.url}` : null,
-      ].filter(Boolean).join("\n")
+      ]
+        .filter(Boolean)
+        .join("\n")
 
-      const parts: PromptRequestPart[] = [{
-        id: Identifier.ascending("part"),
-        type: "text",
-        text,
-        synthetic: true,
-      }]
+      const parts: PromptRequestPart[] = [
+        {
+          id: Identifier.ascending("part"),
+          type: "text",
+          text,
+          synthetic: true,
+        },
+      ]
 
       if (item.thumbnail) {
         parts.push({

@@ -10,20 +10,20 @@ import type {
 } from "@opencode-ai/sdk/v2/client"
 import { dropSessionCaches, pickSessionCacheEvictions } from "./session-cache"
 
-const msg = (id: string, sessionID: string) =>
+const msg = (id: string, agentID: string) =>
   ({
     id,
-    sessionID,
+    agentID,
     role: "user",
     time: { created: 1 },
     agent: "assistant",
     model: { providerID: "openai", modelID: "gpt" },
   }) as Message
 
-const part = (id: string, sessionID: string, messageID: string) =>
+const part = (id: string, agentID: string, messageID: string) =>
   ({
     id,
-    sessionID,
+    agentID,
     messageID,
     type: "text",
     text: id,
@@ -32,7 +32,7 @@ const part = (id: string, sessionID: string, messageID: string) =>
 describe("app session cache", () => {
   test("dropSessionCaches clears orphaned parts without message rows", () => {
     const store: {
-      session_status: Record<string, SessionStatus | undefined>
+      session_status: Record<string,  SessionStatus | undefined>
       session_diff: Record<string, FileDiff[] | undefined>
       todo: Record<string, Todo[] | undefined>
       message: Record<string, Message[] | undefined>
@@ -63,7 +63,7 @@ describe("app session cache", () => {
   test("dropSessionCaches clears message-backed parts", () => {
     const m = msg("msg_1", "ses_1")
     const store: {
-      session_status: Record<string, SessionStatus | undefined>
+      session_status: Record<string,  SessionStatus | undefined>
       session_diff: Record<string, FileDiff[] | undefined>
       todo: Record<string, Todo[] | undefined>
       message: Record<string, Message[] | undefined>

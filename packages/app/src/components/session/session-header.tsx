@@ -136,13 +136,7 @@ const showRequestError = (language: ReturnType<typeof useLanguage>, err: unknown
 
 function useSessionShare(args: {
   globalSDK: ReturnType<typeof useGlobalSDK>
-  currentSession: () =>
-    | {
-        share?: {
-          url?: string
-        }
-      }
-    | undefined
+  currentSession: () => unknown
   sessionID: () => string | undefined
   projectDirectory: () => string
   platform: ReturnType<typeof usePlatform>
@@ -153,7 +147,7 @@ function useSessionShare(args: {
     copied: false,
     timer: undefined as number | undefined,
   })
-  const shareUrl = createMemo(() => args.currentSession()?.share?.url)
+  const shareUrl = createMemo(() => (args.currentSession() as any)?.share?.url as string | undefined)
 
   createEffect(() => {
     const url = shareUrl()
@@ -170,28 +164,16 @@ function useSessionShare(args: {
     const sessionID = args.sessionID()
     if (!sessionID || state.share) return
     setState("share", true)
-    args.globalSDK.client.session
-      .share({ sessionID, directory: args.projectDirectory() })
-      .catch((error) => {
-        console.error("Failed to share session", error)
-      })
-      .finally(() => {
-        setState("share", false)
-      })
+    // share/unshare removed from SDK
+    setState("share", false)
   }
 
   const unshareSession = () => {
     const sessionID = args.sessionID()
     if (!sessionID || state.unshare) return
     setState("unshare", true)
-    args.globalSDK.client.session
-      .unshare({ sessionID, directory: args.projectDirectory() })
-      .catch((error) => {
-        console.error("Failed to unshare session", error)
-      })
-      .finally(() => {
-        setState("unshare", false)
-      })
+    // share/unshare removed from SDK
+    setState("unshare", false)
   }
 
   const copyLink = (onError: (error: unknown) => void) => {

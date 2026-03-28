@@ -118,7 +118,7 @@ export function SessionContextTab() {
 
   const visibleUserMessages = createMemo(
     () => {
-      const revert = info()?.revert?.messageID
+      const revert = (info() as any)?.revert?.messageID
       if (!revert) return userMessages()
       return userMessages().filter((m) => m.id < revert)
     },

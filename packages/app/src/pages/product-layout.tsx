@@ -5,7 +5,7 @@ import { ProductScopeProvider } from "@/context/product-scope"
 export default function ProductLayout(props: ParentProps) {
   const params = useParams()
   return (
-    <ProductScopeProvider productId={params.productId}>
+    <ProductScopeProvider productId={params.productId ?? ""}>
       {props.children}
     </ProductScopeProvider>
   )

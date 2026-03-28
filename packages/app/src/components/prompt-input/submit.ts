@@ -88,9 +88,9 @@ export function createPromptSubmit(input: PromptSubmitInput) {
       pending.delete(sessionID)
       return Promise.resolve()
     }
-    return sdk.client.session
+    return sdk.client.agent
       .abort({
-        sessionID,
+        agentID: sessionID,
       })
       .catch(() => {})
   }
@@ -189,10 +189,10 @@ export function createPromptSubmit(input: PromptSubmitInput) {
 
     let session = input.info()
     if (!session && isNewSession) {
-      session = await client.session
+      session = await client.agent
         .create()
-        .then((x) => x.data ?? undefined)
-        .catch((err) => {
+        .then((x: any) => x.data ?? undefined)
+        .catch((err: any) => {
           showToast({
             title: language.t("prompt.toast.sessionCreateFailed.title"),
             description: errorMessage(err),
@@ -224,7 +224,7 @@ export function createPromptSubmit(input: PromptSubmitInput) {
       modelID: currentModel.id,
       providerID: currentModel.provider.id,
     }
-    const agent = currentAgent.name
+    const agent = currentAgent!.name
     const variant = local.model.variant.current()
 
     const clearInput = () => {
@@ -250,9 +250,9 @@ export function createPromptSubmit(input: PromptSubmitInput) {
       const customCommand = sync.data.command.find((c) => c.name === commandName)
       if (customCommand) {
         clearInput()
-        client.session
+        client.agent
           .command({
-            sessionID: session.id,
+            agentID: session.id,
             command: commandName,
             arguments: args.join(" "),
             agent,
@@ -266,7 +266,7 @@ export function createPromptSubmit(input: PromptSubmitInput) {
               filename: attachment.filename,
             })),
           })
-          .catch((err) => {
+          .catch((err: any) => {
             showToast({
               title: language.t("prompt.toast.commandSendFailed.title"),
               description: formatServerError(err, language.t, language.t("common.requestFailed")),
@@ -278,7 +278,9 @@ export function createPromptSubmit(input: PromptSubmitInput) {
     }
 
     const context = prompt.context.items().slice()
-    const commentItems = context.filter((item): item is FileContextItem & { key: string } => item.type === "file" && !!item.comment?.trim())
+    const commentItems = context.filter(
+      (item): item is FileContextItem & { key: string } => item.type === "file" && !!item.comment?.trim(),
+    )
 
     const messageID = Identifier.ascending("message")
     const { requestParts, optimisticParts } = buildRequestParts({
@@ -293,7 +295,7 @@ export function createPromptSubmit(input: PromptSubmitInput) {
 
     const optimisticMessage: Message = {
       id: messageID,
-      sessionID: session.id,
+      agentID: session.id,
       role: "user",
       time: { created: Date.now() },
       agent,
@@ -378,8 +380,8 @@ export function createPromptSubmit(input: PromptSubmitInput) {
     const send = async () => {
       const ok = await waitForWorktree()
       if (!ok) return
-      await client.session.promptAsync({
-        sessionID: session.id,
+      await client.agent.promptAsync({
+        agentID: session.id,
         agent,
         model,
         messageID,

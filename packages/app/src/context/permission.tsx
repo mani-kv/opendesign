@@ -15,7 +15,7 @@ import {
 } from "./permission-auto-respond"
 
 type PermissionRespondFn = (input: {
-  sessionID: string
+  agentID: string
   permissionID: string
   response: "once" | "always" | "reject"
   directory?: string
@@ -125,7 +125,7 @@ export const { use: usePermission, provider: PermissionProvider } = createSimple
     }
 
     const respond: PermissionRespondFn = (input) => {
-      globalSDK.client.permission.respond(input).catch(() => {
+      globalSDK.client.permission.reply({ requestID: input.permissionID, reply: input.response }).catch(() => {
         responded.delete(input.permissionID)
       })
     }
@@ -138,7 +138,7 @@ export const { use: usePermission, provider: PermissionProvider } = createSimple
       pruneResponded(now)
       if (hit) return
       respond({
-        sessionID: permission.sessionID,
+        agentID: permission.agentID,
         permissionID: permission.id,
         response: "once",
         directory,
@@ -147,7 +147,7 @@ export const { use: usePermission, provider: PermissionProvider } = createSimple
 
     function isAutoAccepting(sessionID: string, directory?: string) {
       const session = directory ? globalSync.child(directory, { bootstrap: false })[0].session : []
-      return autoRespondsPermission(store.autoAccept, session, { sessionID }, directory)
+      return autoRespondsPermission(store.autoAccept, session, { agentID: sessionID } as any, directory)
     }
 
     function isAutoAcceptingDirectory(directory: string) {
