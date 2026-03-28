@@ -255,9 +255,9 @@
         ]
       }
     },
-    "/project": {
+    "/product": {
       "get": {
-        "operationId": "project.list",
+        "operationId": "product.list",
         "parameters": [
           {
             "in": "query",
@@ -274,17 +274,17 @@
             }
           }
         ],
-        "summary": "List all projects",
-        "description": "Get a list of projects that have been opened with OpenCode.",
+        "summary": "List all products",
+        "description": "Get a list of products that have been opened with OpenCode.",
         "responses": {
           "200": {
-            "description": "List of projects",
+            "description": "List of products",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/Project"
+                    "$ref": "#/components/schemas/Product"
                   }
                 }
               }
@@ -294,14 +294,14 @@
         "x-codeSamples": [
           {
             "lang": "js",
-            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.project.list({\n  ...\n})"
+            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.product.list({\n  ...\n})"
           }
         ]
       }
     },
-    "/project/current": {
+    "/product/current": {
       "get": {
-        "operationId": "project.current",
+        "operationId": "product.current",
         "parameters": [
           {
             "in": "query",
@@ -318,15 +318,15 @@
             }
           }
         ],
-        "summary": "Get current project",
-        "description": "Retrieve the currently active project that OpenCode is working with.",
+        "summary": "Get current product",
+        "description": "Retrieve the currently active product that OpenCode is working with.",
         "responses": {
           "200": {
-            "description": "Current project information",
+            "description": "Current product information",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Project"
+                  "$ref": "#/components/schemas/Product"
                 }
               }
             }
@@ -335,14 +335,14 @@
         "x-codeSamples": [
           {
             "lang": "js",
-            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.project.current({\n  ...\n})"
+            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.product.current({\n  ...\n})"
           }
         ]
       }
     },
-    "/project/git/init": {
+    "/product/git/init": {
       "post": {
-        "operationId": "project.initGit",
+        "operationId": "product.initGit",
         "parameters": [
           {
             "in": "query",
@@ -360,14 +360,14 @@
           }
         ],
         "summary": "Initialize git repository",
-        "description": "Create a git repository for the current project and return the refreshed project info.",
+        "description": "Create a git repository for the current product and return the refreshed product info.",
         "responses": {
           "200": {
-            "description": "Project information after git initialization",
+            "description": "Product information after git initialization",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Project"
+                  "$ref": "#/components/schemas/Product"
                 }
               }
             }
@@ -376,14 +376,14 @@
         "x-codeSamples": [
           {
             "lang": "js",
-            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.project.initGit({\n  ...\n})"
+            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.product.initGit({\n  ...\n})"
           }
         ]
       }
     },
-    "/project/{projectID}": {
+    "/product/{projectID}": {
       "patch": {
-        "operationId": "project.update",
+        "operationId": "product.update",
         "parameters": [
           {
             "in": "query",
@@ -408,15 +408,15 @@
             "required": true
           }
         ],
-        "summary": "Update project",
-        "description": "Update project properties such as name, icon, and commands.",
+        "summary": "Update product",
+        "description": "Update product properties such as name, icon, and commands.",
         "responses": {
           "200": {
-            "description": "Updated project information",
+            "description": "Updated product information",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Project"
+                  "$ref": "#/components/schemas/Product"
                 }
               }
             }
@@ -482,7 +482,341 @@
         "x-codeSamples": [
           {
             "lang": "js",
-            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.project.update({\n  ...\n})"
+            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.product.update({\n  ...\n})"
+          }
+        ]
+      }
+    },
+    "/feature": {
+      "get": {
+        "operationId": "feature.list",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "directory",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "workspace",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "productID",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by product ID"
+          }
+        ],
+        "summary": "List features",
+        "description": "Get a list of features, optionally filtered by product.",
+        "responses": {
+          "200": {
+            "description": "List of features",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Feature"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "js",
+            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.feature.list({\n  ...\n})"
+          }
+        ]
+      },
+      "post": {
+        "operationId": "feature.create",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "directory",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "workspace",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "summary": "Create feature",
+        "description": "Create a new feature within a product.",
+        "responses": {
+          "200": {
+            "description": "Created feature",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Feature"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "productID": {
+                    "description": "Product ID",
+                    "type": "string"
+                  },
+                  "name": {
+                    "description": "Feature name",
+                    "type": "string"
+                  },
+                  "branch": {
+                    "description": "Git branch name",
+                    "type": "string"
+                  },
+                  "figmaUrl": {
+                    "description": "Figma URL",
+                    "type": "string"
+                  }
+                },
+                "required": ["productID", "name", "branch"]
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "js",
+            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.feature.create({\n  ...\n})"
+          }
+        ]
+      }
+    },
+    "/feature/{featureID}": {
+      "get": {
+        "operationId": "feature.get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "directory",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "workspace",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "featureID",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "summary": "Get feature",
+        "description": "Retrieve a specific feature.",
+        "responses": {
+          "200": {
+            "description": "Feature details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Feature"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "js",
+            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.feature.get({\n  ...\n})"
+          }
+        ]
+      },
+      "put": {
+        "operationId": "feature.update",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "directory",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "workspace",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "featureID",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "summary": "Update feature",
+        "description": "Update a feature.",
+        "responses": {
+          "200": {
+            "description": "Updated feature",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Feature"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": ["active", "completed", "archived"]
+                  },
+                  "figmaUrl": {
+                    "type": "string"
+                  },
+                  "canvasState": {}
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "js",
+            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.feature.update({\n  ...\n})"
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "feature.remove",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "directory",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "workspace",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "featureID",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "summary": "Delete feature",
+        "description": "Delete a feature and all its agents.",
+        "responses": {
+          "200": {
+            "description": "Deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "js",
+            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.feature.remove({\n  ...\n})"
           }
         ]
       }
@@ -1149,196 +1483,6 @@
         ]
       }
     },
-    "/experimental/workspace": {
-      "post": {
-        "operationId": "experimental.workspace.create",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "directory",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "workspace",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "summary": "Create workspace",
-        "description": "Create a workspace for the current project.",
-        "responses": {
-          "200": {
-            "description": "Workspace created",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Workspace"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/BadRequestError"
-                }
-              }
-            }
-          }
-        },
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "id": {
-                    "type": "string",
-                    "pattern": "^wrk.*"
-                  },
-                  "type": {
-                    "type": "string"
-                  },
-                  "branch": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
-                  },
-                  "extra": {
-                    "anyOf": [
-                      {},
-                      {
-                        "type": "null"
-                      }
-                    ]
-                  }
-                },
-                "required": ["type", "branch", "extra"]
-              }
-            }
-          }
-        },
-        "x-codeSamples": [
-          {
-            "lang": "js",
-            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.experimental.workspace.create({\n  ...\n})"
-          }
-        ]
-      },
-      "get": {
-        "operationId": "experimental.workspace.list",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "directory",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "workspace",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "summary": "List workspaces",
-        "description": "List all workspaces.",
-        "responses": {
-          "200": {
-            "description": "Workspaces",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Workspace"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "x-codeSamples": [
-          {
-            "lang": "js",
-            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.experimental.workspace.list({\n  ...\n})"
-          }
-        ]
-      }
-    },
-    "/experimental/workspace/{id}": {
-      "delete": {
-        "operationId": "experimental.workspace.remove",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "directory",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "workspace",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "id",
-            "schema": {
-              "type": "string",
-              "pattern": "^wrk.*"
-            },
-            "required": true
-          }
-        ],
-        "summary": "Remove workspace",
-        "description": "Remove an existing workspace.",
-        "responses": {
-          "200": {
-            "description": "Workspace removed",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Workspace"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/BadRequestError"
-                }
-              }
-            }
-          }
-        },
-        "x-codeSamples": [
-          {
-            "lang": "js",
-            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.experimental.workspace.remove({\n  ...\n})"
-          }
-        ]
-      }
-    },
     "/experimental/worktree": {
       "post": {
         "operationId": "worktree.create",
@@ -1637,7 +1781,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/GlobalSession"
+                    "$ref": "#/components/schemas/GlobalAgent"
                   }
                 }
               }
@@ -1699,9 +1843,9 @@
         ]
       }
     },
-    "/session": {
+    "/agent-session": {
       "get": {
-        "operationId": "session.list",
+        "operationId": "agent.list",
         "parameters": [
           {
             "in": "query",
@@ -1709,7 +1853,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Filter sessions by project directory"
+            "description": "Filter by project directory"
           },
           {
             "in": "query",
@@ -1720,19 +1864,11 @@
           },
           {
             "in": "query",
-            "name": "roots",
-            "schema": {
-              "type": "boolean"
-            },
-            "description": "Only return root sessions (no parentID)"
-          },
-          {
-            "in": "query",
             "name": "start",
             "schema": {
               "type": "number"
             },
-            "description": "Filter sessions updated on or after this timestamp (milliseconds since epoch)"
+            "description": "Filter updated on or after this timestamp (milliseconds since epoch)"
           },
           {
             "in": "query",
@@ -1740,7 +1876,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Filter sessions by title (case-insensitive)"
+            "description": "Filter by title (case-insensitive)"
           },
           {
             "in": "query",
@@ -1748,20 +1884,20 @@
             "schema": {
               "type": "number"
             },
-            "description": "Maximum number of sessions to return"
+            "description": "Maximum number to return"
           }
         ],
-        "summary": "List sessions",
-        "description": "Get a list of all OpenCode sessions, sorted by most recently updated.",
+        "summary": "List agent sessions",
+        "description": "Get a list of all agent sessions, sorted by most recently updated.",
         "responses": {
           "200": {
-            "description": "List of sessions",
+            "description": "List of agent sessions",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/Session"
+                    "$ref": "#/components/schemas/Agent"
                   }
                 }
               }
@@ -1771,12 +1907,12 @@
         "x-codeSamples": [
           {
             "lang": "js",
-            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.session.list({\n  ...\n})"
+            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.agent.list({\n  ...\n})"
           }
         ]
       },
       "post": {
-        "operationId": "session.create",
+        "operationId": "agent.create",
         "parameters": [
           {
             "in": "query",
@@ -1793,15 +1929,15 @@
             }
           }
         ],
-        "summary": "Create session",
-        "description": "Create a new OpenCode session for interacting with AI assistants and managing conversations.",
+        "summary": "Create agent session",
+        "description": "Create a new agent session.",
         "responses": {
           "200": {
-            "description": "Successfully created session",
+            "description": "Successfully created agent session",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Session"
+                  "$ref": "#/components/schemas/Agent"
                 }
               }
             }
@@ -1823,9 +1959,11 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "parentID": {
-                    "type": "string",
-                    "pattern": "^ses.*"
+                  "featureID": {
+                    "type": "string"
+                  },
+                  "annotationID": {
+                    "type": "string"
                   },
                   "title": {
                     "type": "string"
@@ -1833,9 +1971,11 @@
                   "permission": {
                     "$ref": "#/components/schemas/PermissionRuleset"
                   },
-                  "workspaceID": {
-                    "type": "string",
-                    "pattern": "^wrk.*"
+                  "branch": {
+                    "type": "string"
+                  },
+                  "color": {
+                    "type": "string"
                   }
                 }
               }
@@ -1845,14 +1985,14 @@
         "x-codeSamples": [
           {
             "lang": "js",
-            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.session.create({\n  ...\n})"
+            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.agent.create({\n  ...\n})"
           }
         ]
       }
     },
-    "/session/status": {
+    "/agent-session/status": {
       "get": {
-        "operationId": "session.status",
+        "operationId": "agent.status",
         "parameters": [
           {
             "in": "query",
@@ -1869,11 +2009,11 @@
             }
           }
         ],
-        "summary": "Get session status",
-        "description": "Retrieve the current status of all sessions, including active, idle, and completed states.",
+        "summary": "Get agent session status",
+        "description": "Retrieve the current status of all agent sessions.",
         "responses": {
           "200": {
-            "description": "Get session status",
+            "description": "Get agent session status",
             "content": {
               "application/json": {
                 "schema": {
@@ -1902,14 +2042,14 @@
         "x-codeSamples": [
           {
             "lang": "js",
-            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.session.status({\n  ...\n})"
+            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.agent.status({\n  ...\n})"
           }
         ]
       }
     },
-    "/session/{sessionID}": {
+    "/agent-session/{agentID}": {
       "get": {
-        "operationId": "session.get",
+        "operationId": "agent.get",
         "parameters": [
           {
             "in": "query",
@@ -1927,24 +2067,24 @@
           },
           {
             "in": "path",
-            "name": "sessionID",
+            "name": "agentID",
             "schema": {
               "type": "string",
-              "pattern": "^ses.*"
+              "pattern": "^agt.*"
             },
             "required": true
           }
         ],
-        "summary": "Get session",
-        "description": "Retrieve detailed information about a specific OpenCode session.",
-        "tags": ["Session"],
+        "summary": "Get agent session",
+        "description": "Retrieve detailed information about a specific agent session.",
+        "tags": ["AgentSession"],
         "responses": {
           "200": {
-            "description": "Get session",
+            "description": "Get agent session",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Session"
+                  "$ref": "#/components/schemas/Agent"
                 }
               }
             }
@@ -1973,12 +2113,12 @@
         "x-codeSamples": [
           {
             "lang": "js",
-            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.session.get({\n  ...\n})"
+            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.agent.get({\n  ...\n})"
           }
         ]
       },
       "delete": {
-        "operationId": "session.delete",
+        "operationId": "agent.delete",
         "parameters": [
           {
             "in": "query",
@@ -1996,19 +2136,19 @@
           },
           {
             "in": "path",
-            "name": "sessionID",
+            "name": "agentID",
             "schema": {
               "type": "string",
-              "pattern": "^ses.*"
+              "pattern": "^agt.*"
             },
             "required": true
           }
         ],
-        "summary": "Delete session",
-        "description": "Delete a session and permanently remove all associated data, including messages and history.",
+        "summary": "Delete agent session",
+        "description": "Delete an agent session and permanently remove all associated data.",
         "responses": {
           "200": {
-            "description": "Successfully deleted session",
+            "description": "Successfully deleted agent session",
             "content": {
               "application/json": {
                 "schema": {
@@ -2041,12 +2181,12 @@
         "x-codeSamples": [
           {
             "lang": "js",
-            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.session.delete({\n  ...\n})"
+            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.agent.delete({\n  ...\n})"
           }
         ]
       },
       "patch": {
-        "operationId": "session.update",
+        "operationId": "agent.update",
         "parameters": [
           {
             "in": "query",
@@ -2064,23 +2204,23 @@
           },
           {
             "in": "path",
-            "name": "sessionID",
+            "name": "agentID",
             "schema": {
               "type": "string",
-              "pattern": "^ses.*"
+              "pattern": "^agt.*"
             },
             "required": true
           }
         ],
-        "summary": "Update session",
-        "description": "Update properties of an existing session, such as title or other metadata.",
+        "summary": "Update agent session",
+        "description": "Update properties of an existing agent session.",
         "responses": {
           "200": {
-            "description": "Successfully updated session",
+            "description": "Successfully updated agent session",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Session"
+                  "$ref": "#/components/schemas/Agent"
                 }
               }
             }
@@ -2114,14 +2254,6 @@
                 "properties": {
                   "title": {
                     "type": "string"
-                  },
-                  "time": {
-                    "type": "object",
-                    "properties": {
-                      "archived": {
-                        "type": "number"
-                      }
-                    }
                   }
                 }
               }
@@ -2131,14 +2263,14 @@
         "x-codeSamples": [
           {
             "lang": "js",
-            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.session.update({\n  ...\n})"
+            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.agent.update({\n  ...\n})"
           }
         ]
       }
     },
-    "/session/{sessionID}/children": {
+    "/agent-session/{agentID}/todo": {
       "get": {
-        "operationId": "session.children",
+        "operationId": "agent.todo",
         "parameters": [
           {
             "in": "query",
@@ -2156,91 +2288,17 @@
           },
           {
             "in": "path",
-            "name": "sessionID",
+            "name": "agentID",
             "schema": {
               "type": "string",
-              "pattern": "^ses.*"
-            },
-            "required": true
-          }
-        ],
-        "summary": "Get session children",
-        "tags": ["Session"],
-        "description": "Retrieve all child sessions that were forked from the specified parent session.",
-        "responses": {
-          "200": {
-            "description": "List of children",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Session"
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/BadRequestError"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/NotFoundError"
-                }
-              }
-            }
-          }
-        },
-        "x-codeSamples": [
-          {
-            "lang": "js",
-            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.session.children({\n  ...\n})"
-          }
-        ]
-      }
-    },
-    "/session/{sessionID}/todo": {
-      "get": {
-        "operationId": "session.todo",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "directory",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "workspace",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "sessionID",
-            "schema": {
-              "type": "string",
-              "pattern": "^ses.*"
+              "pattern": "^agt.*"
             },
             "required": true,
-            "description": "Session ID"
+            "description": "Agent ID"
           }
         ],
-        "summary": "Get session todos",
-        "description": "Retrieve the todo list associated with a specific session, showing tasks and action items.",
+        "summary": "Get agent session todos",
+        "description": "Retrieve the todo list associated with a specific agent session.",
         "responses": {
           "200": {
             "description": "Todo list",
@@ -2279,14 +2337,14 @@
         "x-codeSamples": [
           {
             "lang": "js",
-            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.session.todo({\n  ...\n})"
+            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.agent.todo({\n  ...\n})"
           }
         ]
       }
     },
-    "/session/{sessionID}/init": {
+    "/agent-session/{agentID}/init": {
       "post": {
-        "operationId": "session.init",
+        "operationId": "agent.init",
         "parameters": [
           {
             "in": "query",
@@ -2304,16 +2362,16 @@
           },
           {
             "in": "path",
-            "name": "sessionID",
+            "name": "agentID",
             "schema": {
               "type": "string",
-              "pattern": "^ses.*"
+              "pattern": "^agt.*"
             },
             "required": true,
-            "description": "Session ID"
+            "description": "Agent ID"
           }
         ],
-        "summary": "Initialize session",
+        "summary": "Initialize agent session",
         "description": "Analyze the current application and create an AGENTS.md file with project-specific agent configurations.",
         "responses": {
           "200": {
@@ -2372,14 +2430,14 @@
         "x-codeSamples": [
           {
             "lang": "js",
-            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.session.init({\n  ...\n})"
+            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.agent.init({\n  ...\n})"
           }
         ]
       }
     },
-    "/session/{sessionID}/fork": {
+    "/agent-session/{agentID}/fork": {
       "post": {
-        "operationId": "session.fork",
+        "operationId": "agent.fork",
         "parameters": [
           {
             "in": "query",
@@ -2397,23 +2455,23 @@
           },
           {
             "in": "path",
-            "name": "sessionID",
+            "name": "agentID",
             "schema": {
               "type": "string",
-              "pattern": "^ses.*"
+              "pattern": "^agt.*"
             },
             "required": true
           }
         ],
-        "summary": "Fork session",
-        "description": "Create a new session by forking an existing session at a specific message point.",
+        "summary": "Fork agent session",
+        "description": "Create a new agent session by forking an existing one at a specific message point.",
         "responses": {
           "200": {
             "description": "200",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Session"
+                  "$ref": "#/components/schemas/Agent"
                 }
               }
             }
@@ -2437,14 +2495,14 @@
         "x-codeSamples": [
           {
             "lang": "js",
-            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.session.fork({\n  ...\n})"
+            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.agent.fork({\n  ...\n})"
           }
         ]
       }
     },
-    "/session/{sessionID}/abort": {
+    "/agent-session/{agentID}/abort": {
       "post": {
-        "operationId": "session.abort",
+        "operationId": "agent.abort",
         "parameters": [
           {
             "in": "query",
@@ -2462,19 +2520,19 @@
           },
           {
             "in": "path",
-            "name": "sessionID",
+            "name": "agentID",
             "schema": {
               "type": "string",
-              "pattern": "^ses.*"
+              "pattern": "^agt.*"
             },
             "required": true
           }
         ],
-        "summary": "Abort session",
-        "description": "Abort an active session and stop any ongoing AI processing or command execution.",
+        "summary": "Abort agent session",
+        "description": "Abort an active agent session and stop any ongoing AI processing.",
         "responses": {
           "200": {
-            "description": "Aborted session",
+            "description": "Aborted agent session",
             "content": {
               "application/json": {
                 "schema": {
@@ -2507,152 +2565,14 @@
         "x-codeSamples": [
           {
             "lang": "js",
-            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.session.abort({\n  ...\n})"
+            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.agent.abort({\n  ...\n})"
           }
         ]
       }
     },
-    "/session/{sessionID}/share": {
-      "post": {
-        "operationId": "session.share",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "directory",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "workspace",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "sessionID",
-            "schema": {
-              "type": "string",
-              "pattern": "^ses.*"
-            },
-            "required": true
-          }
-        ],
-        "summary": "Share session",
-        "description": "Create a shareable link for a session, allowing others to view the conversation.",
-        "responses": {
-          "200": {
-            "description": "Successfully shared session",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Session"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/BadRequestError"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/NotFoundError"
-                }
-              }
-            }
-          }
-        },
-        "x-codeSamples": [
-          {
-            "lang": "js",
-            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.session.share({\n  ...\n})"
-          }
-        ]
-      },
-      "delete": {
-        "operationId": "session.unshare",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "directory",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "workspace",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "sessionID",
-            "schema": {
-              "type": "string",
-              "pattern": "^ses.*"
-            },
-            "required": true
-          }
-        ],
-        "summary": "Unshare session",
-        "description": "Remove the shareable link for a session, making it private again.",
-        "responses": {
-          "200": {
-            "description": "Successfully unshared session",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Session"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/BadRequestError"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/NotFoundError"
-                }
-              }
-            }
-          }
-        },
-        "x-codeSamples": [
-          {
-            "lang": "js",
-            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.session.unshare({\n  ...\n})"
-          }
-        ]
-      }
-    },
-    "/session/{sessionID}/diff": {
+    "/agent-session/{agentID}/diff": {
       "get": {
-        "operationId": "session.diff",
+        "operationId": "agent.diff",
         "parameters": [
           {
             "in": "query",
@@ -2670,10 +2590,10 @@
           },
           {
             "in": "path",
-            "name": "sessionID",
+            "name": "agentID",
             "schema": {
               "type": "string",
-              "pattern": "^ses.*"
+              "pattern": "^agt.*"
             },
             "required": true
           },
@@ -2687,7 +2607,7 @@
           }
         ],
         "summary": "Get message diff",
-        "description": "Get the file changes (diff) that resulted from a specific user message in the session.",
+        "description": "Get the file changes (diff) that resulted from a specific user message.",
         "responses": {
           "200": {
             "description": "Successfully retrieved diff",
@@ -2706,14 +2626,14 @@
         "x-codeSamples": [
           {
             "lang": "js",
-            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.session.diff({\n  ...\n})"
+            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.agent.diff({\n  ...\n})"
           }
         ]
       }
     },
-    "/session/{sessionID}/summarize": {
+    "/agent-session/{agentID}/summarize": {
       "post": {
-        "operationId": "session.summarize",
+        "operationId": "agent.summarize",
         "parameters": [
           {
             "in": "query",
@@ -2731,20 +2651,20 @@
           },
           {
             "in": "path",
-            "name": "sessionID",
+            "name": "agentID",
             "schema": {
               "type": "string",
-              "pattern": "^ses.*"
+              "pattern": "^agt.*"
             },
             "required": true,
-            "description": "Session ID"
+            "description": "Agent ID"
           }
         ],
-        "summary": "Summarize session",
-        "description": "Generate a concise summary of the session using AI compaction to preserve key information.",
+        "summary": "Summarize agent session",
+        "description": "Generate a concise summary using AI compaction to preserve key information.",
         "responses": {
           "200": {
-            "description": "Summarized session",
+            "description": "Summarized agent session",
             "content": {
               "application/json": {
                 "schema": {
@@ -2799,14 +2719,14 @@
         "x-codeSamples": [
           {
             "lang": "js",
-            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.session.summarize({\n  ...\n})"
+            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.agent.summarize({\n  ...\n})"
           }
         ]
       }
     },
-    "/session/{sessionID}/message": {
+    "/agent-session/{agentID}/message": {
       "get": {
-        "operationId": "session.messages",
+        "operationId": "agent.messages",
         "parameters": [
           {
             "in": "query",
@@ -2824,13 +2744,13 @@
           },
           {
             "in": "path",
-            "name": "sessionID",
+            "name": "agentID",
             "schema": {
               "type": "string",
-              "pattern": "^ses.*"
+              "pattern": "^agt.*"
             },
             "required": true,
-            "description": "Session ID"
+            "description": "Agent ID"
           },
           {
             "in": "query",
@@ -2840,8 +2760,8 @@
             }
           }
         ],
-        "summary": "Get session messages",
-        "description": "Retrieve all messages in a session, including user prompts and AI responses.",
+        "summary": "Get agent session messages",
+        "description": "Retrieve all messages in an agent session.",
         "responses": {
           "200": {
             "description": "List of messages",
@@ -2892,12 +2812,12 @@
         "x-codeSamples": [
           {
             "lang": "js",
-            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.session.messages({\n  ...\n})"
+            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.agent.messages({\n  ...\n})"
           }
         ]
       },
       "post": {
-        "operationId": "session.prompt",
+        "operationId": "agent.prompt",
         "parameters": [
           {
             "in": "query",
@@ -2915,17 +2835,17 @@
           },
           {
             "in": "path",
-            "name": "sessionID",
+            "name": "agentID",
             "schema": {
               "type": "string",
-              "pattern": "^ses.*"
+              "pattern": "^agt.*"
             },
             "required": true,
-            "description": "Session ID"
+            "description": "Agent ID"
           }
         ],
         "summary": "Send message",
-        "description": "Create and send a new message to a session, streaming the AI response.",
+        "description": "Create and send a new message, streaming the AI response.",
         "responses": {
           "200": {
             "description": "Created message",
@@ -3045,14 +2965,14 @@
         "x-codeSamples": [
           {
             "lang": "js",
-            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.session.prompt({\n  ...\n})"
+            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.agent.prompt({\n  ...\n})"
           }
         ]
       }
     },
-    "/session/{sessionID}/message/{messageID}": {
+    "/agent-session/{agentID}/message/{messageID}": {
       "get": {
-        "operationId": "session.message",
+        "operationId": "agent.message",
         "parameters": [
           {
             "in": "query",
@@ -3070,13 +2990,13 @@
           },
           {
             "in": "path",
-            "name": "sessionID",
+            "name": "agentID",
             "schema": {
               "type": "string",
-              "pattern": "^ses.*"
+              "pattern": "^agt.*"
             },
             "required": true,
-            "description": "Session ID"
+            "description": "Agent ID"
           },
           {
             "in": "path",
@@ -3090,7 +3010,7 @@
           }
         ],
         "summary": "Get message",
-        "description": "Retrieve a specific message from a session by its message ID.",
+        "description": "Retrieve a specific message by its message ID.",
         "responses": {
           "200": {
             "description": "Message",
@@ -3138,12 +3058,12 @@
         "x-codeSamples": [
           {
             "lang": "js",
-            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.session.message({\n  ...\n})"
+            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.agent.message({\n  ...\n})"
           }
         ]
       },
       "delete": {
-        "operationId": "session.deleteMessage",
+        "operationId": "agent.deleteMessage",
         "parameters": [
           {
             "in": "query",
@@ -3161,13 +3081,13 @@
           },
           {
             "in": "path",
-            "name": "sessionID",
+            "name": "agentID",
             "schema": {
               "type": "string",
-              "pattern": "^ses.*"
+              "pattern": "^agt.*"
             },
             "required": true,
-            "description": "Session ID"
+            "description": "Agent ID"
           },
           {
             "in": "path",
@@ -3181,7 +3101,7 @@
           }
         ],
         "summary": "Delete message",
-        "description": "Permanently delete a specific message (and all of its parts) from a session. This does not revert any file changes that may have been made while processing the message.",
+        "description": "Permanently delete a specific message from an agent session.",
         "responses": {
           "200": {
             "description": "Successfully deleted message",
@@ -3217,14 +3137,14 @@
         "x-codeSamples": [
           {
             "lang": "js",
-            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.session.deleteMessage({\n  ...\n})"
+            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.agent.deleteMessage({\n  ...\n})"
           }
         ]
       }
     },
-    "/session/{sessionID}/message/{messageID}/part/{partID}": {
+    "/agent-session/{agentID}/message/{messageID}/part/{partID}": {
       "delete": {
-        "operationId": "part.delete",
+        "operationId": "agent.part.delete",
         "parameters": [
           {
             "in": "query",
@@ -3242,13 +3162,13 @@
           },
           {
             "in": "path",
-            "name": "sessionID",
+            "name": "agentID",
             "schema": {
               "type": "string",
-              "pattern": "^ses.*"
+              "pattern": "^agt.*"
             },
             "required": true,
-            "description": "Session ID"
+            "description": "Agent ID"
           },
           {
             "in": "path",
@@ -3306,12 +3226,12 @@
         "x-codeSamples": [
           {
             "lang": "js",
-            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.part.delete({\n  ...\n})"
+            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.agent.part.delete({\n  ...\n})"
           }
         ]
       },
       "patch": {
-        "operationId": "part.update",
+        "operationId": "agent.part.update",
         "parameters": [
           {
             "in": "query",
@@ -3329,13 +3249,13 @@
           },
           {
             "in": "path",
-            "name": "sessionID",
+            "name": "agentID",
             "schema": {
               "type": "string",
-              "pattern": "^ses.*"
+              "pattern": "^agt.*"
             },
             "required": true,
-            "description": "Session ID"
+            "description": "Agent ID"
           },
           {
             "in": "path",
@@ -3402,14 +3322,14 @@
         "x-codeSamples": [
           {
             "lang": "js",
-            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.part.update({\n  ...\n})"
+            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.agent.part.update({\n  ...\n})"
           }
         ]
       }
     },
-    "/session/{sessionID}/prompt_async": {
+    "/agent-session/{agentID}/prompt_async": {
       "post": {
-        "operationId": "session.prompt_async",
+        "operationId": "agent.prompt_async",
         "parameters": [
           {
             "in": "query",
@@ -3427,17 +3347,17 @@
           },
           {
             "in": "path",
-            "name": "sessionID",
+            "name": "agentID",
             "schema": {
               "type": "string",
-              "pattern": "^ses.*"
+              "pattern": "^agt.*"
             },
             "required": true,
-            "description": "Session ID"
+            "description": "Agent ID"
           }
         ],
         "summary": "Send async message",
-        "description": "Create and send a new message to a session asynchronously, starting the session if needed and returning immediately.",
+        "description": "Create and send a new message asynchronously, returning immediately.",
         "responses": {
           "204": {
             "description": "Prompt accepted"
@@ -3538,14 +3458,14 @@
         "x-codeSamples": [
           {
             "lang": "js",
-            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.session.prompt_async({\n  ...\n})"
+            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.agent.prompt_async({\n  ...\n})"
           }
         ]
       }
     },
-    "/session/{sessionID}/command": {
+    "/agent-session/{agentID}/command": {
       "post": {
-        "operationId": "session.command",
+        "operationId": "agent.command",
         "parameters": [
           {
             "in": "query",
@@ -3563,17 +3483,17 @@
           },
           {
             "in": "path",
-            "name": "sessionID",
+            "name": "agentID",
             "schema": {
               "type": "string",
-              "pattern": "^ses.*"
+              "pattern": "^agt.*"
             },
             "required": true,
-            "description": "Session ID"
+            "description": "Agent ID"
           }
         ],
         "summary": "Send command",
-        "description": "Send a new command to a session for execution by the AI assistant.",
+        "description": "Send a command for execution by the AI assistant.",
         "responses": {
           "200": {
             "description": "Created message",
@@ -3684,14 +3604,14 @@
         "x-codeSamples": [
           {
             "lang": "js",
-            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.session.command({\n  ...\n})"
+            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.agent.command({\n  ...\n})"
           }
         ]
       }
     },
-    "/session/{sessionID}/revert": {
+    "/agent-session/{agentID}/revert": {
       "post": {
-        "operationId": "session.revert",
+        "operationId": "agent.revert",
         "parameters": [
           {
             "in": "query",
@@ -3709,23 +3629,23 @@
           },
           {
             "in": "path",
-            "name": "sessionID",
+            "name": "agentID",
             "schema": {
               "type": "string",
-              "pattern": "^ses.*"
+              "pattern": "^agt.*"
             },
             "required": true
           }
         ],
         "summary": "Revert message",
-        "description": "Revert a specific message in a session, undoing its effects and restoring the previous state.",
+        "description": "Revert a specific message, undoing its effects.",
         "responses": {
           "200": {
-            "description": "Updated session",
+            "description": "Updated agent session",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Session"
+                  "$ref": "#/components/schemas/Agent"
                 }
               }
             }
@@ -3774,14 +3694,14 @@
         "x-codeSamples": [
           {
             "lang": "js",
-            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.session.revert({\n  ...\n})"
+            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.agent.revert({\n  ...\n})"
           }
         ]
       }
     },
-    "/session/{sessionID}/unrevert": {
+    "/agent-session/{agentID}/unrevert": {
       "post": {
-        "operationId": "session.unrevert",
+        "operationId": "agent.unrevert",
         "parameters": [
           {
             "in": "query",
@@ -3799,23 +3719,23 @@
           },
           {
             "in": "path",
-            "name": "sessionID",
+            "name": "agentID",
             "schema": {
               "type": "string",
-              "pattern": "^ses.*"
+              "pattern": "^agt.*"
             },
             "required": true
           }
         ],
         "summary": "Restore reverted messages",
-        "description": "Restore all previously reverted messages in a session.",
+        "description": "Restore all previously reverted messages.",
         "responses": {
           "200": {
-            "description": "Updated session",
+            "description": "Updated agent session",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Session"
+                  "$ref": "#/components/schemas/Agent"
                 }
               }
             }
@@ -3844,179 +3764,14 @@
         "x-codeSamples": [
           {
             "lang": "js",
-            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.session.unrevert({\n  ...\n})"
+            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.agent.unrevert({\n  ...\n})"
           }
         ]
       }
     },
-    "/session/{sessionID}/canvas": {
-      "get": {
-        "operationId": "session.canvas.get",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "directory",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "workspace",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "sessionID",
-            "schema": {
-              "type": "string",
-              "pattern": "^ses.*"
-            },
-            "required": true,
-            "description": "Session ID"
-          }
-        ],
-        "summary": "Get canvas state",
-        "description": "Retrieve the canvas state for a specific session.",
-        "responses": {
-          "200": {
-            "description": "Canvas state",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "state": {
-                      "anyOf": [
-                        {
-                          "type": "string"
-                        },
-                        {
-                          "type": "null"
-                        }
-                      ]
-                    }
-                  },
-                  "required": ["state"]
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/BadRequestError"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/NotFoundError"
-                }
-              }
-            }
-          }
-        },
-        "x-codeSamples": [
-          {
-            "lang": "js",
-            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.session.canvas.get({\n  ...\n})"
-          }
-        ]
-      },
-      "put": {
-        "operationId": "session.canvas.put",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "directory",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "workspace",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "sessionID",
-            "schema": {
-              "type": "string",
-              "pattern": "^ses.*"
-            },
-            "required": true,
-            "description": "Session ID"
-          }
-        ],
-        "summary": "Put canvas state",
-        "description": "Save the canvas state for a specific session.",
-        "responses": {
-          "200": {
-            "description": "Canvas state saved",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "ok": {
-                      "type": "boolean"
-                    }
-                  },
-                  "required": ["ok"]
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/BadRequestError"
-                }
-              }
-            }
-          }
-        },
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "state": {
-                    "description": "Canvas state JSON",
-                    "type": "string"
-                  }
-                },
-                "required": ["state"]
-              }
-            }
-          }
-        },
-        "x-codeSamples": [
-          {
-            "lang": "js",
-            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.session.canvas.put({\n  ...\n})"
-          }
-        ]
-      }
-    },
-    "/session/{sessionID}/permissions/{permissionID}": {
+    "/agent-session/{agentID}/permissions/{permissionID}": {
       "post": {
-        "operationId": "permission.respond",
+        "operationId": "agent.permission.respond",
         "parameters": [
           {
             "in": "query",
@@ -4034,10 +3789,10 @@
           },
           {
             "in": "path",
-            "name": "sessionID",
+            "name": "agentID",
             "schema": {
               "type": "string",
-              "pattern": "^ses.*"
+              "pattern": "^agt.*"
             },
             "required": true
           },
@@ -4105,7 +3860,7 @@
         "x-codeSamples": [
           {
             "lang": "js",
-            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.permission.respond({\n  ...\n})"
+            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.agent.permission.respond({\n  ...\n})"
           }
         ]
       }
@@ -5812,699 +5567,6 @@
         ]
       }
     },
-    "/tui/append-prompt": {
-      "post": {
-        "operationId": "tui.appendPrompt",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "directory",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "workspace",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "summary": "Append TUI prompt",
-        "description": "Append prompt to the TUI",
-        "responses": {
-          "200": {
-            "description": "Prompt processed successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "boolean"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/BadRequestError"
-                }
-              }
-            }
-          }
-        },
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "text": {
-                    "type": "string"
-                  }
-                },
-                "required": ["text"]
-              }
-            }
-          }
-        },
-        "x-codeSamples": [
-          {
-            "lang": "js",
-            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.tui.appendPrompt({\n  ...\n})"
-          }
-        ]
-      }
-    },
-    "/tui/open-help": {
-      "post": {
-        "operationId": "tui.openHelp",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "directory",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "workspace",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "summary": "Open help dialog",
-        "description": "Open the help dialog in the TUI to display user assistance information.",
-        "responses": {
-          "200": {
-            "description": "Help dialog opened successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "boolean"
-                }
-              }
-            }
-          }
-        },
-        "x-codeSamples": [
-          {
-            "lang": "js",
-            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.tui.openHelp({\n  ...\n})"
-          }
-        ]
-      }
-    },
-    "/tui/open-sessions": {
-      "post": {
-        "operationId": "tui.openSessions",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "directory",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "workspace",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "summary": "Open sessions dialog",
-        "description": "Open the session dialog",
-        "responses": {
-          "200": {
-            "description": "Session dialog opened successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "boolean"
-                }
-              }
-            }
-          }
-        },
-        "x-codeSamples": [
-          {
-            "lang": "js",
-            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.tui.openSessions({\n  ...\n})"
-          }
-        ]
-      }
-    },
-    "/tui/open-themes": {
-      "post": {
-        "operationId": "tui.openThemes",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "directory",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "workspace",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "summary": "Open themes dialog",
-        "description": "Open the theme dialog",
-        "responses": {
-          "200": {
-            "description": "Theme dialog opened successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "boolean"
-                }
-              }
-            }
-          }
-        },
-        "x-codeSamples": [
-          {
-            "lang": "js",
-            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.tui.openThemes({\n  ...\n})"
-          }
-        ]
-      }
-    },
-    "/tui/open-models": {
-      "post": {
-        "operationId": "tui.openModels",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "directory",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "workspace",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "summary": "Open models dialog",
-        "description": "Open the model dialog",
-        "responses": {
-          "200": {
-            "description": "Model dialog opened successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "boolean"
-                }
-              }
-            }
-          }
-        },
-        "x-codeSamples": [
-          {
-            "lang": "js",
-            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.tui.openModels({\n  ...\n})"
-          }
-        ]
-      }
-    },
-    "/tui/submit-prompt": {
-      "post": {
-        "operationId": "tui.submitPrompt",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "directory",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "workspace",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "summary": "Submit TUI prompt",
-        "description": "Submit the prompt",
-        "responses": {
-          "200": {
-            "description": "Prompt submitted successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "boolean"
-                }
-              }
-            }
-          }
-        },
-        "x-codeSamples": [
-          {
-            "lang": "js",
-            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.tui.submitPrompt({\n  ...\n})"
-          }
-        ]
-      }
-    },
-    "/tui/clear-prompt": {
-      "post": {
-        "operationId": "tui.clearPrompt",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "directory",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "workspace",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "summary": "Clear TUI prompt",
-        "description": "Clear the prompt",
-        "responses": {
-          "200": {
-            "description": "Prompt cleared successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "boolean"
-                }
-              }
-            }
-          }
-        },
-        "x-codeSamples": [
-          {
-            "lang": "js",
-            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.tui.clearPrompt({\n  ...\n})"
-          }
-        ]
-      }
-    },
-    "/tui/execute-command": {
-      "post": {
-        "operationId": "tui.executeCommand",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "directory",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "workspace",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "summary": "Execute TUI command",
-        "description": "Execute a TUI command (e.g. agent_cycle)",
-        "responses": {
-          "200": {
-            "description": "Command executed successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "boolean"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/BadRequestError"
-                }
-              }
-            }
-          }
-        },
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "command": {
-                    "type": "string"
-                  }
-                },
-                "required": ["command"]
-              }
-            }
-          }
-        },
-        "x-codeSamples": [
-          {
-            "lang": "js",
-            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.tui.executeCommand({\n  ...\n})"
-          }
-        ]
-      }
-    },
-    "/tui/show-toast": {
-      "post": {
-        "operationId": "tui.showToast",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "directory",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "workspace",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "summary": "Show TUI toast",
-        "description": "Show a toast notification in the TUI",
-        "responses": {
-          "200": {
-            "description": "Toast notification shown successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "boolean"
-                }
-              }
-            }
-          }
-        },
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "title": {
-                    "type": "string"
-                  },
-                  "message": {
-                    "type": "string"
-                  },
-                  "variant": {
-                    "type": "string",
-                    "enum": ["info", "success", "warning", "error"]
-                  },
-                  "duration": {
-                    "description": "Duration in milliseconds",
-                    "default": 5000,
-                    "type": "number"
-                  }
-                },
-                "required": ["message", "variant"]
-              }
-            }
-          }
-        },
-        "x-codeSamples": [
-          {
-            "lang": "js",
-            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.tui.showToast({\n  ...\n})"
-          }
-        ]
-      }
-    },
-    "/tui/publish": {
-      "post": {
-        "operationId": "tui.publish",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "directory",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "workspace",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "summary": "Publish TUI event",
-        "description": "Publish a TUI event",
-        "responses": {
-          "200": {
-            "description": "Event published successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "boolean"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/BadRequestError"
-                }
-              }
-            }
-          }
-        },
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "anyOf": [
-                  {
-                    "$ref": "#/components/schemas/Event.tui.prompt.append"
-                  },
-                  {
-                    "$ref": "#/components/schemas/Event.tui.command.execute"
-                  },
-                  {
-                    "$ref": "#/components/schemas/Event.tui.toast.show"
-                  },
-                  {
-                    "$ref": "#/components/schemas/Event.tui.session.select"
-                  }
-                ]
-              }
-            }
-          }
-        },
-        "x-codeSamples": [
-          {
-            "lang": "js",
-            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.tui.publish({\n  ...\n})"
-          }
-        ]
-      }
-    },
-    "/tui/select-session": {
-      "post": {
-        "operationId": "tui.selectSession",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "directory",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "workspace",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "summary": "Select session",
-        "description": "Navigate the TUI to display the specified session.",
-        "responses": {
-          "200": {
-            "description": "Session selected successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "boolean"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/BadRequestError"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/NotFoundError"
-                }
-              }
-            }
-          }
-        },
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "sessionID": {
-                    "description": "Session ID to navigate to",
-                    "type": "string",
-                    "pattern": "^ses"
-                  }
-                },
-                "required": ["sessionID"]
-              }
-            }
-          }
-        },
-        "x-codeSamples": [
-          {
-            "lang": "js",
-            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.tui.selectSession({\n  ...\n})"
-          }
-        ]
-      }
-    },
-    "/tui/control/next": {
-      "get": {
-        "operationId": "tui.control.next",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "directory",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "workspace",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "summary": "Get next TUI request",
-        "description": "Retrieve the next TUI (Terminal User Interface) request from the queue for processing.",
-        "responses": {
-          "200": {
-            "description": "Next TUI request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "path": {
-                      "type": "string"
-                    },
-                    "body": {}
-                  },
-                  "required": ["path", "body"]
-                }
-              }
-            }
-          }
-        },
-        "x-codeSamples": [
-          {
-            "lang": "js",
-            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.tui.control.next({\n  ...\n})"
-          }
-        ]
-      }
-    },
-    "/tui/control/response": {
-      "post": {
-        "operationId": "tui.control.response",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "directory",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "workspace",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "summary": "Submit TUI response",
-        "description": "Submit a response to the TUI request queue to complete a pending request.",
-        "responses": {
-          "200": {
-            "description": "Response submitted successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "boolean"
-                }
-              }
-            }
-          }
-        },
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {}
-            }
-          }
-        },
-        "x-codeSamples": [
-          {
-            "lang": "js",
-            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.tui.control.response({\n  ...\n})"
-          }
-        ]
-      }
-    },
     "/instance/dispose": {
       "post": {
         "operationId": "instance.dispose",
@@ -6756,9 +5818,9 @@
         ]
       }
     },
-    "/agent": {
+    "/agent-def": {
       "get": {
-        "operationId": "app.agents",
+        "operationId": "agent-def.list",
         "parameters": [
           {
             "in": "query",
@@ -6775,11 +5837,11 @@
             }
           }
         ],
-        "summary": "List agents",
-        "description": "Get a list of all available AI agents in the OpenCode system.",
+        "summary": "List agent definitions",
+        "description": "Get a list of all available AI agent definitions in the OpenCode system.",
         "responses": {
           "200": {
-            "description": "List of agents",
+            "description": "List of agent definitions",
             "content": {
               "application/json": {
                 "schema": {
@@ -6795,7 +5857,7 @@
         "x-codeSamples": [
           {
             "lang": "js",
-            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.app.agents({\n  ...\n})"
+            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.agent-def.list({\n  ...\n})"
           }
         ]
       }
@@ -7029,7 +6091,7 @@
         },
         "required": ["type", "properties"]
       },
-      "Project": {
+      "Product": {
         "type": "object",
         "properties": {
           "id": {
@@ -7092,15 +6154,15 @@
         },
         "required": ["id", "worktree", "time", "sandboxes"]
       },
-      "Event.project.updated": {
+      "Event.product.updated": {
         "type": "object",
         "properties": {
           "type": {
             "type": "string",
-            "const": "project.updated"
+            "const": "product.updated"
           },
           "properties": {
-            "$ref": "#/components/schemas/Project"
+            "$ref": "#/components/schemas/Product"
           }
         },
         "required": ["type", "properties"]
@@ -7207,6 +6269,145 @@
         },
         "required": ["type", "properties"]
       },
+      "Event.file.watcher.updated": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "file.watcher.updated"
+          },
+          "properties": {
+            "type": "object",
+            "properties": {
+              "file": {
+                "type": "string"
+              },
+              "event": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "const": "add"
+                  },
+                  {
+                    "type": "string",
+                    "const": "change"
+                  },
+                  {
+                    "type": "string",
+                    "const": "unlink"
+                  }
+                ]
+              }
+            },
+            "required": ["file", "event"]
+          }
+        },
+        "required": ["type", "properties"]
+      },
+      "Event.vcs.branch.updated": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "vcs.branch.updated"
+          },
+          "properties": {
+            "type": "object",
+            "properties": {
+              "branch": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "required": ["type", "properties"]
+      },
+      "PermissionRequest": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^per.*"
+          },
+          "agentID": {
+            "type": "string"
+          },
+          "permission": {
+            "type": "string"
+          },
+          "patterns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "metadata": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {}
+          },
+          "always": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "tool": {
+            "type": "object",
+            "properties": {
+              "messageID": {
+                "type": "string"
+              },
+              "callID": {
+                "type": "string"
+              }
+            },
+            "required": ["messageID", "callID"]
+          }
+        },
+        "required": ["id", "agentID", "permission", "patterns", "metadata", "always"]
+      },
+      "Event.permission.asked": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "permission.asked"
+          },
+          "properties": {
+            "$ref": "#/components/schemas/PermissionRequest"
+          }
+        },
+        "required": ["type", "properties"]
+      },
+      "Event.permission.replied": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "permission.replied"
+          },
+          "properties": {
+            "type": "object",
+            "properties": {
+              "agentID": {
+                "type": "string"
+              },
+              "requestID": {
+                "type": "string"
+              },
+              "reply": {
+                "type": "string",
+                "enum": ["once", "always", "reject"]
+              }
+            },
+            "required": ["agentID", "requestID", "reply"]
+          }
+        },
+        "required": ["type", "properties"]
+      },
       "OutputFormatText": {
         "type": "object",
         "properties": {
@@ -7284,7 +6485,7 @@
           "id": {
             "type": "string"
           },
-          "sessionID": {
+          "agentID": {
             "type": "string"
           },
           "role": {
@@ -7352,7 +6553,7 @@
             "type": "string"
           }
         },
-        "required": ["id", "sessionID", "role", "time", "agent", "model"]
+        "required": ["id", "agentID", "role", "time", "agent", "model"]
       },
       "ProviderAuthError": {
         "type": "object",
@@ -7524,7 +6725,7 @@
           "id": {
             "type": "string"
           },
-          "sessionID": {
+          "agentID": {
             "type": "string"
           },
           "role": {
@@ -7641,7 +6842,7 @@
         },
         "required": [
           "id",
-          "sessionID",
+          "agentID",
           "role",
           "time",
           "parentID",
@@ -7693,14 +6894,14 @@
           "properties": {
             "type": "object",
             "properties": {
-              "sessionID": {
+              "agentID": {
                 "type": "string"
               },
               "messageID": {
                 "type": "string"
               }
             },
-            "required": ["sessionID", "messageID"]
+            "required": ["agentID", "messageID"]
           }
         },
         "required": ["type", "properties"]
@@ -7711,7 +6912,7 @@
           "id": {
             "type": "string"
           },
-          "sessionID": {
+          "agentID": {
             "type": "string"
           },
           "messageID": {
@@ -7750,7 +6951,7 @@
             "additionalProperties": {}
           }
         },
-        "required": ["id", "sessionID", "messageID", "type", "text"]
+        "required": ["id", "agentID", "messageID", "type", "text"]
       },
       "SubtaskPart": {
         "type": "object",
@@ -7758,7 +6959,7 @@
           "id": {
             "type": "string"
           },
-          "sessionID": {
+          "agentID": {
             "type": "string"
           },
           "messageID": {
@@ -7793,7 +6994,7 @@
             "type": "string"
           }
         },
-        "required": ["id", "sessionID", "messageID", "type", "prompt", "description", "agent"]
+        "required": ["id", "agentID", "messageID", "type", "prompt", "description", "agent"]
       },
       "ReasoningPart": {
         "type": "object",
@@ -7801,7 +7002,7 @@
           "id": {
             "type": "string"
           },
-          "sessionID": {
+          "agentID": {
             "type": "string"
           },
           "messageID": {
@@ -7834,7 +7035,7 @@
             "required": ["start"]
           }
         },
-        "required": ["id", "sessionID", "messageID", "type", "text", "time"]
+        "required": ["id", "agentID", "messageID", "type", "text", "time"]
       },
       "FilePartSourceText": {
         "type": "object",
@@ -7966,7 +7167,7 @@
           "id": {
             "type": "string"
           },
-          "sessionID": {
+          "agentID": {
             "type": "string"
           },
           "messageID": {
@@ -7989,7 +7190,7 @@
             "$ref": "#/components/schemas/FilePartSource"
           }
         },
-        "required": ["id", "sessionID", "messageID", "type", "mime", "url"]
+        "required": ["id", "agentID", "messageID", "type", "mime", "url"]
       },
       "ToolStatePending": {
         "type": "object",
@@ -8159,7 +7360,7 @@
           "id": {
             "type": "string"
           },
-          "sessionID": {
+          "agentID": {
             "type": "string"
           },
           "messageID": {
@@ -8186,7 +7387,7 @@
             "additionalProperties": {}
           }
         },
-        "required": ["id", "sessionID", "messageID", "type", "callID", "tool", "state"]
+        "required": ["id", "agentID", "messageID", "type", "callID", "tool", "state"]
       },
       "StepStartPart": {
         "type": "object",
@@ -8194,7 +7395,7 @@
           "id": {
             "type": "string"
           },
-          "sessionID": {
+          "agentID": {
             "type": "string"
           },
           "messageID": {
@@ -8208,7 +7409,7 @@
             "type": "string"
           }
         },
-        "required": ["id", "sessionID", "messageID", "type"]
+        "required": ["id", "agentID", "messageID", "type"]
       },
       "StepFinishPart": {
         "type": "object",
@@ -8216,7 +7417,7 @@
           "id": {
             "type": "string"
           },
-          "sessionID": {
+          "agentID": {
             "type": "string"
           },
           "messageID": {
@@ -8266,7 +7467,7 @@
             "required": ["input", "output", "reasoning", "cache"]
           }
         },
-        "required": ["id", "sessionID", "messageID", "type", "reason", "cost", "tokens"]
+        "required": ["id", "agentID", "messageID", "type", "reason", "cost", "tokens"]
       },
       "SnapshotPart": {
         "type": "object",
@@ -8274,7 +7475,7 @@
           "id": {
             "type": "string"
           },
-          "sessionID": {
+          "agentID": {
             "type": "string"
           },
           "messageID": {
@@ -8288,7 +7489,7 @@
             "type": "string"
           }
         },
-        "required": ["id", "sessionID", "messageID", "type", "snapshot"]
+        "required": ["id", "agentID", "messageID", "type", "snapshot"]
       },
       "PatchPart": {
         "type": "object",
@@ -8296,7 +7497,7 @@
           "id": {
             "type": "string"
           },
-          "sessionID": {
+          "agentID": {
             "type": "string"
           },
           "messageID": {
@@ -8316,7 +7517,7 @@
             }
           }
         },
-        "required": ["id", "sessionID", "messageID", "type", "hash", "files"]
+        "required": ["id", "agentID", "messageID", "type", "hash", "files"]
       },
       "AgentPart": {
         "type": "object",
@@ -8324,7 +7525,7 @@
           "id": {
             "type": "string"
           },
-          "sessionID": {
+          "agentID": {
             "type": "string"
           },
           "messageID": {
@@ -8357,7 +7558,7 @@
             "required": ["value", "start", "end"]
           }
         },
-        "required": ["id", "sessionID", "messageID", "type", "name"]
+        "required": ["id", "agentID", "messageID", "type", "name"]
       },
       "RetryPart": {
         "type": "object",
@@ -8365,7 +7566,7 @@
           "id": {
             "type": "string"
           },
-          "sessionID": {
+          "agentID": {
             "type": "string"
           },
           "messageID": {
@@ -8391,7 +7592,7 @@
             "required": ["created"]
           }
         },
-        "required": ["id", "sessionID", "messageID", "type", "attempt", "error", "time"]
+        "required": ["id", "agentID", "messageID", "type", "attempt", "error", "time"]
       },
       "CompactionPart": {
         "type": "object",
@@ -8399,7 +7600,7 @@
           "id": {
             "type": "string"
           },
-          "sessionID": {
+          "agentID": {
             "type": "string"
           },
           "messageID": {
@@ -8416,7 +7617,7 @@
             "type": "boolean"
           }
         },
-        "required": ["id", "sessionID", "messageID", "type", "auto"]
+        "required": ["id", "agentID", "messageID", "type", "auto"]
       },
       "Part": {
         "anyOf": [
@@ -8487,7 +7688,7 @@
           "properties": {
             "type": "object",
             "properties": {
-              "sessionID": {
+              "agentID": {
                 "type": "string"
               },
               "messageID": {
@@ -8503,7 +7704,7 @@
                 "type": "string"
               }
             },
-            "required": ["sessionID", "messageID", "partID", "field", "delta"]
+            "required": ["agentID", "messageID", "partID", "field", "delta"]
           }
         },
         "required": ["type", "properties"]
@@ -8518,7 +7719,7 @@
           "properties": {
             "type": "object",
             "properties": {
-              "sessionID": {
+              "agentID": {
                 "type": "string"
               },
               "messageID": {
@@ -8528,94 +7729,7 @@
                 "type": "string"
               }
             },
-            "required": ["sessionID", "messageID", "partID"]
-          }
-        },
-        "required": ["type", "properties"]
-      },
-      "PermissionRequest": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "pattern": "^per.*"
-          },
-          "sessionID": {
-            "type": "string",
-            "pattern": "^ses.*"
-          },
-          "permission": {
-            "type": "string"
-          },
-          "patterns": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "metadata": {
-            "type": "object",
-            "propertyNames": {
-              "type": "string"
-            },
-            "additionalProperties": {}
-          },
-          "always": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "tool": {
-            "type": "object",
-            "properties": {
-              "messageID": {
-                "type": "string"
-              },
-              "callID": {
-                "type": "string"
-              }
-            },
-            "required": ["messageID", "callID"]
-          }
-        },
-        "required": ["id", "sessionID", "permission", "patterns", "metadata", "always"]
-      },
-      "Event.permission.asked": {
-        "type": "object",
-        "properties": {
-          "type": {
-            "type": "string",
-            "const": "permission.asked"
-          },
-          "properties": {
-            "$ref": "#/components/schemas/PermissionRequest"
-          }
-        },
-        "required": ["type", "properties"]
-      },
-      "Event.permission.replied": {
-        "type": "object",
-        "properties": {
-          "type": {
-            "type": "string",
-            "const": "permission.replied"
-          },
-          "properties": {
-            "type": "object",
-            "properties": {
-              "sessionID": {
-                "type": "string"
-              },
-              "requestID": {
-                "type": "string"
-              },
-              "reply": {
-                "type": "string",
-                "enum": ["once", "always", "reject"]
-              }
-            },
-            "required": ["sessionID", "requestID", "reply"]
+            "required": ["agentID", "messageID", "partID"]
           }
         },
         "required": ["type", "properties"]
@@ -8859,46 +7973,11 @@
           "properties": {
             "type": "object",
             "properties": {
-              "sessionID": {
+              "agentID": {
                 "type": "string"
               }
             },
-            "required": ["sessionID"]
-          }
-        },
-        "required": ["type", "properties"]
-      },
-      "Event.file.watcher.updated": {
-        "type": "object",
-        "properties": {
-          "type": {
-            "type": "string",
-            "const": "file.watcher.updated"
-          },
-          "properties": {
-            "type": "object",
-            "properties": {
-              "file": {
-                "type": "string"
-              },
-              "event": {
-                "anyOf": [
-                  {
-                    "type": "string",
-                    "const": "add"
-                  },
-                  {
-                    "type": "string",
-                    "const": "change"
-                  },
-                  {
-                    "type": "string",
-                    "const": "unlink"
-                  }
-                ]
-              }
-            },
-            "required": ["file", "event"]
+            "required": ["agentID"]
           }
         },
         "required": ["type", "properties"]
@@ -8942,121 +8021,6 @@
               }
             },
             "required": ["sessionID", "todos"]
-          }
-        },
-        "required": ["type", "properties"]
-      },
-      "Event.tui.prompt.append": {
-        "type": "object",
-        "properties": {
-          "type": {
-            "type": "string",
-            "const": "tui.prompt.append"
-          },
-          "properties": {
-            "type": "object",
-            "properties": {
-              "text": {
-                "type": "string"
-              }
-            },
-            "required": ["text"]
-          }
-        },
-        "required": ["type", "properties"]
-      },
-      "Event.tui.command.execute": {
-        "type": "object",
-        "properties": {
-          "type": {
-            "type": "string",
-            "const": "tui.command.execute"
-          },
-          "properties": {
-            "type": "object",
-            "properties": {
-              "command": {
-                "anyOf": [
-                  {
-                    "type": "string",
-                    "enum": [
-                      "session.list",
-                      "session.new",
-                      "session.share",
-                      "session.interrupt",
-                      "session.compact",
-                      "session.page.up",
-                      "session.page.down",
-                      "session.line.up",
-                      "session.line.down",
-                      "session.half.page.up",
-                      "session.half.page.down",
-                      "session.first",
-                      "session.last",
-                      "prompt.clear",
-                      "prompt.submit",
-                      "agent.cycle"
-                    ]
-                  },
-                  {
-                    "type": "string"
-                  }
-                ]
-              }
-            },
-            "required": ["command"]
-          }
-        },
-        "required": ["type", "properties"]
-      },
-      "Event.tui.toast.show": {
-        "type": "object",
-        "properties": {
-          "type": {
-            "type": "string",
-            "const": "tui.toast.show"
-          },
-          "properties": {
-            "type": "object",
-            "properties": {
-              "title": {
-                "type": "string"
-              },
-              "message": {
-                "type": "string"
-              },
-              "variant": {
-                "type": "string",
-                "enum": ["info", "success", "warning", "error"]
-              },
-              "duration": {
-                "description": "Duration in milliseconds",
-                "default": 5000,
-                "type": "number"
-              }
-            },
-            "required": ["message", "variant"]
-          }
-        },
-        "required": ["type", "properties"]
-      },
-      "Event.tui.session.select": {
-        "type": "object",
-        "properties": {
-          "type": {
-            "type": "string",
-            "const": "tui.session.select"
-          },
-          "properties": {
-            "type": "object",
-            "properties": {
-              "sessionID": {
-                "description": "Session ID to navigate to",
-                "type": "string",
-                "pattern": "^ses"
-              }
-            },
-            "required": ["sessionID"]
           }
         },
         "required": ["type", "properties"]
@@ -9115,9 +8079,9 @@
               "name": {
                 "type": "string"
               },
-              "sessionID": {
+              "agentID": {
                 "type": "string",
-                "pattern": "^ses.*"
+                "pattern": "^agt.*"
               },
               "arguments": {
                 "type": "string"
@@ -9127,7 +8091,7 @@
                 "pattern": "^msg.*"
               }
             },
-            "required": ["name", "sessionID", "arguments", "messageID"]
+            "required": ["name", "agentID", "arguments", "messageID"]
           }
         },
         "required": ["type", "properties"]
@@ -9157,58 +8121,30 @@
           "$ref": "#/components/schemas/PermissionRule"
         }
       },
-      "Session": {
+      "Agent": {
         "type": "object",
         "properties": {
           "id": {
             "type": "string",
-            "pattern": "^ses.*"
+            "pattern": "^agt.*"
           },
-          "slug": {
+          "featureID": {
             "type": "string"
           },
-          "projectID": {
+          "annotationID": {
             "type": "string"
           },
-          "workspaceID": {
+          "branch": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "color": {
             "type": "string"
           },
           "directory": {
             "type": "string"
-          },
-          "parentID": {
-            "type": "string",
-            "pattern": "^ses.*"
-          },
-          "summary": {
-            "type": "object",
-            "properties": {
-              "additions": {
-                "type": "number"
-              },
-              "deletions": {
-                "type": "number"
-              },
-              "files": {
-                "type": "number"
-              },
-              "diffs": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/FileDiff"
-                }
-              }
-            },
-            "required": ["additions", "deletions", "files"]
-          },
-          "share": {
-            "type": "object",
-            "properties": {
-              "url": {
-                "type": "string"
-              }
-            },
-            "required": ["url"]
           },
           "title": {
             "type": "string"
@@ -9224,52 +8160,28 @@
               },
               "updated": {
                 "type": "number"
-              },
-              "compacting": {
-                "type": "number"
-              },
-              "archived": {
-                "type": "number"
               }
             },
             "required": ["created", "updated"]
           },
           "permission": {
             "$ref": "#/components/schemas/PermissionRuleset"
-          },
-          "revert": {
-            "type": "object",
-            "properties": {
-              "messageID": {
-                "type": "string"
-              },
-              "partID": {
-                "type": "string"
-              },
-              "snapshot": {
-                "type": "string"
-              },
-              "diff": {
-                "type": "string"
-              }
-            },
-            "required": ["messageID"]
           }
         },
-        "required": ["id", "slug", "projectID", "directory", "title", "version", "time"]
+        "required": ["id", "featureID", "status", "directory", "title", "version", "time"]
       },
-      "Event.session.created": {
+      "Event.agent.created": {
         "type": "object",
         "properties": {
           "type": {
             "type": "string",
-            "const": "session.created"
+            "const": "agent.created"
           },
           "properties": {
             "type": "object",
             "properties": {
               "info": {
-                "$ref": "#/components/schemas/Session"
+                "$ref": "#/components/schemas/Agent"
               }
             },
             "required": ["info"]
@@ -9277,18 +8189,18 @@
         },
         "required": ["type", "properties"]
       },
-      "Event.session.updated": {
+      "Event.agent.updated": {
         "type": "object",
         "properties": {
           "type": {
             "type": "string",
-            "const": "session.updated"
+            "const": "agent.updated"
           },
           "properties": {
             "type": "object",
             "properties": {
               "info": {
-                "$ref": "#/components/schemas/Session"
+                "$ref": "#/components/schemas/Agent"
               }
             },
             "required": ["info"]
@@ -9296,18 +8208,18 @@
         },
         "required": ["type", "properties"]
       },
-      "Event.session.deleted": {
+      "Event.agent.deleted": {
         "type": "object",
         "properties": {
           "type": {
             "type": "string",
-            "const": "session.deleted"
+            "const": "agent.deleted"
           },
           "properties": {
             "type": "object",
             "properties": {
               "info": {
-                "$ref": "#/components/schemas/Session"
+                "$ref": "#/components/schemas/Agent"
               }
             },
             "required": ["info"]
@@ -9315,17 +8227,17 @@
         },
         "required": ["type", "properties"]
       },
-      "Event.session.diff": {
+      "Event.agent.diff": {
         "type": "object",
         "properties": {
           "type": {
             "type": "string",
-            "const": "session.diff"
+            "const": "agent.diff"
           },
           "properties": {
             "type": "object",
             "properties": {
-              "sessionID": {
+              "agentID": {
                 "type": "string"
               },
               "diff": {
@@ -9335,22 +8247,22 @@
                 }
               }
             },
-            "required": ["sessionID", "diff"]
+            "required": ["agentID", "diff"]
           }
         },
         "required": ["type", "properties"]
       },
-      "Event.session.error": {
+      "Event.agent.error": {
         "type": "object",
         "properties": {
           "type": {
             "type": "string",
-            "const": "session.error"
+            "const": "agent.error"
           },
           "properties": {
             "type": "object",
             "properties": {
-              "sessionID": {
+              "agentID": {
                 "type": "string"
               },
               "error": {
@@ -9383,58 +8295,86 @@
         },
         "required": ["type", "properties"]
       },
-      "Event.vcs.branch.updated": {
+      "Feature": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "productID": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "branch": {
+            "type": "string"
+          },
+          "status": {
+            "default": "active",
+            "type": "string",
+            "enum": ["active", "completed", "archived"]
+          },
+          "figmaUrl": {
+            "type": "string"
+          },
+          "canvasState": {},
+          "time": {
+            "type": "object",
+            "properties": {
+              "created": {
+                "type": "number"
+              },
+              "updated": {
+                "type": "number"
+              }
+            },
+            "required": ["created", "updated"]
+          }
+        },
+        "required": ["id", "productID", "name", "branch", "time"]
+      },
+      "Event.feature.created": {
         "type": "object",
         "properties": {
           "type": {
             "type": "string",
-            "const": "vcs.branch.updated"
+            "const": "feature.created"
           },
           "properties": {
-            "type": "object",
-            "properties": {
-              "branch": {
-                "type": "string"
-              }
-            }
+            "$ref": "#/components/schemas/Feature"
           }
         },
         "required": ["type", "properties"]
       },
-      "Event.workspace.ready": {
+      "Event.feature.updated": {
         "type": "object",
         "properties": {
           "type": {
             "type": "string",
-            "const": "workspace.ready"
+            "const": "feature.updated"
           },
           "properties": {
-            "type": "object",
-            "properties": {
-              "name": {
-                "type": "string"
-              }
-            },
-            "required": ["name"]
+            "$ref": "#/components/schemas/Feature"
           }
         },
         "required": ["type", "properties"]
       },
-      "Event.workspace.failed": {
+      "Event.feature.deleted": {
         "type": "object",
         "properties": {
           "type": {
             "type": "string",
-            "const": "workspace.failed"
+            "const": "feature.deleted"
           },
           "properties": {
             "type": "object",
             "properties": {
-              "message": {
+              "id": {
                 "type": "string"
               }
             },
-            "required": ["message"]
+            "required": ["id"]
           }
         },
         "required": ["type", "properties"]
@@ -9602,7 +8542,7 @@
             "$ref": "#/components/schemas/Event.installation.update-available"
           },
           {
-            "$ref": "#/components/schemas/Event.project.updated"
+            "$ref": "#/components/schemas/Event.product.updated"
           },
           {
             "$ref": "#/components/schemas/Event.server.instance.disposed"
@@ -9623,6 +8563,18 @@
             "$ref": "#/components/schemas/Event.file.edited"
           },
           {
+            "$ref": "#/components/schemas/Event.file.watcher.updated"
+          },
+          {
+            "$ref": "#/components/schemas/Event.vcs.branch.updated"
+          },
+          {
+            "$ref": "#/components/schemas/Event.permission.asked"
+          },
+          {
+            "$ref": "#/components/schemas/Event.permission.replied"
+          },
+          {
             "$ref": "#/components/schemas/Event.message.updated"
           },
           {
@@ -9636,12 +8588,6 @@
           },
           {
             "$ref": "#/components/schemas/Event.message.part.removed"
-          },
-          {
-            "$ref": "#/components/schemas/Event.permission.asked"
-          },
-          {
-            "$ref": "#/components/schemas/Event.permission.replied"
           },
           {
             "$ref": "#/components/schemas/Event.session.status"
@@ -9662,22 +8608,7 @@
             "$ref": "#/components/schemas/Event.session.compacted"
           },
           {
-            "$ref": "#/components/schemas/Event.file.watcher.updated"
-          },
-          {
             "$ref": "#/components/schemas/Event.todo.updated"
-          },
-          {
-            "$ref": "#/components/schemas/Event.tui.prompt.append"
-          },
-          {
-            "$ref": "#/components/schemas/Event.tui.command.execute"
-          },
-          {
-            "$ref": "#/components/schemas/Event.tui.toast.show"
-          },
-          {
-            "$ref": "#/components/schemas/Event.tui.session.select"
           },
           {
             "$ref": "#/components/schemas/Event.mcp.tools.changed"
@@ -9689,28 +8620,28 @@
             "$ref": "#/components/schemas/Event.command.executed"
           },
           {
-            "$ref": "#/components/schemas/Event.session.created"
+            "$ref": "#/components/schemas/Event.agent.created"
           },
           {
-            "$ref": "#/components/schemas/Event.session.updated"
+            "$ref": "#/components/schemas/Event.agent.updated"
           },
           {
-            "$ref": "#/components/schemas/Event.session.deleted"
+            "$ref": "#/components/schemas/Event.agent.deleted"
           },
           {
-            "$ref": "#/components/schemas/Event.session.diff"
+            "$ref": "#/components/schemas/Event.agent.diff"
           },
           {
-            "$ref": "#/components/schemas/Event.session.error"
+            "$ref": "#/components/schemas/Event.agent.error"
           },
           {
-            "$ref": "#/components/schemas/Event.vcs.branch.updated"
+            "$ref": "#/components/schemas/Event.feature.created"
           },
           {
-            "$ref": "#/components/schemas/Event.workspace.ready"
+            "$ref": "#/components/schemas/Event.feature.updated"
           },
           {
-            "$ref": "#/components/schemas/Event.workspace.failed"
+            "$ref": "#/components/schemas/Event.feature.deleted"
           },
           {
             "$ref": "#/components/schemas/Event.pty.created"
@@ -11132,60 +10063,6 @@
           "$ref": "#/components/schemas/ToolListItem"
         }
       },
-      "Workspace": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "pattern": "^wrk.*"
-          },
-          "type": {
-            "type": "string"
-          },
-          "branch": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "name": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "directory": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "extra": {
-            "anyOf": [
-              {},
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "projectID": {
-            "type": "string"
-          }
-        },
-        "required": ["id", "type", "branch", "name", "directory", "extra", "projectID"]
-      },
       "Worktree": {
         "type": "object",
         "properties": {
@@ -11231,7 +10108,7 @@
         },
         "required": ["directory"]
       },
-      "ProjectSummary": {
+      "ProductSummary": {
         "type": "object",
         "properties": {
           "id": {
@@ -11240,64 +10117,36 @@
           "name": {
             "type": "string"
           },
-          "worktree": {
+          "directory": {
             "type": "string"
           }
         },
-        "required": ["id", "worktree"]
+        "required": ["id", "directory"]
       },
-      "GlobalSession": {
+      "GlobalAgent": {
         "type": "object",
         "properties": {
           "id": {
             "type": "string",
-            "pattern": "^ses.*"
+            "pattern": "^agt.*"
           },
-          "slug": {
+          "featureID": {
             "type": "string"
           },
-          "projectID": {
+          "annotationID": {
             "type": "string"
           },
-          "workspaceID": {
+          "branch": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "color": {
             "type": "string"
           },
           "directory": {
             "type": "string"
-          },
-          "parentID": {
-            "type": "string",
-            "pattern": "^ses.*"
-          },
-          "summary": {
-            "type": "object",
-            "properties": {
-              "additions": {
-                "type": "number"
-              },
-              "deletions": {
-                "type": "number"
-              },
-              "files": {
-                "type": "number"
-              },
-              "diffs": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/FileDiff"
-                }
-              }
-            },
-            "required": ["additions", "deletions", "files"]
-          },
-          "share": {
-            "type": "object",
-            "properties": {
-              "url": {
-                "type": "string"
-              }
-            },
-            "required": ["url"]
           },
           "title": {
             "type": "string"
@@ -11313,12 +10162,6 @@
               },
               "updated": {
                 "type": "number"
-              },
-              "compacting": {
-                "type": "number"
-              },
-              "archived": {
-                "type": "number"
               }
             },
             "required": ["created", "updated"]
@@ -11326,28 +10169,10 @@
           "permission": {
             "$ref": "#/components/schemas/PermissionRuleset"
           },
-          "revert": {
-            "type": "object",
-            "properties": {
-              "messageID": {
-                "type": "string"
-              },
-              "partID": {
-                "type": "string"
-              },
-              "snapshot": {
-                "type": "string"
-              },
-              "diff": {
-                "type": "string"
-              }
-            },
-            "required": ["messageID"]
-          },
-          "project": {
+          "product": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/ProjectSummary"
+                "$ref": "#/components/schemas/ProductSummary"
               },
               {
                 "type": "null"
@@ -11355,7 +10180,7 @@
             ]
           }
         },
-        "required": ["id", "slug", "projectID", "directory", "title", "version", "time", "project"]
+        "required": ["id", "featureID", "status", "directory", "title", "version", "time", "product"]
       },
       "McpResource": {
         "type": "object",
@@ -11846,73 +10671,6 @@
           }
         },
         "required": ["name", "template", "hints"]
-      },
-      "Agent": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "label": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          },
-          "mode": {
-            "type": "string",
-            "enum": ["subagent", "primary", "all"]
-          },
-          "native": {
-            "type": "boolean"
-          },
-          "hidden": {
-            "type": "boolean"
-          },
-          "topP": {
-            "type": "number"
-          },
-          "temperature": {
-            "type": "number"
-          },
-          "color": {
-            "type": "string"
-          },
-          "permission": {
-            "$ref": "#/components/schemas/PermissionRuleset"
-          },
-          "model": {
-            "type": "object",
-            "properties": {
-              "modelID": {
-                "type": "string"
-              },
-              "providerID": {
-                "type": "string"
-              }
-            },
-            "required": ["modelID", "providerID"]
-          },
-          "variant": {
-            "type": "string"
-          },
-          "prompt": {
-            "type": "string"
-          },
-          "options": {
-            "type": "object",
-            "propertyNames": {
-              "type": "string"
-            },
-            "additionalProperties": {}
-          },
-          "steps": {
-            "type": "integer",
-            "exclusiveMinimum": 0,
-            "maximum": 9007199254740991
-          }
-        },
-        "required": ["name", "mode", "permission", "options"]
       },
       "LSPStatus": {
         "type": "object",

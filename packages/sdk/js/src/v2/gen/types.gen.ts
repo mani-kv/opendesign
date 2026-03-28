@@ -18,7 +18,7 @@ export type EventInstallationUpdateAvailable = {
   }
 }
 
-export type Project = {
+export type Product = {
   id: string
   worktree: string
   vcs?: "git"
@@ -42,9 +42,9 @@ export type Project = {
   sandboxes: Array<string>
 }
 
-export type EventProjectUpdated = {
-  type: "project.updated"
-  properties: Project
+export type EventProductUpdated = {
+  type: "product.updated"
+  properties: Product
 }
 
 export type EventServerInstanceDisposed = {
@@ -90,6 +90,50 @@ export type EventFileEdited = {
   }
 }
 
+export type EventFileWatcherUpdated = {
+  type: "file.watcher.updated"
+  properties: {
+    file: string
+    event: "add" | "change" | "unlink"
+  }
+}
+
+export type EventVcsBranchUpdated = {
+  type: "vcs.branch.updated"
+  properties: {
+    branch?: string
+  }
+}
+
+export type PermissionRequest = {
+  id: string
+  agentID: string
+  permission: string
+  patterns: Array<string>
+  metadata: {
+    [key: string]: unknown
+  }
+  always: Array<string>
+  tool?: {
+    messageID: string
+    callID: string
+  }
+}
+
+export type EventPermissionAsked = {
+  type: "permission.asked"
+  properties: PermissionRequest
+}
+
+export type EventPermissionReplied = {
+  type: "permission.replied"
+  properties: {
+    agentID: string
+    requestID: string
+    reply: "once" | "always" | "reject"
+  }
+}
+
 export type OutputFormatText = {
   type: "text"
 }
@@ -117,7 +161,7 @@ export type FileDiff = {
 
 export type UserMessage = {
   id: string
-  sessionID: string
+  agentID: string
   role: "user"
   time: {
     created: number
@@ -203,7 +247,7 @@ export type ApiError = {
 
 export type AssistantMessage = {
   id: string
-  sessionID: string
+  agentID: string
   role: "assistant"
   time: {
     created: number
@@ -255,14 +299,14 @@ export type EventMessageUpdated = {
 export type EventMessageRemoved = {
   type: "message.removed"
   properties: {
-    sessionID: string
+    agentID: string
     messageID: string
   }
 }
 
 export type TextPart = {
   id: string
-  sessionID: string
+  agentID: string
   messageID: string
   type: "text"
   text: string
@@ -279,7 +323,7 @@ export type TextPart = {
 
 export type SubtaskPart = {
   id: string
-  sessionID: string
+  agentID: string
   messageID: string
   type: "subtask"
   prompt: string
@@ -294,7 +338,7 @@ export type SubtaskPart = {
 
 export type ReasoningPart = {
   id: string
-  sessionID: string
+  agentID: string
   messageID: string
   type: "reasoning"
   text: string
@@ -350,7 +394,7 @@ export type FilePartSource = FileSource | SymbolSource | ResourceSource
 
 export type FilePart = {
   id: string
-  sessionID: string
+  agentID: string
   messageID: string
   type: "file"
   mime: string
@@ -418,7 +462,7 @@ export type ToolState = ToolStatePending | ToolStateRunning | ToolStateCompleted
 
 export type ToolPart = {
   id: string
-  sessionID: string
+  agentID: string
   messageID: string
   type: "tool"
   callID: string
@@ -431,7 +475,7 @@ export type ToolPart = {
 
 export type StepStartPart = {
   id: string
-  sessionID: string
+  agentID: string
   messageID: string
   type: "step-start"
   snapshot?: string
@@ -439,7 +483,7 @@ export type StepStartPart = {
 
 export type StepFinishPart = {
   id: string
-  sessionID: string
+  agentID: string
   messageID: string
   type: "step-finish"
   reason: string
@@ -459,7 +503,7 @@ export type StepFinishPart = {
 
 export type SnapshotPart = {
   id: string
-  sessionID: string
+  agentID: string
   messageID: string
   type: "snapshot"
   snapshot: string
@@ -467,7 +511,7 @@ export type SnapshotPart = {
 
 export type PatchPart = {
   id: string
-  sessionID: string
+  agentID: string
   messageID: string
   type: "patch"
   hash: string
@@ -476,7 +520,7 @@ export type PatchPart = {
 
 export type AgentPart = {
   id: string
-  sessionID: string
+  agentID: string
   messageID: string
   type: "agent"
   name: string
@@ -489,7 +533,7 @@ export type AgentPart = {
 
 export type RetryPart = {
   id: string
-  sessionID: string
+  agentID: string
   messageID: string
   type: "retry"
   attempt: number
@@ -501,7 +545,7 @@ export type RetryPart = {
 
 export type CompactionPart = {
   id: string
-  sessionID: string
+  agentID: string
   messageID: string
   type: "compaction"
   auto: boolean
@@ -532,7 +576,7 @@ export type EventMessagePartUpdated = {
 export type EventMessagePartDelta = {
   type: "message.part.delta"
   properties: {
-    sessionID: string
+    agentID: string
     messageID: string
     partID: string
     field: string
@@ -543,38 +587,9 @@ export type EventMessagePartDelta = {
 export type EventMessagePartRemoved = {
   type: "message.part.removed"
   properties: {
-    sessionID: string
+    agentID: string
     messageID: string
     partID: string
-  }
-}
-
-export type PermissionRequest = {
-  id: string
-  sessionID: string
-  permission: string
-  patterns: Array<string>
-  metadata: {
-    [key: string]: unknown
-  }
-  always: Array<string>
-  tool?: {
-    messageID: string
-    callID: string
-  }
-}
-
-export type EventPermissionAsked = {
-  type: "permission.asked"
-  properties: PermissionRequest
-}
-
-export type EventPermissionReplied = {
-  type: "permission.replied"
-  properties: {
-    sessionID: string
-    requestID: string
-    reply: "once" | "always" | "reject"
   }
 }
 
@@ -681,15 +696,7 @@ export type EventQuestionRejected = {
 export type EventSessionCompacted = {
   type: "session.compacted"
   properties: {
-    sessionID: string
-  }
-}
-
-export type EventFileWatcherUpdated = {
-  type: "file.watcher.updated"
-  properties: {
-    file: string
-    event: "add" | "change" | "unlink"
+    agentID: string
   }
 }
 
@@ -716,60 +723,6 @@ export type EventTodoUpdated = {
   }
 }
 
-export type EventTuiPromptAppend = {
-  type: "tui.prompt.append"
-  properties: {
-    text: string
-  }
-}
-
-export type EventTuiCommandExecute = {
-  type: "tui.command.execute"
-  properties: {
-    command:
-      | "session.list"
-      | "session.new"
-      | "session.share"
-      | "session.interrupt"
-      | "session.compact"
-      | "session.page.up"
-      | "session.page.down"
-      | "session.line.up"
-      | "session.line.down"
-      | "session.half.page.up"
-      | "session.half.page.down"
-      | "session.first"
-      | "session.last"
-      | "prompt.clear"
-      | "prompt.submit"
-      | "agent.cycle"
-      | string
-  }
-}
-
-export type EventTuiToastShow = {
-  type: "tui.toast.show"
-  properties: {
-    title?: string
-    message: string
-    variant: "info" | "success" | "warning" | "error"
-    /**
-     * Duration in milliseconds
-     */
-    duration?: number
-  }
-}
-
-export type EventTuiSessionSelect = {
-  type: "tui.session.select"
-  properties: {
-    /**
-     * Session ID to navigate to
-     */
-    sessionID: string
-  }
-}
-
 export type EventMcpToolsChanged = {
   type: "mcp.tools.changed"
   properties: {
@@ -789,7 +742,7 @@ export type EventCommandExecuted = {
   type: "command.executed"
   properties: {
     name: string
-    sessionID: string
+    agentID: string
     arguments: string
     messageID: string
   }
@@ -805,72 +758,56 @@ export type PermissionRule = {
 
 export type PermissionRuleset = Array<PermissionRule>
 
-export type Session = {
+export type Agent = {
   id: string
-  slug: string
-  projectID: string
-  workspaceID?: string
+  featureID: string
+  annotationID?: string
+  branch?: string
+  status: string
+  color?: string
   directory: string
-  parentID?: string
-  summary?: {
-    additions: number
-    deletions: number
-    files: number
-    diffs?: Array<FileDiff>
-  }
-  share?: {
-    url: string
-  }
   title: string
   version: string
   time: {
     created: number
     updated: number
-    compacting?: number
-    archived?: number
   }
   permission?: PermissionRuleset
-  revert?: {
-    messageID: string
-    partID?: string
-    snapshot?: string
-    diff?: string
+}
+
+export type EventAgentCreated = {
+  type: "agent.created"
+  properties: {
+    info: Agent
   }
 }
 
-export type EventSessionCreated = {
-  type: "session.created"
+export type EventAgentUpdated = {
+  type: "agent.updated"
   properties: {
-    info: Session
+    info: Agent
   }
 }
 
-export type EventSessionUpdated = {
-  type: "session.updated"
+export type EventAgentDeleted = {
+  type: "agent.deleted"
   properties: {
-    info: Session
+    info: Agent
   }
 }
 
-export type EventSessionDeleted = {
-  type: "session.deleted"
+export type EventAgentDiff = {
+  type: "agent.diff"
   properties: {
-    info: Session
-  }
-}
-
-export type EventSessionDiff = {
-  type: "session.diff"
-  properties: {
-    sessionID: string
+    agentID: string
     diff: Array<FileDiff>
   }
 }
 
-export type EventSessionError = {
-  type: "session.error"
+export type EventAgentError = {
+  type: "agent.error"
   properties: {
-    sessionID?: string
+    agentID?: string
     error?:
       | ProviderAuthError
       | UnknownError
@@ -882,24 +819,34 @@ export type EventSessionError = {
   }
 }
 
-export type EventVcsBranchUpdated = {
-  type: "vcs.branch.updated"
-  properties: {
-    branch?: string
+export type Feature = {
+  id: string
+  productID: string
+  name: string
+  branch: string
+  status?: "active" | "completed" | "archived"
+  figmaUrl?: string
+  canvasState?: unknown
+  time: {
+    created: number
+    updated: number
   }
 }
 
-export type EventWorkspaceReady = {
-  type: "workspace.ready"
-  properties: {
-    name: string
-  }
+export type EventFeatureCreated = {
+  type: "feature.created"
+  properties: Feature
 }
 
-export type EventWorkspaceFailed = {
-  type: "workspace.failed"
+export type EventFeatureUpdated = {
+  type: "feature.updated"
+  properties: Feature
+}
+
+export type EventFeatureDeleted = {
+  type: "feature.deleted"
   properties: {
-    message: string
+    id: string
   }
 }
 
@@ -960,43 +907,40 @@ export type EventWorktreeFailed = {
 export type Event =
   | EventInstallationUpdated
   | EventInstallationUpdateAvailable
-  | EventProjectUpdated
+  | EventProductUpdated
   | EventServerInstanceDisposed
   | EventServerConnected
   | EventGlobalDisposed
   | EventLspClientDiagnostics
   | EventLspUpdated
   | EventFileEdited
+  | EventFileWatcherUpdated
+  | EventVcsBranchUpdated
+  | EventPermissionAsked
+  | EventPermissionReplied
   | EventMessageUpdated
   | EventMessageRemoved
   | EventMessagePartUpdated
   | EventMessagePartDelta
   | EventMessagePartRemoved
-  | EventPermissionAsked
-  | EventPermissionReplied
   | EventSessionStatus
   | EventSessionIdle
   | EventQuestionAsked
   | EventQuestionReplied
   | EventQuestionRejected
   | EventSessionCompacted
-  | EventFileWatcherUpdated
   | EventTodoUpdated
-  | EventTuiPromptAppend
-  | EventTuiCommandExecute
-  | EventTuiToastShow
-  | EventTuiSessionSelect
   | EventMcpToolsChanged
   | EventMcpBrowserOpenFailed
   | EventCommandExecuted
-  | EventSessionCreated
-  | EventSessionUpdated
-  | EventSessionDeleted
-  | EventSessionDiff
-  | EventSessionError
-  | EventVcsBranchUpdated
-  | EventWorkspaceReady
-  | EventWorkspaceFailed
+  | EventAgentCreated
+  | EventAgentUpdated
+  | EventAgentDeleted
+  | EventAgentDiff
+  | EventAgentError
+  | EventFeatureCreated
+  | EventFeatureUpdated
+  | EventFeatureDeleted
   | EventPtyCreated
   | EventPtyUpdated
   | EventPtyExited
@@ -1639,16 +1583,6 @@ export type ToolListItem = {
 
 export type ToolList = Array<ToolListItem>
 
-export type Workspace = {
-  id: string
-  type: string
-  branch: string | null
-  name: string | null
-  directory: string | null
-  extra: unknown | null
-  projectID: string
-}
-
 export type Worktree = {
   name: string
   branch: string
@@ -1671,44 +1605,28 @@ export type WorktreeResetInput = {
   directory: string
 }
 
-export type ProjectSummary = {
+export type ProductSummary = {
   id: string
   name?: string
-  worktree: string
+  directory: string
 }
 
-export type GlobalSession = {
+export type GlobalAgent = {
   id: string
-  slug: string
-  projectID: string
-  workspaceID?: string
+  featureID: string
+  annotationID?: string
+  branch?: string
+  status: string
+  color?: string
   directory: string
-  parentID?: string
-  summary?: {
-    additions: number
-    deletions: number
-    files: number
-    diffs?: Array<FileDiff>
-  }
-  share?: {
-    url: string
-  }
   title: string
   version: string
   time: {
     created: number
     updated: number
-    compacting?: number
-    archived?: number
   }
   permission?: PermissionRuleset
-  revert?: {
-    messageID: string
-    partID?: string
-    snapshot?: string
-    diff?: string
-  }
-  project: ProjectSummary | null
+  product: ProductSummary | null
 }
 
 export type McpResource = {
@@ -1876,29 +1794,6 @@ export type Command = {
   hints: Array<string>
 }
 
-export type Agent = {
-  name: string
-  label?: string
-  description?: string
-  mode: "subagent" | "primary" | "all"
-  native?: boolean
-  hidden?: boolean
-  topP?: number
-  temperature?: number
-  color?: string
-  permission: PermissionRuleset
-  model?: {
-    modelID: string
-    providerID: string
-  }
-  variant?: string
-  prompt?: string
-  options: {
-    [key: string]: unknown
-  }
-  steps?: number
-}
-
 export type LspStatus = {
   id: string
   name: string
@@ -2058,64 +1953,64 @@ export type AuthSetResponses = {
 
 export type AuthSetResponse = AuthSetResponses[keyof AuthSetResponses]
 
-export type ProjectListData = {
+export type ProductListData = {
   body?: never
   path?: never
   query?: {
     directory?: string
     workspace?: string
   }
-  url: "/project"
+  url: "/product"
 }
 
-export type ProjectListResponses = {
+export type ProductListResponses = {
   /**
-   * List of projects
+   * List of products
    */
-  200: Array<Project>
+  200: Array<Product>
 }
 
-export type ProjectListResponse = ProjectListResponses[keyof ProjectListResponses]
+export type ProductListResponse = ProductListResponses[keyof ProductListResponses]
 
-export type ProjectCurrentData = {
+export type ProductCurrentData = {
   body?: never
   path?: never
   query?: {
     directory?: string
     workspace?: string
   }
-  url: "/project/current"
+  url: "/product/current"
 }
 
-export type ProjectCurrentResponses = {
+export type ProductCurrentResponses = {
   /**
-   * Current project information
+   * Current product information
    */
-  200: Project
+  200: Product
 }
 
-export type ProjectCurrentResponse = ProjectCurrentResponses[keyof ProjectCurrentResponses]
+export type ProductCurrentResponse = ProductCurrentResponses[keyof ProductCurrentResponses]
 
-export type ProjectInitGitData = {
+export type ProductInitGitData = {
   body?: never
   path?: never
   query?: {
     directory?: string
     workspace?: string
   }
-  url: "/project/git/init"
+  url: "/product/git/init"
 }
 
-export type ProjectInitGitResponses = {
+export type ProductInitGitResponses = {
   /**
-   * Project information after git initialization
+   * Product information after git initialization
    */
-  200: Project
+  200: Product
 }
 
-export type ProjectInitGitResponse = ProjectInitGitResponses[keyof ProjectInitGitResponses]
+export type ProductInitGitResponse = ProductInitGitResponses[keyof ProductInitGitResponses]
 
-export type ProjectUpdateData = {
+export type ProductUpdateData = {
   body?: {
     name?: string
     icon?: {
@@ -2137,10 +2032,10 @@ export type ProjectUpdateData = {
     directory?: string
     workspace?: string
   }
-  url: "/project/{projectID}"
+  url: "/product/{projectID}"
 }
 
-export type ProjectUpdateErrors = {
+export type ProductUpdateErrors = {
   /**
    * Bad request
    */
@@ -2151,16 +2046,183 @@ export type ProjectUpdateErrors = {
   404: NotFoundError
 }
 
-export type ProjectUpdateError = ProjectUpdateErrors[keyof ProjectUpdateErrors]
+export type ProductUpdateError = ProductUpdateErrors[keyof ProductUpdateErrors]
 
-export type ProjectUpdateResponses = {
+export type ProductUpdateResponses = {
   /**
-   * Updated project information
+   * Updated product information
    */
-  200: Project
+  200: Product
 }
 
-export type ProjectUpdateResponse = ProjectUpdateResponses[keyof ProjectUpdateResponses]
+export type ProductUpdateResponse = ProductUpdateResponses[keyof ProductUpdateResponses]
+
+export type FeatureListData = {
+  body?: never
+  path?: never
+  query?: {
+    directory?: string
+    workspace?: string
+    /**
+     * Filter by product ID
+     */
+    productID?: string
+  }
+  url: "/feature"
+}
+
+export type FeatureListResponses = {
+  /**
+   * List of features
+   */
+  200: Array<Feature>
+}
+
+export type FeatureListResponse = FeatureListResponses[keyof FeatureListResponses]
+
+export type FeatureCreateData = {
+  body?: {
+    /**
+     * Product ID
+     */
+    productID: string
+    /**
+     * Feature name
+     */
+    name: string
+    /**
+     * Git branch name
+     */
+    branch: string
+    /**
+     * Figma URL
+     */
+    figmaUrl?: string
+  }
+  path?: never
+  query?: {
+    directory?: string
+    workspace?: string
+  }
+  url: "/feature"
+}
+
+export type FeatureCreateErrors = {
+  /**
+   * Bad request
+   */
+  400: BadRequestError
+}
+
+export type FeatureCreateError = FeatureCreateErrors[keyof FeatureCreateErrors]
+
+export type FeatureCreateResponses = {
+  /**
+   * Created feature
+   */
+  200: Feature
+}
+
+export type FeatureCreateResponse = FeatureCreateResponses[keyof FeatureCreateResponses]
+
+export type FeatureRemoveData = {
+  body?: never
+  path: {
+    featureID: string
+  }
+  query?: {
+    directory?: string
+    workspace?: string
+  }
+  url: "/feature/{featureID}"
+}
+
+export type FeatureRemoveErrors = {
+  /**
+   * Not found
+   */
+  404: NotFoundError
+}
+
+export type FeatureRemoveError = FeatureRemoveErrors[keyof FeatureRemoveErrors]
+
+export type FeatureRemoveResponses = {
+  /**
+   * Deleted
+   */
+  200: boolean
+}
+
+export type FeatureRemoveResponse = FeatureRemoveResponses[keyof FeatureRemoveResponses]
+
+export type FeatureGetData = {
+  body?: never
+  path: {
+    featureID: string
+  }
+  query?: {
+    directory?: string
+    workspace?: string
+  }
+  url: "/feature/{featureID}"
+}
+
+export type FeatureGetErrors = {
+  /**
+   * Not found
+   */
+  404: NotFoundError
+}
+
+export type FeatureGetError = FeatureGetErrors[keyof FeatureGetErrors]
+
+export type FeatureGetResponses = {
+  /**
+   * Feature details
+   */
+  200: Feature
+}
+
+export type FeatureGetResponse = FeatureGetResponses[keyof FeatureGetResponses]
+
+export type FeatureUpdateData = {
+  body?: {
+    name?: string
+    status?: "active" | "completed" | "archived"
+    figmaUrl?: string
+    canvasState?: unknown
+  }
+  path: {
+    featureID: string
+  }
+  query?: {
+    directory?: string
+    workspace?: string
+  }
+  url: "/feature/{featureID}"
+}
+
+export type FeatureUpdateErrors = {
+  /**
+   * Bad request
+   */
+  400: BadRequestError
+  /**
+   * Not found
+   */
+  404: NotFoundError
+}
+
+export type FeatureUpdateError = FeatureUpdateErrors[keyof FeatureUpdateErrors]
+
+export type FeatureUpdateResponses = {
+  /**
+   * Updated feature
+   */
+  200: Feature
+}
+
+export type FeatureUpdateResponse = FeatureUpdateResponses[keyof FeatureUpdateResponses]
 
 export type PtyListData = {
   body?: never
@@ -2472,93 +2534,6 @@ export type ToolListResponses = {
 
 export type ToolListResponse = ToolListResponses[keyof ToolListResponses]
 
-export type ExperimentalWorkspaceListData = {
-  body?: never
-  path?: never
-  query?: {
-    directory?: string
-    workspace?: string
-  }
-  url: "/experimental/workspace"
-}
-
-export type ExperimentalWorkspaceListResponses = {
-  /**
-   * Workspaces
-   */
-  200: Array<Workspace>
-}
-
-export type ExperimentalWorkspaceListResponse =
-  ExperimentalWorkspaceListResponses[keyof ExperimentalWorkspaceListResponses]
-
-export type ExperimentalWorkspaceCreateData = {
-  body?: {
-    id?: string
-    type: string
-    branch: string | null
-    extra: unknown | null
-  }
-  path?: never
-  query?: {
-    directory?: string
-    workspace?: string
-  }
-  url: "/experimental/workspace"
-}
-
-export type ExperimentalWorkspaceCreateErrors = {
-  /**
-   * Bad request
-   */
-  400: BadRequestError
-}
-
-export type ExperimentalWorkspaceCreateError =
-  ExperimentalWorkspaceCreateErrors[keyof ExperimentalWorkspaceCreateErrors]
-
-export type ExperimentalWorkspaceCreateResponses = {
-  /**
-   * Workspace created
-   */
-  200: Workspace
-}
-
-export type ExperimentalWorkspaceCreateResponse =
-  ExperimentalWorkspaceCreateResponses[keyof ExperimentalWorkspaceCreateResponses]
-
-export type ExperimentalWorkspaceRemoveData = {
-  body?: never
-  path: {
-    id: string
-  }
-  query?: {
-    directory?: string
-    workspace?: string
-  }
-  url: "/experimental/workspace/{id}"
-}
-
-export type ExperimentalWorkspaceRemoveErrors = {
-  /**
-   * Bad request
-   */
-  400: BadRequestError
-}
-
-export type ExperimentalWorkspaceRemoveError =
-  ExperimentalWorkspaceRemoveErrors[keyof ExperimentalWorkspaceRemoveErrors]
-
-export type ExperimentalWorkspaceRemoveResponses = {
-  /**
-   * Workspace removed
-   */
-  200: Workspace
-}
-
-export type ExperimentalWorkspaceRemoveResponse =
-  ExperimentalWorkspaceRemoveResponses[keyof ExperimentalWorkspaceRemoveResponses]
-
 export type WorktreeRemoveData = {
   body?: WorktreeRemoveInput
   path?: never
@@ -2703,7 +2678,7 @@ export type ExperimentalSessionListResponses = {
   /**
    * List of sessions
    */
-  200: Array<GlobalSession>
+  200: Array<GlobalAgent>
 }
 
 export type ExperimentalSessionListResponse = ExperimentalSessionListResponses[keyof ExperimentalSessionListResponses]
@@ -2730,120 +2705,118 @@ export type ExperimentalResourceListResponses = {
 export type ExperimentalResourceListResponse =
   ExperimentalResourceListResponses[keyof ExperimentalResourceListResponses]
 
-export type SessionListData = {
+export type AgentListData = {
   body?: never
   path?: never
   query?: {
     /**
-     * Filter sessions by project directory
+     * Filter by project directory
      */
     directory?: string
     workspace?: string
     /**
-     * Only return root sessions (no parentID)
-     */
-    roots?: boolean
-    /**
-     * Filter sessions updated on or after this timestamp (milliseconds since epoch)
+     * Filter updated on or after this timestamp (milliseconds since epoch)
      */
     start?: number
     /**
-     * Filter sessions by title (case-insensitive)
+     * Filter by title (case-insensitive)
      */
     search?: string
     /**
-     * Maximum number of sessions to return
+     * Maximum number to return
      */
     limit?: number
   }
-  url: "/session"
+  url: "/agent-session"
 }
 
-export type SessionListResponses = {
+export type AgentListResponses = {
   /**
-   * List of sessions
+   * List of agent sessions
    */
-  200: Array<Session>
+  200: Array<Agent>
 }
 
-export type SessionListResponse = SessionListResponses[keyof SessionListResponses]
+export type AgentListResponse = AgentListResponses[keyof AgentListResponses]
 
-export type SessionCreateData = {
+export type AgentCreateData = {
   body?: {
-    parentID?: string
+    featureID?: string
+    annotationID?: string
     title?: string
     permission?: PermissionRuleset
-    workspaceID?: string
+    branch?: string
+    color?: string
   }
   path?: never
   query?: {
     directory?: string
     workspace?: string
   }
-  url: "/session"
+  url: "/agent-session"
 }
 
-export type SessionCreateErrors = {
+export type AgentCreateErrors = {
   /**
    * Bad request
    */
   400: BadRequestError
 }
 
-export type SessionCreateError = SessionCreateErrors[keyof SessionCreateErrors]
+export type AgentCreateError = AgentCreateErrors[keyof AgentCreateErrors]
 
-export type SessionCreateResponses = {
+export type AgentCreateResponses = {
   /**
-   * Successfully created session
+   * Successfully created agent session
    */
-  200: Session
+  200: Agent
 }
 
-export type SessionCreateResponse = SessionCreateResponses[keyof SessionCreateResponses]
+export type AgentCreateResponse = AgentCreateResponses[keyof AgentCreateResponses]
 
-export type SessionStatusData = {
+export type AgentStatusData = {
   body?: never
   path?: never
   query?: {
     directory?: string
     workspace?: string
   }
-  url: "/session/status"
+  url: "/agent-session/status"
 }
 
-export type SessionStatusErrors = {
+export type AgentStatusErrors = {
   /**
    * Bad request
    */
   400: BadRequestError
 }
 
-export type SessionStatusError = SessionStatusErrors[keyof SessionStatusErrors]
+export type AgentStatusError = AgentStatusErrors[keyof AgentStatusErrors]
 
-export type SessionStatusResponses = {
+export type AgentStatusResponses = {
   /**
-   * Get session status
+   * Get agent session status
    */
   200: {
     [key: string]: SessionStatus
   }
 }
 
-export type SessionStatusResponse = SessionStatusResponses[keyof SessionStatusResponses]
+export type AgentStatusResponse = AgentStatusResponses[keyof AgentStatusResponses]
 
-export type SessionDeleteData = {
+export type AgentDeleteData = {
   body?: never
   path: {
-    sessionID: string
+    agentID: string
   }
   query?: {
     directory?: string
     workspace?: string
   }
-  url: "/session/{sessionID}"
+  url: "/agent-session/{agentID}"
 }
 
-export type SessionDeleteErrors = {
+export type AgentDeleteErrors = {
   /**
    * Bad request
    */
@@ -2854,30 +2827,30 @@ export type SessionDeleteErrors = {
   404: NotFoundError
 }
 
-export type SessionDeleteError = SessionDeleteErrors[keyof SessionDeleteErrors]
+export type AgentDeleteError = AgentDeleteErrors[keyof AgentDeleteErrors]
 
-export type SessionDeleteResponses = {
+export type AgentDeleteResponses = {
   /**
-   * Successfully deleted session
+   * Successfully deleted agent session
    */
   200: boolean
 }
 
-export type SessionDeleteResponse = SessionDeleteResponses[keyof SessionDeleteResponses]
+export type AgentDeleteResponse = AgentDeleteResponses[keyof AgentDeleteResponses]
 
-export type SessionGetData = {
+export type AgentGetData = {
   body?: never
   path: {
-    sessionID: string
+    agentID: string
   }
   query?: {
     directory?: string
     workspace?: string
   }
-  url: "/session/{sessionID}"
+  url: "/agent-session/{agentID}"
 }
 
-export type SessionGetErrors = {
+export type AgentGetErrors = {
   /**
    * Bad request
    */
@@ -2888,35 +2861,32 @@ export type SessionGetErrors = {
   404: NotFoundError
 }
 
-export type SessionGetError = SessionGetErrors[keyof SessionGetErrors]
+export type AgentGetError = AgentGetErrors[keyof AgentGetErrors]
 
-export type SessionGetResponses = {
+export type AgentGetResponses = {
   /**
-   * Get session
+   * Get agent session
    */
-  200: Session
+  200: Agent
 }
 
-export type SessionGetResponse = SessionGetResponses[keyof SessionGetResponses]
+export type AgentGetResponse = AgentGetResponses[keyof AgentGetResponses]
 
-export type SessionUpdateData = {
+export type AgentUpdateData = {
   body?: {
     title?: string
-    time?: {
-      archived?: number
-    }
   }
   path: {
-    sessionID: string
+    agentID: string
   }
   query?: {
     directory?: string
     workspace?: string
   }
-  url: "/session/{sessionID}"
+  url: "/agent-session/{agentID}"
 }
 
-export type SessionUpdateErrors = {
+export type AgentUpdateErrors = {
   /**
    * Bad request
    */
@@ -2927,67 +2897,33 @@ export type SessionUpdateErrors = {
   404: NotFoundError
 }
 
-export type SessionUpdateError = SessionUpdateErrors[keyof SessionUpdateErrors]
+export type AgentUpdateError = AgentUpdateErrors[keyof AgentUpdateErrors]
 
-export type SessionUpdateResponses = {
+export type AgentUpdateResponses = {
   /**
-   * Successfully updated session
+   * Successfully updated agent session
    */
-  200: Session
+  200: Agent
 }
 
-export type SessionUpdateResponse = SessionUpdateResponses[keyof SessionUpdateResponses]
+export type AgentUpdateResponse = AgentUpdateResponses[keyof AgentUpdateResponses]
 
-export type SessionChildrenData = {
-  body?: never
-  path: {
-    sessionID: string
-  }
-  query?: {
-    directory?: string
-    workspace?: string
-  }
-  url: "/session/{sessionID}/children"
-}
-
-export type SessionChildrenErrors = {
-  /**
-   * Bad request
-   */
-  400: BadRequestError
-  /**
-   * Not found
-   */
-  404: NotFoundError
-}
-
-export type SessionChildrenError = SessionChildrenErrors[keyof SessionChildrenErrors]
-
-export type SessionChildrenResponses = {
-  /**
-   * List of children
-   */
-  200: Array<Session>
-}
-
-export type SessionChildrenResponse = SessionChildrenResponses[keyof SessionChildrenResponses]
-
-export type SessionTodoData = {
+export type AgentTodoData = {
   body?: never
   path: {
     /**
-     * Session ID
+     * Agent ID
      */
-    sessionID: string
+    agentID: string
   }
   query?: {
     directory?: string
     workspace?: string
   }
-  url: "/session/{sessionID}/todo"
+  url: "/agent-session/{agentID}/todo"
 }
 
-export type SessionTodoErrors = {
+export type AgentTodoErrors = {
   /**
    * Bad request
    */
@@ -2998,18 +2934,18 @@ export type SessionTodoErrors = {
   404: NotFoundError
 }
 
-export type SessionTodoError = SessionTodoErrors[keyof SessionTodoErrors]
+export type AgentTodoError = AgentTodoErrors[keyof AgentTodoErrors]
 
-export type SessionTodoResponses = {
+export type AgentTodoResponses = {
   /**
    * Todo list
    */
   200: Array<Todo>
 }
 
-export type SessionTodoResponse = SessionTodoResponses[keyof SessionTodoResponses]
+export type AgentTodoResponse = AgentTodoResponses[keyof AgentTodoResponses]
 
-export type SessionInitData = {
+export type AgentInitData = {
   body?: {
     modelID: string
     providerID: string
@@ -3017,18 +2953,18 @@ export type SessionInitData = {
   }
   path: {
     /**
-     * Session ID
+     * Agent ID
      */
-    sessionID: string
+    agentID: string
   }
   query?: {
     directory?: string
     workspace?: string
   }
-  url: "/session/{sessionID}/init"
+  url: "/agent-session/{agentID}/init"
 }
 
-export type SessionInitErrors = {
+export type AgentInitErrors = {
   /**
    * Bad request
    */
@@ -3039,53 +2975,53 @@ export type SessionInitErrors = {
   404: NotFoundError
 }
 
-export type SessionInitError = SessionInitErrors[keyof SessionInitErrors]
+export type AgentInitError = AgentInitErrors[keyof AgentInitErrors]
 
-export type SessionInitResponses = {
+export type AgentInitResponses = {
   /**
    * 200
    */
   200: boolean
 }
 
-export type SessionInitResponse = SessionInitResponses[keyof SessionInitResponses]
+export type AgentInitResponse = AgentInitResponses[keyof AgentInitResponses]
 
-export type SessionForkData = {
+export type AgentForkData = {
   body?: {
     messageID?: string
   }
   path: {
-    sessionID: string
+    agentID: string
   }
   query?: {
     directory?: string
     workspace?: string
   }
-  url: "/session/{sessionID}/fork"
+  url: "/agent-session/{agentID}/fork"
 }
 
-export type SessionForkResponses = {
+export type AgentForkResponses = {
   /**
    * 200
    */
-  200: Session
+  200: Agent
 }
 
-export type SessionForkResponse = SessionForkResponses[keyof SessionForkResponses]
+export type AgentForkResponse = AgentForkResponses[keyof AgentForkResponses]
 
-export type SessionAbortData = {
+export type AgentAbortData = {
   body?: never
   path: {
-    sessionID: string
+    agentID: string
   }
   query?: {
     directory?: string
     workspace?: string
   }
-  url: "/session/{sessionID}/abort"
+  url: "/agent-session/{agentID}/abort"
 }
 
-export type SessionAbortErrors = {
+export type AgentAbortErrors = {
   /**
    * Bad request
    */
@@ -3096,108 +3032,40 @@ export type SessionAbortErrors = {
   404: NotFoundError
 }
 
-export type SessionAbortError = SessionAbortErrors[keyof SessionAbortErrors]
+export type AgentAbortError = AgentAbortErrors[keyof AgentAbortErrors]
 
-export type SessionAbortResponses = {
+export type AgentAbortResponses = {
   /**
-   * Aborted session
+   * Aborted agent session
    */
   200: boolean
 }
 
-export type SessionAbortResponse = SessionAbortResponses[keyof SessionAbortResponses]
+export type AgentAbortResponse = AgentAbortResponses[keyof AgentAbortResponses]
 
-export type SessionUnshareData = {
+export type AgentDiffData = {
   body?: never
   path: {
-    sessionID: string
-  }
-  query?: {
-    directory?: string
-    workspace?: string
-  }
-  url: "/session/{sessionID}/share"
-}
-
-export type SessionUnshareErrors = {
-  /**
-   * Bad request
-   */
-  400: BadRequestError
-  /**
-   * Not found
-   */
-  404: NotFoundError
-}
-
-export type SessionUnshareError = SessionUnshareErrors[keyof SessionUnshareErrors]
-
-export type SessionUnshareResponses = {
-  /**
-   * Successfully unshared session
-   */
-  200: Session
-}
-
-export type SessionUnshareResponse = SessionUnshareResponses[keyof SessionUnshareResponses]
-
-export type SessionShareData = {
-  body?: never
-  path: {
-    sessionID: string
-  }
-  query?: {
-    directory?: string
-    workspace?: string
-  }
-  url: "/session/{sessionID}/share"
-}
-
-export type SessionShareErrors = {
-  /**
-   * Bad request
-   */
-  400: BadRequestError
-  /**
-   * Not found
-   */
-  404: NotFoundError
-}
-
-export type SessionShareError = SessionShareErrors[keyof SessionShareErrors]
-
-export type SessionShareResponses = {
-  /**
-   * Successfully shared session
-   */
-  200: Session
-}
-
-export type SessionShareResponse = SessionShareResponses[keyof SessionShareResponses]
-
-export type SessionDiffData = {
-  body?: never
-  path: {
-    sessionID: string
+    agentID: string
   }
   query?: {
     directory?: string
     workspace?: string
     messageID?: string
   }
-  url: "/session/{sessionID}/diff"
+  url: "/agent-session/{agentID}/diff"
 }
 
-export type SessionDiffResponses = {
+export type AgentDiffResponses = {
   /**
    * Successfully retrieved diff
    */
   200: Array<FileDiff>
 }
 
-export type SessionDiffResponse = SessionDiffResponses[keyof SessionDiffResponses]
+export type AgentDiffResponse = AgentDiffResponses[keyof AgentDiffResponses]
 
-export type SessionSummarizeData = {
+export type AgentSummarizeData = {
   body?: {
     providerID: string
     modelID: string
@@ -3205,18 +3073,18 @@ export type SessionSummarizeData = {
   }
   path: {
     /**
-     * Session ID
+     * Agent ID
      */
-    sessionID: string
+    agentID: string
   }
   query?: {
     directory?: string
     workspace?: string
   }
-  url: "/session/{sessionID}/summarize"
+  url: "/agent-session/{agentID}/summarize"
 }
 
-export type SessionSummarizeErrors = {
+export type AgentSummarizeErrors = {
   /**
    * Bad request
    */
@@ -3227,34 +3095,34 @@ export type SessionSummarizeErrors = {
   404: NotFoundError
 }
 
-export type SessionSummarizeError = SessionSummarizeErrors[keyof SessionSummarizeErrors]
+export type AgentSummarizeError = AgentSummarizeErrors[keyof AgentSummarizeErrors]
 
-export type SessionSummarizeResponses = {
+export type AgentSummarizeResponses = {
   /**
-   * Summarized session
+   * Summarized agent session
    */
   200: boolean
 }
 
-export type SessionSummarizeResponse = SessionSummarizeResponses[keyof SessionSummarizeResponses]
+export type AgentSummarizeResponse = AgentSummarizeResponses[keyof AgentSummarizeResponses]
 
-export type SessionMessagesData = {
+export type AgentMessagesData = {
   body?: never
   path: {
     /**
-     * Session ID
+     * Agent ID
      */
-    sessionID: string
+    agentID: string
   }
   query?: {
     directory?: string
     workspace?: string
     limit?: number
   }
-  url: "/session/{sessionID}/message"
+  url: "/agent-session/{agentID}/message"
 }
 
-export type SessionMessagesErrors = {
+export type AgentMessagesErrors = {
   /**
    * Bad request
    */
@@ -3265,9 +3133,9 @@ export type SessionMessagesErrors = {
   404: NotFoundError
 }
 
-export type SessionMessagesError = SessionMessagesErrors[keyof SessionMessagesErrors]
+export type AgentMessagesError = AgentMessagesErrors[keyof AgentMessagesErrors]
 
-export type SessionMessagesResponses = {
+export type AgentMessagesResponses = {
   /**
    * List of messages
    */
@@ -3277,9 +3145,9 @@ export type SessionMessagesResponses = {
   }>
 }
 
-export type SessionMessagesResponse = SessionMessagesResponses[keyof SessionMessagesResponses]
+export type AgentMessagesResponse = AgentMessagesResponses[keyof AgentMessagesResponses]
 
-export type SessionPromptData = {
+export type AgentPromptData = {
   body?: {
     messageID?: string
     model?: {
@@ -3301,18 +3169,18 @@ export type SessionPromptData = {
   }
   path: {
     /**
-     * Session ID
+     * Agent ID
      */
-    sessionID: string
+    agentID: string
   }
   query?: {
     directory?: string
     workspace?: string
   }
-  url: "/session/{sessionID}/message"
+  url: "/agent-session/{agentID}/message"
 }
 
-export type SessionPromptErrors = {
+export type AgentPromptErrors = {
   /**
    * Bad request
    */
@@ -3323,9 +3191,9 @@ export type SessionPromptErrors = {
   404: NotFoundError
 }
 
-export type SessionPromptError = SessionPromptErrors[keyof SessionPromptErrors]
+export type AgentPromptError = AgentPromptErrors[keyof AgentPromptErrors]
 
-export type SessionPromptResponses = {
+export type AgentPromptResponses = {
   /**
    * Created message
    */
@@ -3335,15 +3203,15 @@ export type SessionPromptResponses = {
   }
 }
 
-export type SessionPromptResponse = SessionPromptResponses[keyof SessionPromptResponses]
+export type AgentPromptResponse = AgentPromptResponses[keyof AgentPromptResponses]
 
-export type SessionDeleteMessageData = {
+export type AgentDeleteMessageData = {
   body?: never
   path: {
     /**
-     * Session ID
+     * Agent ID
      */
-    sessionID: string
+    agentID: string
     /**
      * Message ID
      */
@@ -3353,10 +3221,10 @@ export type SessionDeleteMessageData = {
     directory?: string
     workspace?: string
   }
-  url: "/session/{sessionID}/message/{messageID}"
+  url: "/agent-session/{agentID}/message/{messageID}"
 }
 
-export type SessionDeleteMessageErrors = {
+export type AgentDeleteMessageErrors = {
   /**
    * Bad request
    */
@@ -3367,24 +3235,24 @@ export type SessionDeleteMessageErrors = {
   404: NotFoundError
 }
 
-export type SessionDeleteMessageError = SessionDeleteMessageErrors[keyof SessionDeleteMessageErrors]
+export type AgentDeleteMessageError = AgentDeleteMessageErrors[keyof AgentDeleteMessageErrors]
 
-export type SessionDeleteMessageResponses = {
+export type AgentDeleteMessageResponses = {
   /**
    * Successfully deleted message
    */
   200: boolean
 }
 
-export type SessionDeleteMessageResponse = SessionDeleteMessageResponses[keyof SessionDeleteMessageResponses]
+export type AgentDeleteMessageResponse = AgentDeleteMessageResponses[keyof AgentDeleteMessageResponses]
 
-export type SessionMessageData = {
+export type AgentMessageData = {
   body?: never
   path: {
     /**
-     * Session ID
+     * Agent ID
      */
-    sessionID: string
+    agentID: string
     /**
      * Message ID
      */
@@ -3394,10 +3262,10 @@ export type SessionMessageData = {
     directory?: string
     workspace?: string
   }
-  url: "/session/{sessionID}/message/{messageID}"
+  url: "/agent-session/{agentID}/message/{messageID}"
 }
 
-export type SessionMessageErrors = {
+export type AgentMessageErrors = {
   /**
    * Bad request
    */
@@ -3408,9 +3276,9 @@ export type SessionMessageErrors = {
   404: NotFoundError
 }
 
-export type SessionMessageError = SessionMessageErrors[keyof SessionMessageErrors]
+export type AgentMessageError = AgentMessageErrors[keyof AgentMessageErrors]
 
-export type SessionMessageResponses = {
+export type AgentMessageResponses = {
   /**
    * Message
    */
@@ -3420,15 +3288,15 @@ export type SessionMessageResponses = {
   }
 }
 
-export type SessionMessageResponse = SessionMessageResponses[keyof SessionMessageResponses]
+export type AgentMessageResponse = AgentMessageResponses[keyof AgentMessageResponses]
 
-export type PartDeleteData = {
+export type AgentPartDeleteData = {
   body?: never
   path: {
     /**
-     * Session ID
+     * Agent ID
      */
-    sessionID: string
+    agentID: string
     /**
      * Message ID
      */
@@ -3442,10 +3310,10 @@ export type PartDeleteData = {
     directory?: string
     workspace?: string
   }
-  url: "/session/{sessionID}/message/{messageID}/part/{partID}"
+  url: "/agent-session/{agentID}/message/{messageID}/part/{partID}"
 }
 
-export type PartDeleteErrors = {
+export type AgentPartDeleteErrors = {
   /**
    * Bad request
    */
@@ -3456,24 +3324,24 @@ export type PartDeleteErrors = {
   404: NotFoundError
 }
 
-export type PartDeleteError = PartDeleteErrors[keyof PartDeleteErrors]
+export type AgentPartDeleteError = AgentPartDeleteErrors[keyof AgentPartDeleteErrors]
 
-export type PartDeleteResponses = {
+export type AgentPartDeleteResponses = {
   /**
    * Successfully deleted part
    */
   200: boolean
 }
 
-export type PartDeleteResponse = PartDeleteResponses[keyof PartDeleteResponses]
+export type AgentPartDeleteResponse = AgentPartDeleteResponses[keyof AgentPartDeleteResponses]
 
-export type PartUpdateData = {
+export type AgentPartUpdateData = {
   body?: Part
   path: {
     /**
-     * Session ID
+     * Agent ID
      */
-    sessionID: string
+    agentID: string
     /**
      * Message ID
      */
@@ -3487,10 +3355,10 @@ export type PartUpdateData = {
     directory?: string
     workspace?: string
   }
-  url: "/session/{sessionID}/message/{messageID}/part/{partID}"
+  url: "/agent-session/{agentID}/message/{messageID}/part/{partID}"
 }
 
-export type PartUpdateErrors = {
+export type AgentPartUpdateErrors = {
   /**
    * Bad request
    */
@@ -3501,18 +3369,18 @@ export type PartUpdateErrors = {
   404: NotFoundError
 }
 
-export type PartUpdateError = PartUpdateErrors[keyof PartUpdateErrors]
+export type AgentPartUpdateError = AgentPartUpdateErrors[keyof AgentPartUpdateErrors]
 
-export type PartUpdateResponses = {
+export type AgentPartUpdateResponses = {
   /**
    * Successfully updated part
    */
   200: Part
 }
 
-export type PartUpdateResponse = PartUpdateResponses[keyof PartUpdateResponses]
+export type AgentPartUpdateResponse = AgentPartUpdateResponses[keyof AgentPartUpdateResponses]
 
-export type SessionPromptAsyncData = {
+export type AgentPromptAsyncData = {
   body?: {
     messageID?: string
     model?: {
@@ -3534,18 +3402,18 @@ export type SessionPromptAsyncData = {
   }
   path: {
     /**
-     * Session ID
+     * Agent ID
      */
-    sessionID: string
+    agentID: string
   }
   query?: {
     directory?: string
     workspace?: string
   }
-  url: "/session/{sessionID}/prompt_async"
+  url: "/agent-session/{agentID}/prompt_async"
 }
 
-export type SessionPromptAsyncErrors = {
+export type AgentPromptAsyncErrors = {
   /**
    * Bad request
    */
@@ -3556,18 +3424,18 @@ export type SessionPromptAsyncErrors = {
   404: NotFoundError
 }
 
-export type SessionPromptAsyncError = SessionPromptAsyncErrors[keyof SessionPromptAsyncErrors]
+export type AgentPromptAsyncError = AgentPromptAsyncErrors[keyof AgentPromptAsyncErrors]
 
-export type SessionPromptAsyncResponses = {
+export type AgentPromptAsyncResponses = {
   /**
    * Prompt accepted
    */
   204: void
 }
 
-export type SessionPromptAsyncResponse = SessionPromptAsyncResponses[keyof SessionPromptAsyncResponses]
+export type AgentPromptAsyncResponse = AgentPromptAsyncResponses[keyof AgentPromptAsyncResponses]
 
-export type SessionCommandData = {
+export type AgentCommandData = {
   body?: {
     messageID?: string
     agent?: string
@@ -3586,18 +3454,18 @@ export type SessionCommandData = {
   }
   path: {
     /**
-     * Session ID
+     * Agent ID
      */
-    sessionID: string
+    agentID: string
   }
   query?: {
     directory?: string
     workspace?: string
   }
-  url: "/session/{sessionID}/command"
+  url: "/agent-session/{agentID}/command"
 }
 
-export type SessionCommandErrors = {
+export type AgentCommandErrors = {
   /**
    * Bad request
    */
@@ -3608,9 +3476,9 @@ export type SessionCommandErrors = {
   404: NotFoundError
 }
 
-export type SessionCommandError = SessionCommandErrors[keyof SessionCommandErrors]
+export type AgentCommandError = AgentCommandErrors[keyof AgentCommandErrors]
 
-export type SessionCommandResponses = {
+export type AgentCommandResponses = {
   /**
    * Created message
    */
@@ -3620,24 +3488,24 @@ export type SessionCommandResponses = {
   }
 }
 
-export type SessionCommandResponse = SessionCommandResponses[keyof SessionCommandResponses]
+export type AgentCommandResponse = AgentCommandResponses[keyof AgentCommandResponses]
 
-export type SessionRevertData = {
+export type AgentRevertData = {
   body?: {
     messageID: string
     partID?: string
   }
   path: {
-    sessionID: string
+    agentID: string
   }
   query?: {
     directory?: string
     workspace?: string
   }
-  url: "/session/{sessionID}/revert"
+  url: "/agent-session/{agentID}/revert"
 }
 
-export type SessionRevertErrors = {
+export type AgentRevertErrors = {
   /**
    * Bad request
    */
@@ -3648,30 +3516,30 @@ export type SessionRevertErrors = {
   404: NotFoundError
 }
 
-export type SessionRevertError = SessionRevertErrors[keyof SessionRevertErrors]
+export type AgentRevertError = AgentRevertErrors[keyof AgentRevertErrors]
 
-export type SessionRevertResponses = {
+export type AgentRevertResponses = {
   /**
-   * Updated session
+   * Updated agent session
    */
-  200: Session
+  200: Agent
 }
 
-export type SessionRevertResponse = SessionRevertResponses[keyof SessionRevertResponses]
+export type AgentRevertResponse = AgentRevertResponses[keyof AgentRevertResponses]
 
-export type SessionUnrevertData = {
+export type AgentUnrevertData = {
   body?: never
   path: {
-    sessionID: string
+    agentID: string
   }
   query?: {
     directory?: string
     workspace?: string
   }
-  url: "/session/{sessionID}/unrevert"
+  url: "/agent-session/{agentID}/unrevert"
 }
 
-export type SessionUnrevertErrors = {
+export type AgentUnrevertErrors = {
   /**
    * Bad request
    */
@@ -3682,112 +3550,33 @@ export type SessionUnrevertErrors = {
   404: NotFoundError
 }
 
-export type SessionUnrevertError = SessionUnrevertErrors[keyof SessionUnrevertErrors]
+export type AgentUnrevertError = AgentUnrevertErrors[keyof AgentUnrevertErrors]
 
-export type SessionUnrevertResponses = {
+export type AgentUnrevertResponses = {
   /**
-   * Updated session
+   * Updated agent session
    */
-  200: Session
+  200: Agent
 }
 
-export type SessionUnrevertResponse = SessionUnrevertResponses[keyof SessionUnrevertResponses]
+export type AgentUnrevertResponse = AgentUnrevertResponses[keyof AgentUnrevertResponses]
 
-export type SessionCanvasGetData = {
-  body?: never
-  path: {
-    /**
-     * Session ID
-     */
-    sessionID: string
-  }
-  query?: {
-    directory?: string
-    workspace?: string
-  }
-  url: "/session/{sessionID}/canvas"
-}
-
-export type SessionCanvasGetErrors = {
-  /**
-   * Bad request
-   */
-  400: BadRequestError
-  /**
-   * Not found
-   */
-  404: NotFoundError
-}
-
-export type SessionCanvasGetError = SessionCanvasGetErrors[keyof SessionCanvasGetErrors]
-
-export type SessionCanvasGetResponses = {
-  /**
-   * Canvas state
-   */
-  200: {
-    state: string | null
-  }
-}
-
-export type SessionCanvasGetResponse = SessionCanvasGetResponses[keyof SessionCanvasGetResponses]
-
-export type SessionCanvasPutData = {
-  body?: {
-    /**
-     * Canvas state JSON
-     */
-    state: string
-  }
-  path: {
-    /**
-     * Session ID
-     */
-    sessionID: string
-  }
-  query?: {
-    directory?: string
-    workspace?: string
-  }
-  url: "/session/{sessionID}/canvas"
-}
-
-export type SessionCanvasPutErrors = {
-  /**
-   * Bad request
-   */
-  400: BadRequestError
-}
-
-export type SessionCanvasPutError = SessionCanvasPutErrors[keyof SessionCanvasPutErrors]
-
-export type SessionCanvasPutResponses = {
-  /**
-   * Canvas state saved
-   */
-  200: {
-    ok: boolean
-  }
-}
-
-export type SessionCanvasPutResponse = SessionCanvasPutResponses[keyof SessionCanvasPutResponses]
-
-export type PermissionRespondData = {
+export type AgentPermissionRespondData = {
   body?: {
     response: "once" | "always" | "reject"
   }
   path: {
-    sessionID: string
+    agentID: string
     permissionID: string
   }
   query?: {
     directory?: string
     workspace?: string
   }
-  url: "/session/{sessionID}/permissions/{permissionID}"
+  url: "/agent-session/{agentID}/permissions/{permissionID}"
 }
 
-export type PermissionRespondErrors = {
+export type AgentPermissionRespondErrors = {
   /**
    * Bad request
    */
@@ -3798,16 +3587,16 @@ export type PermissionRespondErrors = {
   404: NotFoundError
 }
 
-export type PermissionRespondError = PermissionRespondErrors[keyof PermissionRespondErrors]
+export type AgentPermissionRespondError = AgentPermissionRespondErrors[keyof AgentPermissionRespondErrors]
 
-export type PermissionRespondResponses = {
+export type AgentPermissionRespondResponses = {
   /**
    * Permission processed successfully
    */
   200: boolean
 }
 
-export type PermissionRespondResponse = PermissionRespondResponses[keyof PermissionRespondResponses]
+export type AgentPermissionRespondResponse = AgentPermissionRespondResponses[keyof AgentPermissionRespondResponses]
 
 export type PermissionReplyData = {
   body?: {
@@ -4522,313 +4311,6 @@ export type McpDisconnectResponses = {
 
 export type McpDisconnectResponse = McpDisconnectResponses[keyof McpDisconnectResponses]
 
-export type TuiAppendPromptData = {
-  body?: {
-    text: string
-  }
-  path?: never
-  query?: {
-    directory?: string
-    workspace?: string
-  }
-  url: "/tui/append-prompt"
-}
-
-export type TuiAppendPromptErrors = {
-  /**
-   * Bad request
-   */
-  400: BadRequestError
-}
-
-export type TuiAppendPromptError = TuiAppendPromptErrors[keyof TuiAppendPromptErrors]
-
-export type TuiAppendPromptResponses = {
-  /**
-   * Prompt processed successfully
-   */
-  200: boolean
-}
-
-export type TuiAppendPromptResponse = TuiAppendPromptResponses[keyof TuiAppendPromptResponses]
-
-export type TuiOpenHelpData = {
-  body?: never
-  path?: never
-  query?: {
-    directory?: string
-    workspace?: string
-  }
-  url: "/tui/open-help"
-}
-
-export type TuiOpenHelpResponses = {
-  /**
-   * Help dialog opened successfully
-   */
-  200: boolean
-}
-
-export type TuiOpenHelpResponse = TuiOpenHelpResponses[keyof TuiOpenHelpResponses]
-
-export type TuiOpenSessionsData = {
-  body?: never
-  path?: never
-  query?: {
-    directory?: string
-    workspace?: string
-  }
-  url: "/tui/open-sessions"
-}
-
-export type TuiOpenSessionsResponses = {
-  /**
-   * Session dialog opened successfully
-   */
-  200: boolean
-}
-
-export type TuiOpenSessionsResponse = TuiOpenSessionsResponses[keyof TuiOpenSessionsResponses]
-
-export type TuiOpenThemesData = {
-  body?: never
-  path?: never
-  query?: {
-    directory?: string
-    workspace?: string
-  }
-  url: "/tui/open-themes"
-}
-
-export type TuiOpenThemesResponses = {
-  /**
-   * Theme dialog opened successfully
-   */
-  200: boolean
-}
-
-export type TuiOpenThemesResponse = TuiOpenThemesResponses[keyof TuiOpenThemesResponses]
-
-export type TuiOpenModelsData = {
-  body?: never
-  path?: never
-  query?: {
-    directory?: string
-    workspace?: string
-  }
-  url: "/tui/open-models"
-}
-
-export type TuiOpenModelsResponses = {
-  /**
-   * Model dialog opened successfully
-   */
-  200: boolean
-}
-
-export type TuiOpenModelsResponse = TuiOpenModelsResponses[keyof TuiOpenModelsResponses]
-
-export type TuiSubmitPromptData = {
-  body?: never
-  path?: never
-  query?: {
-    directory?: string
-    workspace?: string
-  }
-  url: "/tui/submit-prompt"
-}
-
-export type TuiSubmitPromptResponses = {
-  /**
-   * Prompt submitted successfully
-   */
-  200: boolean
-}
-
-export type TuiSubmitPromptResponse = TuiSubmitPromptResponses[keyof TuiSubmitPromptResponses]
-
-export type TuiClearPromptData = {
-  body?: never
-  path?: never
-  query?: {
-    directory?: string
-    workspace?: string
-  }
-  url: "/tui/clear-prompt"
-}
-
-export type TuiClearPromptResponses = {
-  /**
-   * Prompt cleared successfully
-   */
-  200: boolean
-}
-
-export type TuiClearPromptResponse = TuiClearPromptResponses[keyof TuiClearPromptResponses]
-
-export type TuiExecuteCommandData = {
-  body?: {
-    command: string
-  }
-  path?: never
-  query?: {
-    directory?: string
-    workspace?: string
-  }
-  url: "/tui/execute-command"
-}
-
-export type TuiExecuteCommandErrors = {
-  /**
-   * Bad request
-   */
-  400: BadRequestError
-}
-
-export type TuiExecuteCommandError = TuiExecuteCommandErrors[keyof TuiExecuteCommandErrors]
-
-export type TuiExecuteCommandResponses = {
-  /**
-   * Command executed successfully
-   */
-  200: boolean
-}
-
-export type TuiExecuteCommandResponse = TuiExecuteCommandResponses[keyof TuiExecuteCommandResponses]
-
-export type TuiShowToastData = {
-  body?: {
-    title?: string
-    message: string
-    variant: "info" | "success" | "warning" | "error"
-    /**
-     * Duration in milliseconds
-     */
-    duration?: number
-  }
-  path?: never
-  query?: {
-    directory?: string
-    workspace?: string
-  }
-  url: "/tui/show-toast"
-}
-
-export type TuiShowToastResponses = {
-  /**
-   * Toast notification shown successfully
-   */
-  200: boolean
-}
-
-export type TuiShowToastResponse = TuiShowToastResponses[keyof TuiShowToastResponses]
-
-export type TuiPublishData = {
-  body?: EventTuiPromptAppend | EventTuiCommandExecute | EventTuiToastShow | EventTuiSessionSelect
-  path?: never
-  query?: {
-    directory?: string
-    workspace?: string
-  }
-  url: "/tui/publish"
-}
-
-export type TuiPublishErrors = {
-  /**
-   * Bad request
-   */
-  400: BadRequestError
-}
-
-export type TuiPublishError = TuiPublishErrors[keyof TuiPublishErrors]
-
-export type TuiPublishResponses = {
-  /**
-   * Event published successfully
-   */
-  200: boolean
-}
-
-export type TuiPublishResponse = TuiPublishResponses[keyof TuiPublishResponses]
-
-export type TuiSelectSessionData = {
-  body?: {
-    /**
-     * Session ID to navigate to
-     */
-    sessionID: string
-  }
-  path?: never
-  query?: {
-    directory?: string
-    workspace?: string
-  }
-  url: "/tui/select-session"
-}
-
-export type TuiSelectSessionErrors = {
-  /**
-   * Bad request
-   */
-  400: BadRequestError
-  /**
-   * Not found
-   */
-  404: NotFoundError
-}
-
-export type TuiSelectSessionError = TuiSelectSessionErrors[keyof TuiSelectSessionErrors]
-
-export type TuiSelectSessionResponses = {
-  /**
-   * Session selected successfully
-   */
-  200: boolean
-}
-
-export type TuiSelectSessionResponse = TuiSelectSessionResponses[keyof TuiSelectSessionResponses]
-
-export type TuiControlNextData = {
-  body?: never
-  path?: never
-  query?: {
-    directory?: string
-    workspace?: string
-  }
-  url: "/tui/control/next"
-}
-
-export type TuiControlNextResponses = {
-  /**
-   * Next TUI request
-   */
-  200: {
-    path: string
-    body: unknown
-  }
-}
-
-export type TuiControlNextResponse = TuiControlNextResponses[keyof TuiControlNextResponses]
-
-export type TuiControlResponseData = {
-  body?: unknown
-  path?: never
-  query?: {
-    directory?: string
-    workspace?: string
-  }
-  url: "/tui/control/response"
-}
-
-export type TuiControlResponseResponses = {
-  /**
-   * Response submitted successfully
-   */
-  200: boolean
-}
-
-export type TuiControlResponseResponse = TuiControlResponseResponses[keyof TuiControlResponseResponses]
-
 export type InstanceDisposeData = {
   body?: never
   path?: never
@@ -4952,24 +4434,24 @@ export type AppLogResponses = {
 
 export type AppLogResponse = AppLogResponses[keyof AppLogResponses]
 
-export type AppAgentsData = {
+export type AgentDefListData = {
   body?: never
   path?: never
   query?: {
     directory?: string
     workspace?: string
   }
-  url: "/agent"
+  url: "/agent-def"
 }
 
-export type AppAgentsResponses = {
+export type AgentDefListResponses = {
   /**
-   * List of agents
+   * List of agent definitions
    */
   200: Array<Agent>
 }
 
-export type AppAgentsResponse = AppAgentsResponses[keyof AppAgentsResponses]
+export type AgentDefListResponse = AgentDefListResponses[keyof AgentDefListResponses]
 
 export type AppSkillsData = {
   body?: never

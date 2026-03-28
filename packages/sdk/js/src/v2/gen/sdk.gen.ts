@@ -3,8 +3,51 @@
 import { client } from "./client.gen.js"
 import { buildClientParams, type Client, type Options as Options2, type TDataShape } from "./client/index.js"
 import type {
+  AgentAbortErrors,
+  AgentAbortResponses,
+  AgentCommandErrors,
+  AgentCommandResponses,
+  AgentCreateErrors,
+  AgentCreateResponses,
+  AgentDefListResponses,
+  AgentDeleteErrors,
+  AgentDeleteMessageErrors,
+  AgentDeleteMessageResponses,
+  AgentDeleteResponses,
+  AgentDiffResponses,
+  AgentForkResponses,
+  AgentGetErrors,
+  AgentGetResponses,
+  AgentInitErrors,
+  AgentInitResponses,
+  AgentListResponses,
+  AgentMessageErrors,
+  AgentMessageResponses,
+  AgentMessagesErrors,
+  AgentMessagesResponses,
+  AgentPartDeleteErrors,
+  AgentPartDeleteResponses,
   AgentPartInput,
-  AppAgentsResponses,
+  AgentPartUpdateErrors,
+  AgentPartUpdateResponses,
+  AgentPermissionRespondErrors,
+  AgentPermissionRespondResponses,
+  AgentPromptAsyncErrors,
+  AgentPromptAsyncResponses,
+  AgentPromptErrors,
+  AgentPromptResponses,
+  AgentRevertErrors,
+  AgentRevertResponses,
+  AgentStatusErrors,
+  AgentStatusResponses,
+  AgentSummarizeErrors,
+  AgentSummarizeResponses,
+  AgentTodoErrors,
+  AgentTodoResponses,
+  AgentUnrevertErrors,
+  AgentUnrevertResponses,
+  AgentUpdateErrors,
+  AgentUpdateResponses,
   AppLogErrors,
   AppLogResponses,
   AppSkillsResponses,
@@ -20,17 +63,17 @@ import type {
   ConfigUpdateErrors,
   ConfigUpdateResponses,
   EventSubscribeResponses,
-  EventTuiCommandExecute,
-  EventTuiPromptAppend,
-  EventTuiSessionSelect,
-  EventTuiToastShow,
   ExperimentalResourceListResponses,
   ExperimentalSessionListResponses,
-  ExperimentalWorkspaceCreateErrors,
-  ExperimentalWorkspaceCreateResponses,
-  ExperimentalWorkspaceListResponses,
-  ExperimentalWorkspaceRemoveErrors,
-  ExperimentalWorkspaceRemoveResponses,
+  FeatureCreateErrors,
+  FeatureCreateResponses,
+  FeatureGetErrors,
+  FeatureGetResponses,
+  FeatureListResponses,
+  FeatureRemoveErrors,
+  FeatureRemoveResponses,
+  FeatureUpdateErrors,
+  FeatureUpdateResponses,
   FileListResponses,
   FilePartInput,
   FilePartSource,
@@ -65,22 +108,16 @@ import type {
   McpStatusResponses,
   OutputFormat,
   Part as Part2,
-  PartDeleteErrors,
-  PartDeleteResponses,
-  PartUpdateErrors,
-  PartUpdateResponses,
   PathGetResponses,
   PermissionListResponses,
   PermissionReplyErrors,
   PermissionReplyResponses,
-  PermissionRespondErrors,
-  PermissionRespondResponses,
   PermissionRuleset,
-  ProjectCurrentResponses,
-  ProjectInitGitResponses,
-  ProjectListResponses,
-  ProjectUpdateErrors,
-  ProjectUpdateResponses,
+  ProductCurrentResponses,
+  ProductInitGitResponses,
+  ProductListResponses,
+  ProductUpdateErrors,
+  ProductUpdateResponses,
   ProviderAuthResponses,
   ProviderListResponses,
   ProviderOauthAuthorizeErrors,
@@ -104,76 +141,12 @@ import type {
   QuestionRejectResponses,
   QuestionReplyErrors,
   QuestionReplyResponses,
-  SessionAbortErrors,
-  SessionAbortResponses,
-  SessionCanvasGetErrors,
-  SessionCanvasGetResponses,
-  SessionCanvasPutErrors,
-  SessionCanvasPutResponses,
-  SessionChildrenErrors,
-  SessionChildrenResponses,
-  SessionCommandErrors,
-  SessionCommandResponses,
-  SessionCreateErrors,
-  SessionCreateResponses,
-  SessionDeleteErrors,
-  SessionDeleteMessageErrors,
-  SessionDeleteMessageResponses,
-  SessionDeleteResponses,
-  SessionDiffResponses,
-  SessionForkResponses,
-  SessionGetErrors,
-  SessionGetResponses,
-  SessionInitErrors,
-  SessionInitResponses,
-  SessionListResponses,
-  SessionMessageErrors,
-  SessionMessageResponses,
-  SessionMessagesErrors,
-  SessionMessagesResponses,
-  SessionPromptAsyncErrors,
-  SessionPromptAsyncResponses,
-  SessionPromptErrors,
-  SessionPromptResponses,
-  SessionRevertErrors,
-  SessionRevertResponses,
-  SessionShareErrors,
-  SessionShareResponses,
-  SessionStatusErrors,
-  SessionStatusResponses,
-  SessionSummarizeErrors,
-  SessionSummarizeResponses,
-  SessionTodoErrors,
-  SessionTodoResponses,
-  SessionUnrevertErrors,
-  SessionUnrevertResponses,
-  SessionUnshareErrors,
-  SessionUnshareResponses,
-  SessionUpdateErrors,
-  SessionUpdateResponses,
   SubtaskPartInput,
   TextPartInput,
   ToolIdsErrors,
   ToolIdsResponses,
   ToolListErrors,
   ToolListResponses,
-  TuiAppendPromptErrors,
-  TuiAppendPromptResponses,
-  TuiClearPromptResponses,
-  TuiControlNextResponses,
-  TuiControlResponseResponses,
-  TuiExecuteCommandErrors,
-  TuiExecuteCommandResponses,
-  TuiOpenHelpResponses,
-  TuiOpenModelsResponses,
-  TuiOpenSessionsResponses,
-  TuiOpenThemesResponses,
-  TuiPublishErrors,
-  TuiPublishResponses,
-  TuiSelectSessionErrors,
-  TuiSelectSessionResponses,
-  TuiShowToastResponses,
-  TuiSubmitPromptResponses,
   VcsGetResponses,
   WorktreeCreateErrors,
   WorktreeCreateInput,
@@ -367,11 +340,11 @@ export class Auth extends HeyApiClient {
   }
 }
 
-export class Project extends HeyApiClient {
+export class Product extends HeyApiClient {
   /**
-   * List all projects
+   * List all products
    *
-   * Get a list of projects that have been opened with OpenCode.
+   * Get a list of products that have been opened with OpenCode.
    */
   public list<ThrowOnError extends boolean = false>(
     parameters?: {
@@ -391,17 +364,17 @@ export class Project extends HeyApiClient {
         },
       ],
     )
-    return (options?.client ?? this.client).get<ProjectListResponses, unknown, ThrowOnError>({
-      url: "/project",
+    return (options?.client ?? this.client).get<ProductListResponses, unknown, ThrowOnError>({
+      url: "/product",
       ...options,
       ...params,
     })
   }
 
   /**
-   * Get current project
+   * Get current product
    *
-   * Retrieve the currently active project that OpenCode is working with.
+   * Retrieve the currently active product that OpenCode is working with.
    */
   public current<ThrowOnError extends boolean = false>(
     parameters?: {
@@ -421,8 +394,8 @@ export class Project extends HeyApiClient {
         },
       ],
     )
-    return (options?.client ?? this.client).get<ProjectCurrentResponses, unknown, ThrowOnError>({
-      url: "/project/current",
+    return (options?.client ?? this.client).get<ProductCurrentResponses, unknown, ThrowOnError>({
+      url: "/product/current",
       ...options,
       ...params,
     })
@@ -431,7 +404,7 @@ export class Project extends HeyApiClient {
   /**
    * Initialize git repository
    *
-   * Create a git repository for the current project and return the refreshed project info.
+   * Create a git repository for the current product and return the refreshed product info.
    */
   public initGit<ThrowOnError extends boolean = false>(
     parameters?: {
@@ -451,17 +424,17 @@ export class Project extends HeyApiClient {
         },
       ],
     )
-    return (options?.client ?? this.client).post<ProjectInitGitResponses, unknown, ThrowOnError>({
-      url: "/project/git/init",
+    return (options?.client ?? this.client).post<ProductInitGitResponses, unknown, ThrowOnError>({
+      url: "/product/git/init",
       ...options,
       ...params,
     })
   }
 
   /**
-   * Update project
+   * Update product
    *
-   * Update project properties such as name, icon, and commands.
+   * Update product properties such as name, icon, and commands.
    */
   public update<ThrowOnError extends boolean = false>(
     parameters: {
@@ -498,8 +471,194 @@ export class Project extends HeyApiClient {
         },
       ],
     )
-    return (options?.client ?? this.client).patch<ProjectUpdateResponses, ProjectUpdateErrors, ThrowOnError>({
-      url: "/project/{projectID}",
+    return (options?.client ?? this.client).patch<ProductUpdateResponses, ProductUpdateErrors, ThrowOnError>({
+      url: "/product/{projectID}",
+      ...options,
+      ...params,
+      headers: {
+        "Content-Type": "application/json",
+        ...options?.headers,
+        ...params.headers,
+      },
+    })
+  }
+}
+
+export class Feature extends HeyApiClient {
+  /**
+   * List features
+   *
+   * Get a list of features, optionally filtered by product.
+   */
+  public list<ThrowOnError extends boolean = false>(
+    parameters?: {
+      directory?: string
+      workspace?: string
+      productID?: string
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "query", key: "directory" },
+            { in: "query", key: "workspace" },
+            { in: "query", key: "productID" },
+          ],
+        },
+      ],
+    )
+    return (options?.client ?? this.client).get<FeatureListResponses, unknown, ThrowOnError>({
+      url: "/feature",
+      ...options,
+      ...params,
+    })
+  }
+
+  /**
+   * Create feature
+   *
+   * Create a new feature within a product.
+   */
+  public create<ThrowOnError extends boolean = false>(
+    parameters?: {
+      directory?: string
+      workspace?: string
+      productID?: string
+      name?: string
+      branch?: string
+      figmaUrl?: string
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "query", key: "directory" },
+            { in: "query", key: "workspace" },
+            { in: "body", key: "productID" },
+            { in: "body", key: "name" },
+            { in: "body", key: "branch" },
+            { in: "body", key: "figmaUrl" },
+          ],
+        },
+      ],
+    )
+    return (options?.client ?? this.client).post<FeatureCreateResponses, FeatureCreateErrors, ThrowOnError>({
+      url: "/feature",
+      ...options,
+      ...params,
+      headers: {
+        "Content-Type": "application/json",
+        ...options?.headers,
+        ...params.headers,
+      },
+    })
+  }
+
+  /**
+   * Delete feature
+   *
+   * Delete a feature and all its agents.
+   */
+  public remove<ThrowOnError extends boolean = false>(
+    parameters: {
+      featureID: string
+      directory?: string
+      workspace?: string
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "featureID" },
+            { in: "query", key: "directory" },
+            { in: "query", key: "workspace" },
+          ],
+        },
+      ],
+    )
+    return (options?.client ?? this.client).delete<FeatureRemoveResponses, FeatureRemoveErrors, ThrowOnError>({
+      url: "/feature/{featureID}",
+      ...options,
+      ...params,
+    })
+  }
+
+  /**
+   * Get feature
+   *
+   * Retrieve a specific feature.
+   */
+  public get<ThrowOnError extends boolean = false>(
+    parameters: {
+      featureID: string
+      directory?: string
+      workspace?: string
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "featureID" },
+            { in: "query", key: "directory" },
+            { in: "query", key: "workspace" },
+          ],
+        },
+      ],
+    )
+    return (options?.client ?? this.client).get<FeatureGetResponses, FeatureGetErrors, ThrowOnError>({
+      url: "/feature/{featureID}",
+      ...options,
+      ...params,
+    })
+  }
+
+  /**
+   * Update feature
+   *
+   * Update a feature.
+   */
+  public update<ThrowOnError extends boolean = false>(
+    parameters: {
+      featureID: string
+      directory?: string
+      workspace?: string
+      name?: string
+      status?: "active" | "completed" | "archived"
+      figmaUrl?: string
+      canvasState?: unknown
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "featureID" },
+            { in: "query", key: "directory" },
+            { in: "query", key: "workspace" },
+            { in: "body", key: "name" },
+            { in: "body", key: "status" },
+            { in: "body", key: "figmaUrl" },
+            { in: "body", key: "canvasState" },
+          ],
+        },
+      ],
+    )
+    return (options?.client ?? this.client).put<FeatureUpdateResponses, FeatureUpdateErrors, ThrowOnError>({
+      url: "/feature/{featureID}",
       ...options,
       ...params,
       headers: {
@@ -895,214 +1054,6 @@ export class Tool extends HeyApiClient {
   }
 }
 
-export class Workspace extends HeyApiClient {
-  /**
-   * List workspaces
-   *
-   * List all workspaces.
-   */
-  public list<ThrowOnError extends boolean = false>(
-    parameters?: {
-      directory?: string
-      workspace?: string
-    },
-    options?: Options<never, ThrowOnError>,
-  ) {
-    const params = buildClientParams(
-      [parameters],
-      [
-        {
-          args: [
-            { in: "query", key: "directory" },
-            { in: "query", key: "workspace" },
-          ],
-        },
-      ],
-    )
-    return (options?.client ?? this.client).get<ExperimentalWorkspaceListResponses, unknown, ThrowOnError>({
-      url: "/experimental/workspace",
-      ...options,
-      ...params,
-    })
-  }
-
-  /**
-   * Create workspace
-   *
-   * Create a workspace for the current project.
-   */
-  public create<ThrowOnError extends boolean = false>(
-    parameters?: {
-      directory?: string
-      workspace?: string
-      id?: string
-      type?: string
-      branch?: string | null
-      extra?: unknown | null
-    },
-    options?: Options<never, ThrowOnError>,
-  ) {
-    const params = buildClientParams(
-      [parameters],
-      [
-        {
-          args: [
-            { in: "query", key: "directory" },
-            { in: "query", key: "workspace" },
-            { in: "body", key: "id" },
-            { in: "body", key: "type" },
-            { in: "body", key: "branch" },
-            { in: "body", key: "extra" },
-          ],
-        },
-      ],
-    )
-    return (options?.client ?? this.client).post<
-      ExperimentalWorkspaceCreateResponses,
-      ExperimentalWorkspaceCreateErrors,
-      ThrowOnError
-    >({
-      url: "/experimental/workspace",
-      ...options,
-      ...params,
-      headers: {
-        "Content-Type": "application/json",
-        ...options?.headers,
-        ...params.headers,
-      },
-    })
-  }
-
-  /**
-   * Remove workspace
-   *
-   * Remove an existing workspace.
-   */
-  public remove<ThrowOnError extends boolean = false>(
-    parameters: {
-      id: string
-      directory?: string
-      workspace?: string
-    },
-    options?: Options<never, ThrowOnError>,
-  ) {
-    const params = buildClientParams(
-      [parameters],
-      [
-        {
-          args: [
-            { in: "path", key: "id" },
-            { in: "query", key: "directory" },
-            { in: "query", key: "workspace" },
-          ],
-        },
-      ],
-    )
-    return (options?.client ?? this.client).delete<
-      ExperimentalWorkspaceRemoveResponses,
-      ExperimentalWorkspaceRemoveErrors,
-      ThrowOnError
-    >({
-      url: "/experimental/workspace/{id}",
-      ...options,
-      ...params,
-    })
-  }
-}
-
-export class Session extends HeyApiClient {
-  /**
-   * List sessions
-   *
-   * Get a list of all OpenCode sessions across projects, sorted by most recently updated. Archived sessions are excluded by default.
-   */
-  public list<ThrowOnError extends boolean = false>(
-    parameters?: {
-      directory?: string
-      workspace?: string
-      roots?: boolean
-      start?: number
-      cursor?: number
-      search?: string
-      limit?: number
-      archived?: boolean
-    },
-    options?: Options<never, ThrowOnError>,
-  ) {
-    const params = buildClientParams(
-      [parameters],
-      [
-        {
-          args: [
-            { in: "query", key: "directory" },
-            { in: "query", key: "workspace" },
-            { in: "query", key: "roots" },
-            { in: "query", key: "start" },
-            { in: "query", key: "cursor" },
-            { in: "query", key: "search" },
-            { in: "query", key: "limit" },
-            { in: "query", key: "archived" },
-          ],
-        },
-      ],
-    )
-    return (options?.client ?? this.client).get<ExperimentalSessionListResponses, unknown, ThrowOnError>({
-      url: "/experimental/session",
-      ...options,
-      ...params,
-    })
-  }
-}
-
-export class Resource extends HeyApiClient {
-  /**
-   * Get MCP resources
-   *
-   * Get all available MCP resources from connected servers. Optionally filter by name.
-   */
-  public list<ThrowOnError extends boolean = false>(
-    parameters?: {
-      directory?: string
-      workspace?: string
-    },
-    options?: Options<never, ThrowOnError>,
-  ) {
-    const params = buildClientParams(
-      [parameters],
-      [
-        {
-          args: [
-            { in: "query", key: "directory" },
-            { in: "query", key: "workspace" },
-          ],
-        },
-      ],
-    )
-    return (options?.client ?? this.client).get<ExperimentalResourceListResponses, unknown, ThrowOnError>({
-      url: "/experimental/resource",
-      ...options,
-      ...params,
-    })
-  }
-}
-
-export class Experimental extends HeyApiClient {
-  private _workspace?: Workspace
-  get workspace(): Workspace {
-    return (this._workspace ??= new Workspace({ client: this.client }))
-  }
-
-  private _session?: Session
-  get session(): Session {
-    return (this._session ??= new Session({ client: this.client }))
-  }
-
-  private _resource?: Resource
-  get resource(): Resource {
-    return (this._resource ??= new Resource({ client: this.client }))
-  }
-}
-
 export class Worktree extends HeyApiClient {
   /**
    * Remove worktree
@@ -1246,15 +1197,58 @@ export class Worktree extends HeyApiClient {
   }
 }
 
-export class Canvas extends HeyApiClient {
+export class Session extends HeyApiClient {
   /**
-   * Get canvas state
+   * List sessions
    *
-   * Retrieve the canvas state for a specific session.
+   * Get a list of all OpenCode sessions across projects, sorted by most recently updated. Archived sessions are excluded by default.
    */
-  public get<ThrowOnError extends boolean = false>(
-    parameters: {
-      sessionID: string
+  public list<ThrowOnError extends boolean = false>(
+    parameters?: {
+      directory?: string
+      workspace?: string
+      roots?: boolean
+      start?: number
+      cursor?: number
+      search?: string
+      limit?: number
+      archived?: boolean
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "query", key: "directory" },
+            { in: "query", key: "workspace" },
+            { in: "query", key: "roots" },
+            { in: "query", key: "start" },
+            { in: "query", key: "cursor" },
+            { in: "query", key: "search" },
+            { in: "query", key: "limit" },
+            { in: "query", key: "archived" },
+          ],
+        },
+      ],
+    )
+    return (options?.client ?? this.client).get<ExperimentalSessionListResponses, unknown, ThrowOnError>({
+      url: "/experimental/session",
+      ...options,
+      ...params,
+    })
+  }
+}
+
+export class Resource extends HeyApiClient {
+  /**
+   * Get MCP resources
+   *
+   * Get all available MCP resources from connected servers. Optionally filter by name.
+   */
+  public list<ThrowOnError extends boolean = false>(
+    parameters?: {
       directory?: string
       workspace?: string
     },
@@ -1265,31 +1259,78 @@ export class Canvas extends HeyApiClient {
       [
         {
           args: [
-            { in: "path", key: "sessionID" },
             { in: "query", key: "directory" },
             { in: "query", key: "workspace" },
           ],
         },
       ],
     )
-    return (options?.client ?? this.client).get<SessionCanvasGetResponses, SessionCanvasGetErrors, ThrowOnError>({
-      url: "/session/{sessionID}/canvas",
+    return (options?.client ?? this.client).get<ExperimentalResourceListResponses, unknown, ThrowOnError>({
+      url: "/experimental/resource",
+      ...options,
+      ...params,
+    })
+  }
+}
+
+export class Experimental extends HeyApiClient {
+  private _session?: Session
+  get session(): Session {
+    return (this._session ??= new Session({ client: this.client }))
+  }
+
+  private _resource?: Resource
+  get resource(): Resource {
+    return (this._resource ??= new Resource({ client: this.client }))
+  }
+}
+
+export class Part extends HeyApiClient {
+  /**
+   * Delete a part from a message
+   */
+  public delete<ThrowOnError extends boolean = false>(
+    parameters: {
+      agentID: string
+      messageID: string
+      partID: string
+      directory?: string
+      workspace?: string
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "agentID" },
+            { in: "path", key: "messageID" },
+            { in: "path", key: "partID" },
+            { in: "query", key: "directory" },
+            { in: "query", key: "workspace" },
+          ],
+        },
+      ],
+    )
+    return (options?.client ?? this.client).delete<AgentPartDeleteResponses, AgentPartDeleteErrors, ThrowOnError>({
+      url: "/agent-session/{agentID}/message/{messageID}/part/{partID}",
       ...options,
       ...params,
     })
   }
 
   /**
-   * Put canvas state
-   *
-   * Save the canvas state for a specific session.
+   * Update a part in a message
    */
-  public put<ThrowOnError extends boolean = false>(
+  public update<ThrowOnError extends boolean = false>(
     parameters: {
-      sessionID: string
+      agentID: string
+      messageID: string
+      partID: string
       directory?: string
       workspace?: string
-      state?: string
+      part?: Part2
     },
     options?: Options<never, ThrowOnError>,
   ) {
@@ -1298,16 +1339,18 @@ export class Canvas extends HeyApiClient {
       [
         {
           args: [
-            { in: "path", key: "sessionID" },
+            { in: "path", key: "agentID" },
+            { in: "path", key: "messageID" },
+            { in: "path", key: "partID" },
             { in: "query", key: "directory" },
             { in: "query", key: "workspace" },
-            { in: "body", key: "state" },
+            { key: "part", map: "body" },
           ],
         },
       ],
     )
-    return (options?.client ?? this.client).put<SessionCanvasPutResponses, SessionCanvasPutErrors, ThrowOnError>({
-      url: "/session/{sessionID}/canvas",
+    return (options?.client ?? this.client).patch<AgentPartUpdateResponses, AgentPartUpdateErrors, ThrowOnError>({
+      url: "/agent-session/{agentID}/message/{messageID}/part/{partID}",
       ...options,
       ...params,
       headers: {
@@ -1319,17 +1362,65 @@ export class Canvas extends HeyApiClient {
   }
 }
 
-export class Session2 extends HeyApiClient {
+export class Permission extends HeyApiClient {
   /**
-   * List sessions
+   * Respond to permission
    *
-   * Get a list of all OpenCode sessions, sorted by most recently updated.
+   * Approve or deny a permission request from the AI assistant.
+   *
+   * @deprecated
+   */
+  public respond<ThrowOnError extends boolean = false>(
+    parameters: {
+      agentID: string
+      permissionID: string
+      directory?: string
+      workspace?: string
+      response?: "once" | "always" | "reject"
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "agentID" },
+            { in: "path", key: "permissionID" },
+            { in: "query", key: "directory" },
+            { in: "query", key: "workspace" },
+            { in: "body", key: "response" },
+          ],
+        },
+      ],
+    )
+    return (options?.client ?? this.client).post<
+      AgentPermissionRespondResponses,
+      AgentPermissionRespondErrors,
+      ThrowOnError
+    >({
+      url: "/agent-session/{agentID}/permissions/{permissionID}",
+      ...options,
+      ...params,
+      headers: {
+        "Content-Type": "application/json",
+        ...options?.headers,
+        ...params.headers,
+      },
+    })
+  }
+}
+
+export class Agent extends HeyApiClient {
+  /**
+   * List agent sessions
+   *
+   * Get a list of all agent sessions, sorted by most recently updated.
    */
   public list<ThrowOnError extends boolean = false>(
     parameters?: {
       directory?: string
       workspace?: string
-      roots?: boolean
       start?: number
       search?: string
       limit?: number
@@ -1343,7 +1434,6 @@ export class Session2 extends HeyApiClient {
           args: [
             { in: "query", key: "directory" },
             { in: "query", key: "workspace" },
-            { in: "query", key: "roots" },
             { in: "query", key: "start" },
             { in: "query", key: "search" },
             { in: "query", key: "limit" },
@@ -1351,26 +1441,28 @@ export class Session2 extends HeyApiClient {
         },
       ],
     )
-    return (options?.client ?? this.client).get<SessionListResponses, unknown, ThrowOnError>({
-      url: "/session",
+    return (options?.client ?? this.client).get<AgentListResponses, unknown, ThrowOnError>({
+      url: "/agent-session",
       ...options,
       ...params,
     })
   }
 
   /**
-   * Create session
+   * Create agent session
    *
-   * Create a new OpenCode session for interacting with AI assistants and managing conversations.
+   * Create a new agent session.
    */
   public create<ThrowOnError extends boolean = false>(
     parameters?: {
       directory?: string
       workspace?: string
-      parentID?: string
+      featureID?: string
+      annotationID?: string
       title?: string
       permission?: PermissionRuleset
-      workspaceID?: string
+      branch?: string
+      color?: string
     },
     options?: Options<never, ThrowOnError>,
   ) {
@@ -1381,16 +1473,18 @@ export class Session2 extends HeyApiClient {
           args: [
             { in: "query", key: "directory" },
             { in: "query", key: "workspace" },
-            { in: "body", key: "parentID" },
+            { in: "body", key: "featureID" },
+            { in: "body", key: "annotationID" },
             { in: "body", key: "title" },
             { in: "body", key: "permission" },
-            { in: "body", key: "workspaceID" },
+            { in: "body", key: "branch" },
+            { in: "body", key: "color" },
           ],
         },
       ],
     )
-    return (options?.client ?? this.client).post<SessionCreateResponses, SessionCreateErrors, ThrowOnError>({
-      url: "/session",
+    return (options?.client ?? this.client).post<AgentCreateResponses, AgentCreateErrors, ThrowOnError>({
+      url: "/agent-session",
       ...options,
       ...params,
       headers: {
@@ -1402,9 +1496,9 @@ export class Session2 extends HeyApiClient {
   }
 
   /**
-   * Get session status
+   * Get agent session status
    *
-   * Retrieve the current status of all sessions, including active, idle, and completed states.
+   * Retrieve the current status of all agent sessions.
    */
   public status<ThrowOnError extends boolean = false>(
     parameters?: {
@@ -1424,21 +1518,21 @@ export class Session2 extends HeyApiClient {
         },
       ],
     )
-    return (options?.client ?? this.client).get<SessionStatusResponses, SessionStatusErrors, ThrowOnError>({
-      url: "/session/status",
+    return (options?.client ?? this.client).get<AgentStatusResponses, AgentStatusErrors, ThrowOnError>({
+      url: "/agent-session/status",
       ...options,
       ...params,
     })
   }
 
   /**
-   * Delete session
+   * Delete agent session
    *
-   * Delete a session and permanently remove all associated data, including messages and history.
+   * Delete an agent session and permanently remove all associated data.
    */
   public delete<ThrowOnError extends boolean = false>(
     parameters: {
-      sessionID: string
+      agentID: string
       directory?: string
       workspace?: string
     },
@@ -1449,28 +1543,28 @@ export class Session2 extends HeyApiClient {
       [
         {
           args: [
-            { in: "path", key: "sessionID" },
+            { in: "path", key: "agentID" },
             { in: "query", key: "directory" },
             { in: "query", key: "workspace" },
           ],
         },
       ],
     )
-    return (options?.client ?? this.client).delete<SessionDeleteResponses, SessionDeleteErrors, ThrowOnError>({
-      url: "/session/{sessionID}",
+    return (options?.client ?? this.client).delete<AgentDeleteResponses, AgentDeleteErrors, ThrowOnError>({
+      url: "/agent-session/{agentID}",
       ...options,
       ...params,
     })
   }
 
   /**
-   * Get session
+   * Get agent session
    *
-   * Retrieve detailed information about a specific OpenCode session.
+   * Retrieve detailed information about a specific agent session.
    */
   public get<ThrowOnError extends boolean = false>(
     parameters: {
-      sessionID: string
+      agentID: string
       directory?: string
       workspace?: string
     },
@@ -1481,34 +1575,31 @@ export class Session2 extends HeyApiClient {
       [
         {
           args: [
-            { in: "path", key: "sessionID" },
+            { in: "path", key: "agentID" },
             { in: "query", key: "directory" },
             { in: "query", key: "workspace" },
           ],
         },
       ],
     )
-    return (options?.client ?? this.client).get<SessionGetResponses, SessionGetErrors, ThrowOnError>({
-      url: "/session/{sessionID}",
+    return (options?.client ?? this.client).get<AgentGetResponses, AgentGetErrors, ThrowOnError>({
+      url: "/agent-session/{agentID}",
       ...options,
       ...params,
     })
   }
 
   /**
-   * Update session
+   * Update agent session
    *
-   * Update properties of an existing session, such as title or other metadata.
+   * Update properties of an existing agent session.
    */
   public update<ThrowOnError extends boolean = false>(
     parameters: {
-      sessionID: string
+      agentID: string
       directory?: string
       workspace?: string
       title?: string
-      time?: {
-        archived?: number
-      }
     },
     options?: Options<never, ThrowOnError>,
   ) {
@@ -1517,17 +1608,16 @@ export class Session2 extends HeyApiClient {
       [
         {
           args: [
-            { in: "path", key: "sessionID" },
+            { in: "path", key: "agentID" },
             { in: "query", key: "directory" },
             { in: "query", key: "workspace" },
             { in: "body", key: "title" },
-            { in: "body", key: "time" },
           ],
         },
       ],
     )
-    return (options?.client ?? this.client).patch<SessionUpdateResponses, SessionUpdateErrors, ThrowOnError>({
-      url: "/session/{sessionID}",
+    return (options?.client ?? this.client).patch<AgentUpdateResponses, AgentUpdateErrors, ThrowOnError>({
+      url: "/agent-session/{agentID}",
       ...options,
       ...params,
       headers: {
@@ -1539,45 +1629,13 @@ export class Session2 extends HeyApiClient {
   }
 
   /**
-   * Get session children
+   * Get agent session todos
    *
-   * Retrieve all child sessions that were forked from the specified parent session.
-   */
-  public children<ThrowOnError extends boolean = false>(
-    parameters: {
-      sessionID: string
-      directory?: string
-      workspace?: string
-    },
-    options?: Options<never, ThrowOnError>,
-  ) {
-    const params = buildClientParams(
-      [parameters],
-      [
-        {
-          args: [
-            { in: "path", key: "sessionID" },
-            { in: "query", key: "directory" },
-            { in: "query", key: "workspace" },
-          ],
-        },
-      ],
-    )
-    return (options?.client ?? this.client).get<SessionChildrenResponses, SessionChildrenErrors, ThrowOnError>({
-      url: "/session/{sessionID}/children",
-      ...options,
-      ...params,
-    })
-  }
-
-  /**
-   * Get session todos
-   *
-   * Retrieve the todo list associated with a specific session, showing tasks and action items.
+   * Retrieve the todo list associated with a specific agent session.
    */
   public todo<ThrowOnError extends boolean = false>(
     parameters: {
-      sessionID: string
+      agentID: string
       directory?: string
       workspace?: string
     },
@@ -1588,28 +1646,28 @@ export class Session2 extends HeyApiClient {
       [
         {
           args: [
-            { in: "path", key: "sessionID" },
+            { in: "path", key: "agentID" },
             { in: "query", key: "directory" },
             { in: "query", key: "workspace" },
           ],
         },
       ],
     )
-    return (options?.client ?? this.client).get<SessionTodoResponses, SessionTodoErrors, ThrowOnError>({
-      url: "/session/{sessionID}/todo",
+    return (options?.client ?? this.client).get<AgentTodoResponses, AgentTodoErrors, ThrowOnError>({
+      url: "/agent-session/{agentID}/todo",
       ...options,
       ...params,
     })
   }
 
   /**
-   * Initialize session
+   * Initialize agent session
    *
    * Analyze the current application and create an AGENTS.md file with project-specific agent configurations.
    */
   public init<ThrowOnError extends boolean = false>(
     parameters: {
-      sessionID: string
+      agentID: string
       directory?: string
       workspace?: string
       modelID?: string
@@ -1623,7 +1681,7 @@ export class Session2 extends HeyApiClient {
       [
         {
           args: [
-            { in: "path", key: "sessionID" },
+            { in: "path", key: "agentID" },
             { in: "query", key: "directory" },
             { in: "query", key: "workspace" },
             { in: "body", key: "modelID" },
@@ -1633,8 +1691,8 @@ export class Session2 extends HeyApiClient {
         },
       ],
     )
-    return (options?.client ?? this.client).post<SessionInitResponses, SessionInitErrors, ThrowOnError>({
-      url: "/session/{sessionID}/init",
+    return (options?.client ?? this.client).post<AgentInitResponses, AgentInitErrors, ThrowOnError>({
+      url: "/agent-session/{agentID}/init",
       ...options,
       ...params,
       headers: {
@@ -1646,13 +1704,13 @@ export class Session2 extends HeyApiClient {
   }
 
   /**
-   * Fork session
+   * Fork agent session
    *
-   * Create a new session by forking an existing session at a specific message point.
+   * Create a new agent session by forking an existing one at a specific message point.
    */
   public fork<ThrowOnError extends boolean = false>(
     parameters: {
-      sessionID: string
+      agentID: string
       directory?: string
       workspace?: string
       messageID?: string
@@ -1664,7 +1722,7 @@ export class Session2 extends HeyApiClient {
       [
         {
           args: [
-            { in: "path", key: "sessionID" },
+            { in: "path", key: "agentID" },
             { in: "query", key: "directory" },
             { in: "query", key: "workspace" },
             { in: "body", key: "messageID" },
@@ -1672,8 +1730,8 @@ export class Session2 extends HeyApiClient {
         },
       ],
     )
-    return (options?.client ?? this.client).post<SessionForkResponses, unknown, ThrowOnError>({
-      url: "/session/{sessionID}/fork",
+    return (options?.client ?? this.client).post<AgentForkResponses, unknown, ThrowOnError>({
+      url: "/agent-session/{agentID}/fork",
       ...options,
       ...params,
       headers: {
@@ -1685,13 +1743,13 @@ export class Session2 extends HeyApiClient {
   }
 
   /**
-   * Abort session
+   * Abort agent session
    *
-   * Abort an active session and stop any ongoing AI processing or command execution.
+   * Abort an active agent session and stop any ongoing AI processing.
    */
   public abort<ThrowOnError extends boolean = false>(
     parameters: {
-      sessionID: string
+      agentID: string
       directory?: string
       workspace?: string
     },
@@ -1702,79 +1760,15 @@ export class Session2 extends HeyApiClient {
       [
         {
           args: [
-            { in: "path", key: "sessionID" },
+            { in: "path", key: "agentID" },
             { in: "query", key: "directory" },
             { in: "query", key: "workspace" },
           ],
         },
       ],
     )
-    return (options?.client ?? this.client).post<SessionAbortResponses, SessionAbortErrors, ThrowOnError>({
-      url: "/session/{sessionID}/abort",
-      ...options,
-      ...params,
-    })
-  }
-
-  /**
-   * Unshare session
-   *
-   * Remove the shareable link for a session, making it private again.
-   */
-  public unshare<ThrowOnError extends boolean = false>(
-    parameters: {
-      sessionID: string
-      directory?: string
-      workspace?: string
-    },
-    options?: Options<never, ThrowOnError>,
-  ) {
-    const params = buildClientParams(
-      [parameters],
-      [
-        {
-          args: [
-            { in: "path", key: "sessionID" },
-            { in: "query", key: "directory" },
-            { in: "query", key: "workspace" },
-          ],
-        },
-      ],
-    )
-    return (options?.client ?? this.client).delete<SessionUnshareResponses, SessionUnshareErrors, ThrowOnError>({
-      url: "/session/{sessionID}/share",
-      ...options,
-      ...params,
-    })
-  }
-
-  /**
-   * Share session
-   *
-   * Create a shareable link for a session, allowing others to view the conversation.
-   */
-  public share<ThrowOnError extends boolean = false>(
-    parameters: {
-      sessionID: string
-      directory?: string
-      workspace?: string
-    },
-    options?: Options<never, ThrowOnError>,
-  ) {
-    const params = buildClientParams(
-      [parameters],
-      [
-        {
-          args: [
-            { in: "path", key: "sessionID" },
-            { in: "query", key: "directory" },
-            { in: "query", key: "workspace" },
-          ],
-        },
-      ],
-    )
-    return (options?.client ?? this.client).post<SessionShareResponses, SessionShareErrors, ThrowOnError>({
-      url: "/session/{sessionID}/share",
+    return (options?.client ?? this.client).post<AgentAbortResponses, AgentAbortErrors, ThrowOnError>({
+      url: "/agent-session/{agentID}/abort",
       ...options,
       ...params,
     })
@@ -1783,11 +1777,11 @@ export class Session2 extends HeyApiClient {
   /**
    * Get message diff
    *
-   * Get the file changes (diff) that resulted from a specific user message in the session.
+   * Get the file changes (diff) that resulted from a specific user message.
    */
   public diff<ThrowOnError extends boolean = false>(
     parameters: {
-      sessionID: string
+      agentID: string
       directory?: string
       workspace?: string
       messageID?: string
@@ -1799,7 +1793,7 @@ export class Session2 extends HeyApiClient {
       [
         {
           args: [
-            { in: "path", key: "sessionID" },
+            { in: "path", key: "agentID" },
             { in: "query", key: "directory" },
             { in: "query", key: "workspace" },
             { in: "query", key: "messageID" },
@@ -1807,21 +1801,21 @@ export class Session2 extends HeyApiClient {
         },
       ],
     )
-    return (options?.client ?? this.client).get<SessionDiffResponses, unknown, ThrowOnError>({
-      url: "/session/{sessionID}/diff",
+    return (options?.client ?? this.client).get<AgentDiffResponses, unknown, ThrowOnError>({
+      url: "/agent-session/{agentID}/diff",
       ...options,
       ...params,
     })
   }
 
   /**
-   * Summarize session
+   * Summarize agent session
    *
-   * Generate a concise summary of the session using AI compaction to preserve key information.
+   * Generate a concise summary using AI compaction to preserve key information.
    */
   public summarize<ThrowOnError extends boolean = false>(
     parameters: {
-      sessionID: string
+      agentID: string
       directory?: string
       workspace?: string
       providerID?: string
@@ -1835,7 +1829,7 @@ export class Session2 extends HeyApiClient {
       [
         {
           args: [
-            { in: "path", key: "sessionID" },
+            { in: "path", key: "agentID" },
             { in: "query", key: "directory" },
             { in: "query", key: "workspace" },
             { in: "body", key: "providerID" },
@@ -1845,8 +1839,8 @@ export class Session2 extends HeyApiClient {
         },
       ],
     )
-    return (options?.client ?? this.client).post<SessionSummarizeResponses, SessionSummarizeErrors, ThrowOnError>({
-      url: "/session/{sessionID}/summarize",
+    return (options?.client ?? this.client).post<AgentSummarizeResponses, AgentSummarizeErrors, ThrowOnError>({
+      url: "/agent-session/{agentID}/summarize",
       ...options,
       ...params,
       headers: {
@@ -1858,13 +1852,13 @@ export class Session2 extends HeyApiClient {
   }
 
   /**
-   * Get session messages
+   * Get agent session messages
    *
-   * Retrieve all messages in a session, including user prompts and AI responses.
+   * Retrieve all messages in an agent session.
    */
   public messages<ThrowOnError extends boolean = false>(
     parameters: {
-      sessionID: string
+      agentID: string
       directory?: string
       workspace?: string
       limit?: number
@@ -1876,7 +1870,7 @@ export class Session2 extends HeyApiClient {
       [
         {
           args: [
-            { in: "path", key: "sessionID" },
+            { in: "path", key: "agentID" },
             { in: "query", key: "directory" },
             { in: "query", key: "workspace" },
             { in: "query", key: "limit" },
@@ -1884,8 +1878,8 @@ export class Session2 extends HeyApiClient {
         },
       ],
     )
-    return (options?.client ?? this.client).get<SessionMessagesResponses, SessionMessagesErrors, ThrowOnError>({
-      url: "/session/{sessionID}/message",
+    return (options?.client ?? this.client).get<AgentMessagesResponses, AgentMessagesErrors, ThrowOnError>({
+      url: "/agent-session/{agentID}/message",
       ...options,
       ...params,
     })
@@ -1894,11 +1888,11 @@ export class Session2 extends HeyApiClient {
   /**
    * Send message
    *
-   * Create and send a new message to a session, streaming the AI response.
+   * Create and send a new message, streaming the AI response.
    */
   public prompt<ThrowOnError extends boolean = false>(
     parameters: {
-      sessionID: string
+      agentID: string
       directory?: string
       workspace?: string
       messageID?: string
@@ -1923,7 +1917,7 @@ export class Session2 extends HeyApiClient {
       [
         {
           args: [
-            { in: "path", key: "sessionID" },
+            { in: "path", key: "agentID" },
             { in: "query", key: "directory" },
             { in: "query", key: "workspace" },
             { in: "body", key: "messageID" },
@@ -1939,8 +1933,8 @@ export class Session2 extends HeyApiClient {
         },
       ],
     )
-    return (options?.client ?? this.client).post<SessionPromptResponses, SessionPromptErrors, ThrowOnError>({
-      url: "/session/{sessionID}/message",
+    return (options?.client ?? this.client).post<AgentPromptResponses, AgentPromptErrors, ThrowOnError>({
+      url: "/agent-session/{agentID}/message",
       ...options,
       ...params,
       headers: {
@@ -1954,11 +1948,11 @@ export class Session2 extends HeyApiClient {
   /**
    * Delete message
    *
-   * Permanently delete a specific message (and all of its parts) from a session. This does not revert any file changes that may have been made while processing the message.
+   * Permanently delete a specific message from an agent session.
    */
   public deleteMessage<ThrowOnError extends boolean = false>(
     parameters: {
-      sessionID: string
+      agentID: string
       messageID: string
       directory?: string
       workspace?: string
@@ -1970,7 +1964,7 @@ export class Session2 extends HeyApiClient {
       [
         {
           args: [
-            { in: "path", key: "sessionID" },
+            { in: "path", key: "agentID" },
             { in: "path", key: "messageID" },
             { in: "query", key: "directory" },
             { in: "query", key: "workspace" },
@@ -1978,25 +1972,23 @@ export class Session2 extends HeyApiClient {
         },
       ],
     )
-    return (options?.client ?? this.client).delete<
-      SessionDeleteMessageResponses,
-      SessionDeleteMessageErrors,
-      ThrowOnError
-    >({
-      url: "/session/{sessionID}/message/{messageID}",
-      ...options,
-      ...params,
-    })
+    return (options?.client ?? this.client).delete<AgentDeleteMessageResponses, AgentDeleteMessageErrors, ThrowOnError>(
+      {
+        url: "/agent-session/{agentID}/message/{messageID}",
+        ...options,
+        ...params,
+      },
+    )
   }
 
   /**
    * Get message
    *
-   * Retrieve a specific message from a session by its message ID.
+   * Retrieve a specific message by its message ID.
    */
   public message<ThrowOnError extends boolean = false>(
     parameters: {
-      sessionID: string
+      agentID: string
       messageID: string
       directory?: string
       workspace?: string
@@ -2008,7 +2000,7 @@ export class Session2 extends HeyApiClient {
       [
         {
           args: [
-            { in: "path", key: "sessionID" },
+            { in: "path", key: "agentID" },
             { in: "path", key: "messageID" },
             { in: "query", key: "directory" },
             { in: "query", key: "workspace" },
@@ -2016,8 +2008,8 @@ export class Session2 extends HeyApiClient {
         },
       ],
     )
-    return (options?.client ?? this.client).get<SessionMessageResponses, SessionMessageErrors, ThrowOnError>({
-      url: "/session/{sessionID}/message/{messageID}",
+    return (options?.client ?? this.client).get<AgentMessageResponses, AgentMessageErrors, ThrowOnError>({
+      url: "/agent-session/{agentID}/message/{messageID}",
       ...options,
       ...params,
     })
@@ -2026,11 +2018,11 @@ export class Session2 extends HeyApiClient {
   /**
    * Send async message
    *
-   * Create and send a new message to a session asynchronously, starting the session if needed and returning immediately.
+   * Create and send a new message asynchronously, returning immediately.
    */
   public promptAsync<ThrowOnError extends boolean = false>(
     parameters: {
-      sessionID: string
+      agentID: string
       directory?: string
       workspace?: string
       messageID?: string
@@ -2055,7 +2047,7 @@ export class Session2 extends HeyApiClient {
       [
         {
           args: [
-            { in: "path", key: "sessionID" },
+            { in: "path", key: "agentID" },
             { in: "query", key: "directory" },
             { in: "query", key: "workspace" },
             { in: "body", key: "messageID" },
@@ -2071,8 +2063,8 @@ export class Session2 extends HeyApiClient {
         },
       ],
     )
-    return (options?.client ?? this.client).post<SessionPromptAsyncResponses, SessionPromptAsyncErrors, ThrowOnError>({
-      url: "/session/{sessionID}/prompt_async",
+    return (options?.client ?? this.client).post<AgentPromptAsyncResponses, AgentPromptAsyncErrors, ThrowOnError>({
+      url: "/agent-session/{agentID}/prompt_async",
       ...options,
       ...params,
       headers: {
@@ -2086,11 +2078,11 @@ export class Session2 extends HeyApiClient {
   /**
    * Send command
    *
-   * Send a new command to a session for execution by the AI assistant.
+   * Send a command for execution by the AI assistant.
    */
   public command<ThrowOnError extends boolean = false>(
     parameters: {
-      sessionID: string
+      agentID: string
       directory?: string
       workspace?: string
       messageID?: string
@@ -2115,7 +2107,7 @@ export class Session2 extends HeyApiClient {
       [
         {
           args: [
-            { in: "path", key: "sessionID" },
+            { in: "path", key: "agentID" },
             { in: "query", key: "directory" },
             { in: "query", key: "workspace" },
             { in: "body", key: "messageID" },
@@ -2129,8 +2121,8 @@ export class Session2 extends HeyApiClient {
         },
       ],
     )
-    return (options?.client ?? this.client).post<SessionCommandResponses, SessionCommandErrors, ThrowOnError>({
-      url: "/session/{sessionID}/command",
+    return (options?.client ?? this.client).post<AgentCommandResponses, AgentCommandErrors, ThrowOnError>({
+      url: "/agent-session/{agentID}/command",
       ...options,
       ...params,
       headers: {
@@ -2144,11 +2136,11 @@ export class Session2 extends HeyApiClient {
   /**
    * Revert message
    *
-   * Revert a specific message in a session, undoing its effects and restoring the previous state.
+   * Revert a specific message, undoing its effects.
    */
   public revert<ThrowOnError extends boolean = false>(
     parameters: {
-      sessionID: string
+      agentID: string
       directory?: string
       workspace?: string
       messageID?: string
@@ -2161,7 +2153,7 @@ export class Session2 extends HeyApiClient {
       [
         {
           args: [
-            { in: "path", key: "sessionID" },
+            { in: "path", key: "agentID" },
             { in: "query", key: "directory" },
             { in: "query", key: "workspace" },
             { in: "body", key: "messageID" },
@@ -2170,8 +2162,8 @@ export class Session2 extends HeyApiClient {
         },
       ],
     )
-    return (options?.client ?? this.client).post<SessionRevertResponses, SessionRevertErrors, ThrowOnError>({
-      url: "/session/{sessionID}/revert",
+    return (options?.client ?? this.client).post<AgentRevertResponses, AgentRevertErrors, ThrowOnError>({
+      url: "/agent-session/{agentID}/revert",
       ...options,
       ...params,
       headers: {
@@ -2185,11 +2177,11 @@ export class Session2 extends HeyApiClient {
   /**
    * Restore reverted messages
    *
-   * Restore all previously reverted messages in a session.
+   * Restore all previously reverted messages.
    */
   public unrevert<ThrowOnError extends boolean = false>(
     parameters: {
-      sessionID: string
+      agentID: string
       directory?: string
       workspace?: string
     },
@@ -2200,147 +2192,32 @@ export class Session2 extends HeyApiClient {
       [
         {
           args: [
-            { in: "path", key: "sessionID" },
+            { in: "path", key: "agentID" },
             { in: "query", key: "directory" },
             { in: "query", key: "workspace" },
           ],
         },
       ],
     )
-    return (options?.client ?? this.client).post<SessionUnrevertResponses, SessionUnrevertErrors, ThrowOnError>({
-      url: "/session/{sessionID}/unrevert",
+    return (options?.client ?? this.client).post<AgentUnrevertResponses, AgentUnrevertErrors, ThrowOnError>({
+      url: "/agent-session/{agentID}/unrevert",
       ...options,
       ...params,
     })
   }
 
-  private _canvas?: Canvas
-  get canvas(): Canvas {
-    return (this._canvas ??= new Canvas({ client: this.client }))
+  private _part?: Part
+  get part(): Part {
+    return (this._part ??= new Part({ client: this.client }))
+  }
+
+  private _permission?: Permission
+  get permission(): Permission {
+    return (this._permission ??= new Permission({ client: this.client }))
   }
 }
 
-export class Part extends HeyApiClient {
-  /**
-   * Delete a part from a message
-   */
-  public delete<ThrowOnError extends boolean = false>(
-    parameters: {
-      sessionID: string
-      messageID: string
-      partID: string
-      directory?: string
-      workspace?: string
-    },
-    options?: Options<never, ThrowOnError>,
-  ) {
-    const params = buildClientParams(
-      [parameters],
-      [
-        {
-          args: [
-            { in: "path", key: "sessionID" },
-            { in: "path", key: "messageID" },
-            { in: "path", key: "partID" },
-            { in: "query", key: "directory" },
-            { in: "query", key: "workspace" },
-          ],
-        },
-      ],
-    )
-    return (options?.client ?? this.client).delete<PartDeleteResponses, PartDeleteErrors, ThrowOnError>({
-      url: "/session/{sessionID}/message/{messageID}/part/{partID}",
-      ...options,
-      ...params,
-    })
-  }
-
-  /**
-   * Update a part in a message
-   */
-  public update<ThrowOnError extends boolean = false>(
-    parameters: {
-      sessionID: string
-      messageID: string
-      partID: string
-      directory?: string
-      workspace?: string
-      part?: Part2
-    },
-    options?: Options<never, ThrowOnError>,
-  ) {
-    const params = buildClientParams(
-      [parameters],
-      [
-        {
-          args: [
-            { in: "path", key: "sessionID" },
-            { in: "path", key: "messageID" },
-            { in: "path", key: "partID" },
-            { in: "query", key: "directory" },
-            { in: "query", key: "workspace" },
-            { key: "part", map: "body" },
-          ],
-        },
-      ],
-    )
-    return (options?.client ?? this.client).patch<PartUpdateResponses, PartUpdateErrors, ThrowOnError>({
-      url: "/session/{sessionID}/message/{messageID}/part/{partID}",
-      ...options,
-      ...params,
-      headers: {
-        "Content-Type": "application/json",
-        ...options?.headers,
-        ...params.headers,
-      },
-    })
-  }
-}
-
-export class Permission extends HeyApiClient {
-  /**
-   * Respond to permission
-   *
-   * Approve or deny a permission request from the AI assistant.
-   *
-   * @deprecated
-   */
-  public respond<ThrowOnError extends boolean = false>(
-    parameters: {
-      sessionID: string
-      permissionID: string
-      directory?: string
-      workspace?: string
-      response?: "once" | "always" | "reject"
-    },
-    options?: Options<never, ThrowOnError>,
-  ) {
-    const params = buildClientParams(
-      [parameters],
-      [
-        {
-          args: [
-            { in: "path", key: "sessionID" },
-            { in: "path", key: "permissionID" },
-            { in: "query", key: "directory" },
-            { in: "query", key: "workspace" },
-            { in: "body", key: "response" },
-          ],
-        },
-      ],
-    )
-    return (options?.client ?? this.client).post<PermissionRespondResponses, PermissionRespondErrors, ThrowOnError>({
-      url: "/session/{sessionID}/permissions/{permissionID}",
-      ...options,
-      ...params,
-      headers: {
-        "Content-Type": "application/json",
-        ...options?.headers,
-        ...params.headers,
-      },
-    })
-  }
-
+export class Permission2 extends HeyApiClient {
   /**
    * Respond to permission request
    *
@@ -3148,453 +3025,6 @@ export class Mcp extends HeyApiClient {
   }
 }
 
-export class Control extends HeyApiClient {
-  /**
-   * Get next TUI request
-   *
-   * Retrieve the next TUI (Terminal User Interface) request from the queue for processing.
-   */
-  public next<ThrowOnError extends boolean = false>(
-    parameters?: {
-      directory?: string
-      workspace?: string
-    },
-    options?: Options<never, ThrowOnError>,
-  ) {
-    const params = buildClientParams(
-      [parameters],
-      [
-        {
-          args: [
-            { in: "query", key: "directory" },
-            { in: "query", key: "workspace" },
-          ],
-        },
-      ],
-    )
-    return (options?.client ?? this.client).get<TuiControlNextResponses, unknown, ThrowOnError>({
-      url: "/tui/control/next",
-      ...options,
-      ...params,
-    })
-  }
-
-  /**
-   * Submit TUI response
-   *
-   * Submit a response to the TUI request queue to complete a pending request.
-   */
-  public response<ThrowOnError extends boolean = false>(
-    parameters?: {
-      directory?: string
-      workspace?: string
-      body?: unknown
-    },
-    options?: Options<never, ThrowOnError>,
-  ) {
-    const params = buildClientParams(
-      [parameters],
-      [
-        {
-          args: [
-            { in: "query", key: "directory" },
-            { in: "query", key: "workspace" },
-            { key: "body", map: "body" },
-          ],
-        },
-      ],
-    )
-    return (options?.client ?? this.client).post<TuiControlResponseResponses, unknown, ThrowOnError>({
-      url: "/tui/control/response",
-      ...options,
-      ...params,
-      headers: {
-        "Content-Type": "application/json",
-        ...options?.headers,
-        ...params.headers,
-      },
-    })
-  }
-}
-
-export class Tui extends HeyApiClient {
-  /**
-   * Append TUI prompt
-   *
-   * Append prompt to the TUI
-   */
-  public appendPrompt<ThrowOnError extends boolean = false>(
-    parameters?: {
-      directory?: string
-      workspace?: string
-      text?: string
-    },
-    options?: Options<never, ThrowOnError>,
-  ) {
-    const params = buildClientParams(
-      [parameters],
-      [
-        {
-          args: [
-            { in: "query", key: "directory" },
-            { in: "query", key: "workspace" },
-            { in: "body", key: "text" },
-          ],
-        },
-      ],
-    )
-    return (options?.client ?? this.client).post<TuiAppendPromptResponses, TuiAppendPromptErrors, ThrowOnError>({
-      url: "/tui/append-prompt",
-      ...options,
-      ...params,
-      headers: {
-        "Content-Type": "application/json",
-        ...options?.headers,
-        ...params.headers,
-      },
-    })
-  }
-
-  /**
-   * Open help dialog
-   *
-   * Open the help dialog in the TUI to display user assistance information.
-   */
-  public openHelp<ThrowOnError extends boolean = false>(
-    parameters?: {
-      directory?: string
-      workspace?: string
-    },
-    options?: Options<never, ThrowOnError>,
-  ) {
-    const params = buildClientParams(
-      [parameters],
-      [
-        {
-          args: [
-            { in: "query", key: "directory" },
-            { in: "query", key: "workspace" },
-          ],
-        },
-      ],
-    )
-    return (options?.client ?? this.client).post<TuiOpenHelpResponses, unknown, ThrowOnError>({
-      url: "/tui/open-help",
-      ...options,
-      ...params,
-    })
-  }
-
-  /**
-   * Open sessions dialog
-   *
-   * Open the session dialog
-   */
-  public openSessions<ThrowOnError extends boolean = false>(
-    parameters?: {
-      directory?: string
-      workspace?: string
-    },
-    options?: Options<never, ThrowOnError>,
-  ) {
-    const params = buildClientParams(
-      [parameters],
-      [
-        {
-          args: [
-            { in: "query", key: "directory" },
-            { in: "query", key: "workspace" },
-          ],
-        },
-      ],
-    )
-    return (options?.client ?? this.client).post<TuiOpenSessionsResponses, unknown, ThrowOnError>({
-      url: "/tui/open-sessions",
-      ...options,
-      ...params,
-    })
-  }
-
-  /**
-   * Open themes dialog
-   *
-   * Open the theme dialog
-   */
-  public openThemes<ThrowOnError extends boolean = false>(
-    parameters?: {
-      directory?: string
-      workspace?: string
-    },
-    options?: Options<never, ThrowOnError>,
-  ) {
-    const params = buildClientParams(
-      [parameters],
-      [
-        {
-          args: [
-            { in: "query", key: "directory" },
-            { in: "query", key: "workspace" },
-          ],
-        },
-      ],
-    )
-    return (options?.client ?? this.client).post<TuiOpenThemesResponses, unknown, ThrowOnError>({
-      url: "/tui/open-themes",
-      ...options,
-      ...params,
-    })
-  }
-
-  /**
-   * Open models dialog
-   *
-   * Open the model dialog
-   */
-  public openModels<ThrowOnError extends boolean = false>(
-    parameters?: {
-      directory?: string
-      workspace?: string
-    },
-    options?: Options<never, ThrowOnError>,
-  ) {
-    const params = buildClientParams(
-      [parameters],
-      [
-        {
-          args: [
-            { in: "query", key: "directory" },
-            { in: "query", key: "workspace" },
-          ],
-        },
-      ],
-    )
-    return (options?.client ?? this.client).post<TuiOpenModelsResponses, unknown, ThrowOnError>({
-      url: "/tui/open-models",
-      ...options,
-      ...params,
-    })
-  }
-
-  /**
-   * Submit TUI prompt
-   *
-   * Submit the prompt
-   */
-  public submitPrompt<ThrowOnError extends boolean = false>(
-    parameters?: {
-      directory?: string
-      workspace?: string
-    },
-    options?: Options<never, ThrowOnError>,
-  ) {
-    const params = buildClientParams(
-      [parameters],
-      [
-        {
-          args: [
-            { in: "query", key: "directory" },
-            { in: "query", key: "workspace" },
-          ],
-        },
-      ],
-    )
-    return (options?.client ?? this.client).post<TuiSubmitPromptResponses, unknown, ThrowOnError>({
-      url: "/tui/submit-prompt",
-      ...options,
-      ...params,
-    })
-  }
-
-  /**
-   * Clear TUI prompt
-   *
-   * Clear the prompt
-   */
-  public clearPrompt<ThrowOnError extends boolean = false>(
-    parameters?: {
-      directory?: string
-      workspace?: string
-    },
-    options?: Options<never, ThrowOnError>,
-  ) {
-    const params = buildClientParams(
-      [parameters],
-      [
-        {
-          args: [
-            { in: "query", key: "directory" },
-            { in: "query", key: "workspace" },
-          ],
-        },
-      ],
-    )
-    return (options?.client ?? this.client).post<TuiClearPromptResponses, unknown, ThrowOnError>({
-      url: "/tui/clear-prompt",
-      ...options,
-      ...params,
-    })
-  }
-
-  /**
-   * Execute TUI command
-   *
-   * Execute a TUI command (e.g. agent_cycle)
-   */
-  public executeCommand<ThrowOnError extends boolean = false>(
-    parameters?: {
-      directory?: string
-      workspace?: string
-      command?: string
-    },
-    options?: Options<never, ThrowOnError>,
-  ) {
-    const params = buildClientParams(
-      [parameters],
-      [
-        {
-          args: [
-            { in: "query", key: "directory" },
-            { in: "query", key: "workspace" },
-            { in: "body", key: "command" },
-          ],
-        },
-      ],
-    )
-    return (options?.client ?? this.client).post<TuiExecuteCommandResponses, TuiExecuteCommandErrors, ThrowOnError>({
-      url: "/tui/execute-command",
-      ...options,
-      ...params,
-      headers: {
-        "Content-Type": "application/json",
-        ...options?.headers,
-        ...params.headers,
-      },
-    })
-  }
-
-  /**
-   * Show TUI toast
-   *
-   * Show a toast notification in the TUI
-   */
-  public showToast<ThrowOnError extends boolean = false>(
-    parameters?: {
-      directory?: string
-      workspace?: string
-      title?: string
-      message?: string
-      variant?: "info" | "success" | "warning" | "error"
-      duration?: number
-    },
-    options?: Options<never, ThrowOnError>,
-  ) {
-    const params = buildClientParams(
-      [parameters],
-      [
-        {
-          args: [
-            { in: "query", key: "directory" },
-            { in: "query", key: "workspace" },
-            { in: "body", key: "title" },
-            { in: "body", key: "message" },
-            { in: "body", key: "variant" },
-            { in: "body", key: "duration" },
-          ],
-        },
-      ],
-    )
-    return (options?.client ?? this.client).post<TuiShowToastResponses, unknown, ThrowOnError>({
-      url: "/tui/show-toast",
-      ...options,
-      ...params,
-      headers: {
-        "Content-Type": "application/json",
-        ...options?.headers,
-        ...params.headers,
-      },
-    })
-  }
-
-  /**
-   * Publish TUI event
-   *
-   * Publish a TUI event
-   */
-  public publish<ThrowOnError extends boolean = false>(
-    parameters?: {
-      directory?: string
-      workspace?: string
-      body?: EventTuiPromptAppend | EventTuiCommandExecute | EventTuiToastShow | EventTuiSessionSelect
-    },
-    options?: Options<never, ThrowOnError>,
-  ) {
-    const params = buildClientParams(
-      [parameters],
-      [
-        {
-          args: [
-            { in: "query", key: "directory" },
-            { in: "query", key: "workspace" },
-            { key: "body", map: "body" },
-          ],
-        },
-      ],
-    )
-    return (options?.client ?? this.client).post<TuiPublishResponses, TuiPublishErrors, ThrowOnError>({
-      url: "/tui/publish",
-      ...options,
-      ...params,
-      headers: {
-        "Content-Type": "application/json",
-        ...options?.headers,
-        ...params.headers,
-      },
-    })
-  }
-
-  /**
-   * Select session
-   *
-   * Navigate the TUI to display the specified session.
-   */
-  public selectSession<ThrowOnError extends boolean = false>(
-    parameters?: {
-      directory?: string
-      workspace?: string
-      sessionID?: string
-    },
-    options?: Options<never, ThrowOnError>,
-  ) {
-    const params = buildClientParams(
-      [parameters],
-      [
-        {
-          args: [
-            { in: "query", key: "directory" },
-            { in: "query", key: "workspace" },
-            { in: "body", key: "sessionID" },
-          ],
-        },
-      ],
-    )
-    return (options?.client ?? this.client).post<TuiSelectSessionResponses, TuiSelectSessionErrors, ThrowOnError>({
-      url: "/tui/select-session",
-      ...options,
-      ...params,
-      headers: {
-        "Content-Type": "application/json",
-        ...options?.headers,
-        ...params.headers,
-      },
-    })
-  }
-
-  private _control?: Control
-  get control(): Control {
-    return (this._control ??= new Control({ client: this.client }))
-  }
-}
-
 export class Instance extends HeyApiClient {
   /**
    * Dispose instance
@@ -3770,36 +3200,6 @@ export class App extends HeyApiClient {
   }
 
   /**
-   * List agents
-   *
-   * Get a list of all available AI agents in the OpenCode system.
-   */
-  public agents<ThrowOnError extends boolean = false>(
-    parameters?: {
-      directory?: string
-      workspace?: string
-    },
-    options?: Options<never, ThrowOnError>,
-  ) {
-    const params = buildClientParams(
-      [parameters],
-      [
-        {
-          args: [
-            { in: "query", key: "directory" },
-            { in: "query", key: "workspace" },
-          ],
-        },
-      ],
-    )
-    return (options?.client ?? this.client).get<AppAgentsResponses, unknown, ThrowOnError>({
-      url: "/agent",
-      ...options,
-      ...params,
-    })
-  }
-
-  /**
    * List skills
    *
    * Get a list of all available skills in the OpenCode system.
@@ -3824,6 +3224,38 @@ export class App extends HeyApiClient {
     )
     return (options?.client ?? this.client).get<AppSkillsResponses, unknown, ThrowOnError>({
       url: "/skill",
+      ...options,
+      ...params,
+    })
+  }
+}
+
+export class AgentDef extends HeyApiClient {
+  /**
+   * List agent definitions
+   *
+   * Get a list of all available AI agent definitions in the OpenCode system.
+   */
+  public list<ThrowOnError extends boolean = false>(
+    parameters?: {
+      directory?: string
+      workspace?: string
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "query", key: "directory" },
+            { in: "query", key: "workspace" },
+          ],
+        },
+      ],
+    )
+    return (options?.client ?? this.client).get<AgentDefListResponses, unknown, ThrowOnError>({
+      url: "/agent-def",
       ...options,
       ...params,
     })
@@ -3944,9 +3376,14 @@ export class OpencodeClient extends HeyApiClient {
     return (this._auth ??= new Auth({ client: this.client }))
   }
 
-  private _project?: Project
-  get project(): Project {
-    return (this._project ??= new Project({ client: this.client }))
+  private _product?: Product
+  get product(): Product {
+    return (this._product ??= new Product({ client: this.client }))
+  }
+
+  private _feature?: Feature
+  get feature(): Feature {
+    return (this._feature ??= new Feature({ client: this.client }))
   }
 
   private _pty?: Pty
@@ -3964,29 +3401,24 @@ export class OpencodeClient extends HeyApiClient {
     return (this._tool ??= new Tool({ client: this.client }))
   }
 
-  private _experimental?: Experimental
-  get experimental(): Experimental {
-    return (this._experimental ??= new Experimental({ client: this.client }))
-  }
-
   private _worktree?: Worktree
   get worktree(): Worktree {
     return (this._worktree ??= new Worktree({ client: this.client }))
   }
 
-  private _session?: Session2
-  get session(): Session2 {
-    return (this._session ??= new Session2({ client: this.client }))
+  private _experimental?: Experimental
+  get experimental(): Experimental {
+    return (this._experimental ??= new Experimental({ client: this.client }))
   }
 
-  private _part?: Part
-  get part(): Part {
-    return (this._part ??= new Part({ client: this.client }))
+  private _agent?: Agent
+  get agent(): Agent {
+    return (this._agent ??= new Agent({ client: this.client }))
   }
 
-  private _permission?: Permission
-  get permission(): Permission {
-    return (this._permission ??= new Permission({ client: this.client }))
+  private _permission?: Permission2
+  get permission(): Permission2 {
+    return (this._permission ??= new Permission2({ client: this.client }))
   }
 
   private _question?: Question
@@ -4014,11 +3446,6 @@ export class OpencodeClient extends HeyApiClient {
     return (this._mcp ??= new Mcp({ client: this.client }))
   }
 
-  private _tui?: Tui
-  get tui(): Tui {
-    return (this._tui ??= new Tui({ client: this.client }))
-  }
-
   private _instance?: Instance
   get instance(): Instance {
     return (this._instance ??= new Instance({ client: this.client }))
@@ -4042,6 +3469,11 @@ export class OpencodeClient extends HeyApiClient {
   private _app?: App
   get app(): App {
     return (this._app ??= new App({ client: this.client }))
+  }
+
+  private _agentDef?: AgentDef
+  get agentDef(): AgentDef {
+    return (this._agentDef ??= new AgentDef({ client: this.client }))
   }
 
   private _lsp?: Lsp
