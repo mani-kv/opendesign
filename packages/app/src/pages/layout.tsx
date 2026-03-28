@@ -231,11 +231,14 @@ export default function Layout(props: ParentProps) {
     const proj = (within24h ? projects.find((p) => p.id === last!.projectId) : undefined) ?? projects[0]
     setStore("activeProjectId", proj.id)
     setStore("lastProjectByWorkspace", w.id, { projectId: proj.id, at: Date.now() })
-    navigateWithSidebarReset(sessionHref(projectDir(proj), proj.sessionId))
+    const path = proj.productId
+      ? featureHref(proj.productId, proj.id)
+      : sessionHref(projectDir(proj), proj.sessionId)
+    navigateWithSidebarReset(path)
   }
   createEffect(() => {
     if (!pageReady() || !workspace.ready()) return
-    if (params.projectId) return
+    if (params.projectId || params.productId) return
     const wsId = store.activeWorkspaceId ?? workspaceList()[0]?.id
     if (!wsId) return
     const list = workspace.projects.list(wsId)
@@ -2076,7 +2079,10 @@ export default function Layout(props: ParentProps) {
                   if (next) {
                     setStore("activeProjectId", next.id)
                     setStore("lastProjectByWorkspace", proj.workspaceId, { projectId: next.id, at: Date.now() })
-                    navigateWithSidebarReset(sessionHref(projectDir(next), next.sessionId))
+                    const nextPath = next.productId
+                      ? featureHref(next.productId, next.id)
+                      : sessionHref(projectDir(next), next.sessionId)
+                    navigateWithSidebarReset(nextPath)
                   } else {
                     setStore("activeProjectId", undefined)
                     navigateWithSidebarReset("/")
