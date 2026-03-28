@@ -23,6 +23,7 @@ import { Command } from "../command"
 import { Global } from "../global"
 // TODO: dropped - workspace removed
 import { ProductRoutes } from "./routes/product"
+import { FeatureRoutes } from "./routes/feature"
 import { AgentSessionRoutes } from "./routes/agent-session"
 import { PtyRoutes } from "./routes/pty"
 import { McpRoutes } from "./routes/mcp"
@@ -239,16 +240,17 @@ export namespace Server {
         ),
       )
       .route("/product", ProductRoutes())
+      .route("/feature", FeatureRoutes())
       .route("/pty", PtyRoutes())
       .route("/config", ConfigRoutes())
       .route("/experimental", ExperimentalRoutes())
-      .route("/session", AgentSessionRoutes())
+      .route("/agent-session", AgentSessionRoutes())
       .route("/permission", PermissionRoutes())
       .route("/question", QuestionRoutes())
       .route("/provider", ProviderRoutes())
       .route("/", FileRoutes())
       .route("/mcp", McpRoutes())
-      .route("/agent", AgentFilesRoutes())
+      .route("/agent-files", AgentFilesRoutes())
       // TODO: dropped - tui removed
       .post(
         "/instance/dispose",

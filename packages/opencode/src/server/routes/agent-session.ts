@@ -29,7 +29,7 @@ export const AgentSessionRoutes = lazy(() =>
       describeRoute({
         summary: "List agent sessions",
         description: "Get a list of all agent sessions, sorted by most recently updated.",
-        operationId: "agent.session.list",
+        operationId: "agent.list",
         responses: {
           200: {
             description: "List of agent sessions",
@@ -72,7 +72,7 @@ export const AgentSessionRoutes = lazy(() =>
       describeRoute({
         summary: "Get agent session status",
         description: "Retrieve the current status of all agent sessions.",
-        operationId: "agent.session.status",
+        operationId: "agent.status",
         responses: {
           200: {
             description: "Get agent session status",
@@ -96,7 +96,7 @@ export const AgentSessionRoutes = lazy(() =>
         summary: "Get agent session",
         description: "Retrieve detailed information about a specific agent session.",
         tags: ["AgentSession"],
-        operationId: "agent.session.get",
+        operationId: "agent.get",
         responses: {
           200: {
             description: "Get agent session",
@@ -127,7 +127,7 @@ export const AgentSessionRoutes = lazy(() =>
       describeRoute({
         summary: "Get agent session todos",
         description: "Retrieve the todo list associated with a specific agent session.",
-        operationId: "agent.session.todo",
+        operationId: "agent.todo",
         responses: {
           200: {
             description: "Todo list",
@@ -157,7 +157,7 @@ export const AgentSessionRoutes = lazy(() =>
       describeRoute({
         summary: "Create agent session",
         description: "Create a new agent session.",
-        operationId: "agent.session.create",
+        operationId: "agent.create",
         responses: {
           ...errors(400),
           200: {
@@ -182,7 +182,7 @@ export const AgentSessionRoutes = lazy(() =>
       describeRoute({
         summary: "Delete agent session",
         description: "Delete an agent session and permanently remove all associated data.",
-        operationId: "agent.session.delete",
+        operationId: "agent.delete",
         responses: {
           200: {
             description: "Successfully deleted agent session",
@@ -212,7 +212,7 @@ export const AgentSessionRoutes = lazy(() =>
       describeRoute({
         summary: "Update agent session",
         description: "Update properties of an existing agent session.",
-        operationId: "agent.session.update",
+        operationId: "agent.update",
         responses: {
           200: {
             description: "Successfully updated agent session",
@@ -255,7 +255,7 @@ export const AgentSessionRoutes = lazy(() =>
         summary: "Initialize agent session",
         description:
           "Analyze the current application and create an AGENTS.md file with project-specific agent configurations.",
-        operationId: "agent.session.init",
+        operationId: "agent.init",
         responses: {
           200: {
             description: "200",
@@ -287,7 +287,7 @@ export const AgentSessionRoutes = lazy(() =>
       describeRoute({
         summary: "Fork agent session",
         description: "Create a new agent session by forking an existing one at a specific message point.",
-        operationId: "agent.session.fork",
+        operationId: "agent.fork",
         responses: {
           200: {
             description: "200",
@@ -318,7 +318,7 @@ export const AgentSessionRoutes = lazy(() =>
       describeRoute({
         summary: "Abort agent session",
         description: "Abort an active agent session and stop any ongoing AI processing.",
-        operationId: "agent.session.abort",
+        operationId: "agent.abort",
         responses: {
           200: {
             description: "Aborted agent session",
@@ -347,7 +347,7 @@ export const AgentSessionRoutes = lazy(() =>
       describeRoute({
         summary: "Get message diff",
         description: "Get the file changes (diff) that resulted from a specific user message.",
-        operationId: "agent.session.diff",
+        operationId: "agent.diff",
         responses: {
           200: {
             description: "Successfully retrieved diff",
@@ -386,7 +386,7 @@ export const AgentSessionRoutes = lazy(() =>
       describeRoute({
         summary: "Summarize agent session",
         description: "Generate a concise summary using AI compaction to preserve key information.",
-        operationId: "agent.session.summarize",
+        operationId: "agent.summarize",
         responses: {
           200: {
             description: "Summarized agent session",
@@ -445,7 +445,7 @@ export const AgentSessionRoutes = lazy(() =>
       describeRoute({
         summary: "Get agent session messages",
         description: "Retrieve all messages in an agent session.",
-        operationId: "agent.session.messages",
+        operationId: "agent.messages",
         responses: {
           200: {
             description: "List of messages",
@@ -491,7 +491,7 @@ export const AgentSessionRoutes = lazy(() =>
       describeRoute({
         summary: "Get message",
         description: "Retrieve a specific message by its message ID.",
-        operationId: "agent.session.message",
+        operationId: "agent.message",
         responses: {
           200: {
             description: "Message",
@@ -537,7 +537,7 @@ export const AgentSessionRoutes = lazy(() =>
       describeRoute({
         summary: "Delete message",
         description: "Permanently delete a specific message from an agent session.",
-        operationId: "agent.session.deleteMessage",
+        operationId: "agent.deleteMessage",
         responses: {
           200: {
             description: "Successfully deleted message",
@@ -571,7 +571,7 @@ export const AgentSessionRoutes = lazy(() =>
       "/:agentID/message/:messageID/part/:partID",
       describeRoute({
         description: "Delete a part from a message",
-        operationId: "agent.session.part.delete",
+        operationId: "agent.part.delete",
         responses: {
           200: {
             description: "Successfully deleted part",
@@ -606,7 +606,7 @@ export const AgentSessionRoutes = lazy(() =>
       "/:agentID/message/:messageID/part/:partID",
       describeRoute({
         description: "Update a part in a message",
-        operationId: "agent.session.part.update",
+        operationId: "agent.part.update",
         responses: {
           200: {
             description: "Successfully updated part",
@@ -645,7 +645,7 @@ export const AgentSessionRoutes = lazy(() =>
       describeRoute({
         summary: "Send message",
         description: "Create and send a new message, streaming the AI response.",
-        operationId: "agent.session.prompt",
+        operationId: "agent.prompt",
         responses: {
           200: {
             description: "Created message",
@@ -686,7 +686,7 @@ export const AgentSessionRoutes = lazy(() =>
       describeRoute({
         summary: "Send async message",
         description: "Create and send a new message asynchronously, returning immediately.",
-        operationId: "agent.session.prompt_async",
+        operationId: "agent.prompt_async",
         responses: {
           204: {
             description: "Prompt accepted",
@@ -716,7 +716,7 @@ export const AgentSessionRoutes = lazy(() =>
       describeRoute({
         summary: "Send command",
         description: "Send a command for execution by the AI assistant.",
-        operationId: "agent.session.command",
+        operationId: "agent.command",
         responses: {
           200: {
             description: "Created message",
@@ -753,7 +753,7 @@ export const AgentSessionRoutes = lazy(() =>
       describeRoute({
         summary: "Revert message",
         description: "Revert a specific message, undoing its effects.",
-        operationId: "agent.session.revert",
+        operationId: "agent.revert",
         responses: {
           200: {
             description: "Updated agent session",
@@ -788,7 +788,7 @@ export const AgentSessionRoutes = lazy(() =>
       describeRoute({
         summary: "Restore reverted messages",
         description: "Restore all previously reverted messages.",
-        operationId: "agent.session.unrevert",
+        operationId: "agent.unrevert",
         responses: {
           200: {
             description: "Updated agent session",
@@ -819,7 +819,7 @@ export const AgentSessionRoutes = lazy(() =>
         summary: "Respond to permission",
         deprecated: true,
         description: "Approve or deny a permission request from the AI assistant.",
-        operationId: "agent.session.permission.respond",
+        operationId: "agent.permission.respond",
         responses: {
           200: {
             description: "Permission processed successfully",
