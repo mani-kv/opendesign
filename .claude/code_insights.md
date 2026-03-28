@@ -226,14 +226,14 @@ Accumulated knowledge about this codebase. Read before starting any task. Update
 
 ---
 
-## AgentSession namespace — Session→Agent transformation (2026-03-26)
+## Agent namespaces — AgentDef (definitions) + Agent (instances) (2026-03-27)
 
-- **Layer 1 of DB re-architecture**: `packages/opencode/src/agent/` now contains the new `AgentSession` namespace (replaces `Session`).
-- Files: `index.ts` (AgentSession namespace), `message-v2.ts` (MessageV2 with agentID), `llm.ts` (LLM streaming), `prompt.ts` (AgentPrompt), `revert.ts` (AgentRevert).
-- Schema mapping: `AgentTable` has `feature_id` (replaces `project_id`), `status`, `color`, `branch`, `annotation_id`. Removed: `slug`, `parent_id`, `workspace_id`, `share_url`, `summary_*`, `revert` JSON column, `time_compacting`, `time_archived`.
-- The old `agent/agent.ts` is the agent **definition** module (Agent namespace — types like "general", "title", "compaction"). The new `agent/index.ts` is the agent **session** module (AgentSession namespace — CRUD, messages, parts). These coexist but have different names.
-- `session/` directory is **DELETED** (Layer 5 complete). All modules moved to `agent/`.
+- **`AgentDef`** namespace (`agent/agent-def.ts`): Agent type definitions — "general", "title", "prototype", etc. Exports `AgentDef.Info`, `AgentDef.get(name)`, `AgentDef.list()`, `AgentDef.defaultAgent()`, `AgentDef.generate()`.
+- **`Agent`** namespace (`agent/index.ts`, was `AgentSession`): Agent instance CRUD — `Agent.create()`, `Agent.get(id)`, `Agent.messages()`, `Agent.updateMessage()`, `Agent.updatePart()`, `Agent.Event.*`, `Agent.BusyError`, etc.
+- Files that work with both must import both: `import { Agent } from "@/agent"` + `import { AgentDef } from "@/agent/agent-def"`.
+- Schema mapping: `AgentTable` has `feature_id`, `status`, `color`, `branch`, `annotation_id`.
 - `AgentRevert.cleanup()` is a no-op placeholder — the old revert/snapshot columns were removed from AgentTable schema.
+- Server endpoint for listing agent definitions: `GET /agent-def` (operationId: `agent-def.list`).
 
 ## Tool context and plugin hooks — sessionID→agentID rename (2026-03-26)
 
@@ -261,7 +261,8 @@ _Last updated: 2026-03-26 — Layer 5: session/ directory fully deleted, all mod
 ## Database Migration — OpenDesign v2 schema (2026-03-26)
 
 - **Migration file**: `packages/opencode/migration/20260326000000_opendesign_v2/migration.sql` — drops old tables (`todo`, `part`, `message`, `session_share`, `session_canvas`, `permission`, `session`, `workspace`) and creates new tables (`product`, `design_system`, `product_design_system`, `feature`, `annotation`, `agent`, `message`, `part`, `variation`, `checkpoint`, `todo`, `permission`).
-- **`project` table kept**: Still used by `project.ts` for directory/VCS discovery. NOT dropped, NOT renamed. `ProjectTable` added to `storage/schema.ts` barrel export.
+- **`project` table REMOVED** (2026-03-27): `ProjectTable` deleted from `project/project.sql.ts` and removed from `storage/schema.ts` barrel export. Consolidated into `ProductTable` (added `worktree` column). `AgentTable.feature_id` FK now correctly references `FeatureTable` (was incorrectly referencing `ProjectTable`). New migration: `20260327000000_phase1_foundation`.
+- **`Project` namespace REPLACED by `Product`** (2026-03-27): `project/project.ts` deleted, replaced by `product/index.ts` (Product namespace). All consumers updated. Route file renamed `server/routes/project.ts` → `server/routes/product.ts` (export: `ProductRoutes`). Route mount path changed `/project` → `/product`. Operation IDs changed: `project.*` → `product.*`. Bus events: `project.updated` → `product.updated`. The `ProductTable` schema (id, name, directory, worktree, git_root, timestamps) differs from old `ProjectTable` — `fromRow` and DB insert/update logic adapted accordingly. Fields like `vcs`, `icon`, `sandboxes`, `commands` are still in `Product.Info` type but not persisted to DB (kept for runtime compatibility). `addSandbox`/`removeSandbox` are no-ops. Test/script files still reference old `project/project` — to be fixed in Task 3.
 - **`migrateFromGlobal` gutted**: Was querying `AgentTable.feature_id = "global"` which is invalid in new schema. Now a no-op.
 - **Migration system**: Custom `migrations()` in `db.ts` reads `migration.sql` from timestamped dirs. Sorted by timestamp. `snapshot.json` is not used at runtime (only by Drizzle Kit).
 - **Data loss accepted**: Old session/workspace data is dropped. No data migration.

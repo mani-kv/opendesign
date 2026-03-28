@@ -5,7 +5,7 @@ import { Instance } from "../../src/project/instance"
 import { Filesystem } from "../../src/util/filesystem"
 import { tmpdir } from "../fixture/fixture"
 import { PermissionNext } from "../../src/permission/next"
-import { Agent } from "../../src/agent/agent"
+import { AgentDef } from "../../src/agent/agent-def"
 
 const FIXTURES_DIR = path.join(import.meta.dir, "fixtures")
 
@@ -171,7 +171,7 @@ describe("tool.read env file permissions", () => {
       await Instance.provide({
         directory: tmp.path,
         fn: async () => {
-          const agent = await Agent.get(agentName)
+          const agent = await AgentDef.get(agentName)
           let askedForEnv = false
           const ctxWithPermissions = {
             ...ctx,

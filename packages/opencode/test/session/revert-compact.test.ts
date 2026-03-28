@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test"
 import path from "path"
-import { AgentSession as Session } from "../../src/agent"
+import { Agent as Session } from "../../src/agent"
 import { AgentRevert } from "../../src/agent/revert"
 import { MessageV2 } from "../../src/agent/message-v2"
 import { Log } from "../../src/util/log"

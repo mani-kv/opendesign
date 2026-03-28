@@ -29,7 +29,7 @@ import { Global } from "@/global"
 import type { LanguageModelV2Usage } from "@ai-sdk/provider"
 import { iife } from "@/util/iife"
 
-export namespace AgentSession {
+export namespace Agent {
   const log = Log.create({ service: "agent" })
 
   const titlePrefix = "New agent - "
@@ -110,7 +110,7 @@ export namespace AgentSession {
       permission: PermissionNext.Ruleset.optional(),
     })
     .meta({
-      ref: "AgentSession",
+      ref: "Agent",
     })
   export type Info = z.output<typeof Info>
 
@@ -128,7 +128,7 @@ export namespace AgentSession {
   export const GlobalInfo = Info.extend({
     product: ProductInfo.nullable(),
   }).meta({
-    ref: "GlobalAgentSession",
+    ref: "GlobalAgent",
   })
   export type GlobalInfo = z.output<typeof GlobalInfo>
 

@@ -15,7 +15,7 @@ import { mergeDeep, pipe } from "remeda"
 import { ProviderTransform } from "@/provider/transform"
 import { Config } from "@/config/config"
 import { Instance } from "@/project/instance"
-import type { Agent } from "@/agent/agent"
+import type { AgentDef } from "@/agent/agent-def"
 import type { MessageV2 } from "./message-v2"
 import { Plugin } from "@/plugin"
 import { SystemPrompt } from "./system"
@@ -31,7 +31,7 @@ export namespace LLM {
     user: MessageV2.User
     agentID: string
     model: Provider.Model
-    agent: Agent.Info
+    agent: AgentDef.Info
     system: string[]
     abort: AbortSignal
     messages: ModelMessage[]

@@ -1,5 +1,5 @@
 import { describe, expect, mock, test } from "bun:test"
-import { Project } from "../../src/project/project"
+import { Product as Project } from "../../src/product"
 import { Log } from "../../src/util/log"
 import { $ } from "bun"
 import path from "path"
@@ -62,7 +62,7 @@ async function withMode(next: Mode, run: () => Promise<void>) {
 }
 
 async function loadProject() {
-  return (await import("../../src/project/project")).Project
+  return (await import("../../src/product")).Product
 }
 
 describe("Project.fromDirectory", () => {

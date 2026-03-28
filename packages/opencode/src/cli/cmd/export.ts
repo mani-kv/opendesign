@@ -1,5 +1,5 @@
 import type { Argv } from "yargs"
-import { AgentSession as Session } from "../../agent"
+import { Agent as Session } from "../../agent"
 import { cmd } from "./cmd"
 import { bootstrap } from "../bootstrap"
 import { UI } from "../ui"

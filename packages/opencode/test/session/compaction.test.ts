@@ -5,7 +5,7 @@ import { Token } from "../../src/util/token"
 import { Instance } from "../../src/project/instance"
 import { Log } from "../../src/util/log"
 import { tmpdir } from "../fixture/fixture"
-import { AgentSession as Session } from "../../src/agent"
+import { Agent as Session } from "../../src/agent"
 import type { Provider } from "../../src/provider/provider"
 
 Log.init({ print: false })

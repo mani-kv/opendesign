@@ -29,7 +29,7 @@ import path from "path"
 import { Plugin } from "@/plugin"
 import { Skill } from "../skill"
 
-export namespace Agent {
+export namespace AgentDef {
   export const Info = z
     .object({
       name: z.string(),

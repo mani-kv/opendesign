@@ -1,6 +1,6 @@
 import { fn } from "@/util/fn"
 import z from "zod"
-import { AgentSession } from "."
+import { Agent } from "."
 
 import { MessageV2 } from "./message-v2"
 import { Identifier } from "@/id/id"
@@ -72,7 +72,7 @@ export namespace SessionSummary {
       messageID: z.string(),
     }),
     async (input) => {
-      const all = await AgentSession.messages({ agentID: input.agentID })
+      const all = await Agent.messages({ agentID: input.agentID })
       await Promise.all([
         summarizeSession({ agentID: input.agentID, messages: all }),
         summarizeMessage({ messageID: input.messageID, messages: all }),
@@ -82,7 +82,7 @@ export namespace SessionSummary {
 
   async function summarizeSession(input: { agentID: string; messages: MessageV2.WithParts[] }) {
     const diffs = await computeDiff({ messages: input.messages })
-    await AgentSession.setSummary({
+    await Agent.setSummary({
       agentID: input.agentID,
       summary: {
         additions: diffs.reduce((sum, x) => sum + x.additions, 0),
@@ -91,7 +91,7 @@ export namespace SessionSummary {
       },
     })
     await Storage.write(["session_diff", input.agentID], diffs)
-    Bus.publish(AgentSession.Event.Diff, {
+    Bus.publish(Agent.Event.Diff, {
       agentID: input.agentID,
       diff: diffs,
     })
@@ -108,7 +108,7 @@ export namespace SessionSummary {
       ...userMsg.summary,
       diffs,
     }
-    await AgentSession.updateMessage(userMsg)
+    await Agent.updateMessage(userMsg)
   }
 
   export const diff = fn(

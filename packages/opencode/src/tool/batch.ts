@@ -30,7 +30,7 @@ export const BatchTool = Tool.define("batch", async () => {
       return `Invalid parameters for tool 'batch':\n${formattedErrors}\n\nExpected payload format:\n  [{"tool": "tool_name", "parameters": {...}}, {...}]`
     },
     async execute(params, ctx) {
-      const { AgentSession } = await import("../agent")
+      const { Agent } = await import("../agent")
       const { Identifier } = await import("../id/id")
 
       const toolCalls = params.tool_calls.slice(0, 25)
@@ -60,7 +60,7 @@ export const BatchTool = Tool.define("batch", async () => {
           }
           const validatedParams = tool.parameters.parse(call.parameters)
 
-          await AgentSession.updatePart({
+          await Agent.updatePart({
             id: partID,
             messageID: ctx.messageID,
             agentID: ctx.agentID,
@@ -84,7 +84,7 @@ export const BatchTool = Tool.define("batch", async () => {
             messageID: ctx.messageID,
           }))
 
-          await AgentSession.updatePart({
+          await Agent.updatePart({
             id: partID,
             messageID: ctx.messageID,
             agentID: ctx.agentID,
@@ -107,7 +107,7 @@ export const BatchTool = Tool.define("batch", async () => {
 
           return { success: true as const, tool: call.tool, result }
         } catch (error) {
-          await AgentSession.updatePart({
+          await Agent.updatePart({
             id: partID,
             messageID: ctx.messageID,
             agentID: ctx.agentID,
@@ -135,7 +135,7 @@ export const BatchTool = Tool.define("batch", async () => {
       const now = Date.now()
       for (const call of discardedCalls) {
         const partID = Identifier.ascending("part")
-        await AgentSession.updatePart({
+        await Agent.updatePart({
           id: partID,
           messageID: ctx.messageID,
           agentID: ctx.agentID,

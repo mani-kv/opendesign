@@ -2,11 +2,11 @@ import { test, expect } from "bun:test"
 import path from "path"
 import { tmpdir } from "../fixture/fixture"
 import { Instance } from "../../src/project/instance"
-import { Agent } from "../../src/agent/agent"
+import { AgentDef } from "../../src/agent/agent-def"
 import { PermissionNext } from "../../src/permission/next"
 
 // Helper to evaluate permission for a tool with wildcard pattern
-function evalPerm(agent: Agent.Info | undefined, permission: string): PermissionNext.Action | undefined {
+function evalPerm(agent: AgentDef.Info | undefined, permission: string): PermissionNext.Action | undefined {
   if (!agent) return undefined
   return PermissionNext.evaluate(permission, "*", agent.permission).action
 }
@@ -16,7 +16,7 @@ test("returns default native agents when no config", async () => {
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      const agents = await Agent.list()
+      const agents = await AgentDef.list()
       const names = agents.map((a) => a.name)
       expect(names).toContain("prototype")
       expect(names).toContain("ask")
@@ -38,7 +38,7 @@ test("prototype agent has correct default properties", async () => {
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      const agent = await Agent.get("prototype")
+      const agent = await AgentDef.get("prototype")
       expect(agent).toBeDefined()
       expect(agent?.mode).toBe("primary")
       expect(agent?.native).toBe(true)
@@ -56,7 +56,7 @@ test("ask agent denies edits and writes", async () => {
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      const ask = await Agent.get("ask")
+      const ask = await AgentDef.get("ask")
       expect(ask).toBeDefined()
       expect(ask?.mode).toBe("primary")
       expect(evalPerm(ask, "edit")).toBe("deny")
@@ -78,7 +78,7 @@ test("explore agent denies edit and write", async () => {
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      const explore = await Agent.get("explore")
+      const explore = await AgentDef.get("explore")
       expect(explore).toBeDefined()
       expect(explore?.mode).toBe("subagent")
       expect(evalPerm(explore, "edit")).toBe("deny")
@@ -95,7 +95,7 @@ test("explore agent asks for external directories and allows Truncate.GLOB", asy
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      const explore = await Agent.get("explore")
+      const explore = await AgentDef.get("explore")
       expect(explore).toBeDefined()
       expect(PermissionNext.evaluate("external_directory", "/some/other/path", explore!.permission).action).toBe("ask")
       expect(PermissionNext.evaluate("external_directory", Truncate.GLOB, explore!.permission).action).toBe("allow")
@@ -108,7 +108,7 @@ test("scenario agent is a subagent with prompt", async () => {
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      const scenario = await Agent.get("scenario")
+      const scenario = await AgentDef.get("scenario")
       expect(scenario).toBeDefined()
       expect(scenario?.mode).toBe("subagent")
       expect(scenario?.native).toBe(true)
@@ -122,7 +122,7 @@ test("research agent is read-only subagent", async () => {
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      const research = await Agent.get("research")
+      const research = await AgentDef.get("research")
       expect(research).toBeDefined()
       expect(research?.mode).toBe("subagent")
       expect(evalPerm(research, "edit")).toBe("deny")
@@ -138,7 +138,7 @@ test("audit agent allows bash but denies edit", async () => {
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      const audit = await Agent.get("audit")
+      const audit = await AgentDef.get("audit")
       expect(audit).toBeDefined()
       expect(audit?.mode).toBe("subagent")
       expect(evalPerm(audit, "bash")).toBe("allow")
@@ -153,7 +153,7 @@ test("figma-write agent is a subagent", async () => {
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      const fw = await Agent.get("figma-write")
+      const fw = await AgentDef.get("figma-write")
       expect(fw).toBeDefined()
       expect(fw?.mode).toBe("subagent")
       expect(fw?.native).toBe(true)
@@ -168,7 +168,7 @@ test("general agent denies todo tools", async () => {
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      const general = await Agent.get("general")
+      const general = await AgentDef.get("general")
       expect(general).toBeDefined()
       expect(general?.mode).toBe("subagent")
       expect(general?.hidden).toBeUndefined()
@@ -183,7 +183,7 @@ test("compaction agent denies all permissions", async () => {
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      const compaction = await Agent.get("compaction")
+      const compaction = await AgentDef.get("compaction")
       expect(compaction).toBeDefined()
       expect(compaction?.hidden).toBe(true)
       expect(evalPerm(compaction, "bash")).toBe("deny")
@@ -209,7 +209,7 @@ test("custom agent from config creates new agent", async () => {
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      const custom = await Agent.get("my_custom_agent")
+      const custom = await AgentDef.get("my_custom_agent")
       expect(custom).toBeDefined()
       expect(custom?.model?.providerID).toBe("openai")
       expect(custom?.model?.modelID).toBe("gpt-4")
@@ -238,7 +238,7 @@ test("custom agent config overrides native agent properties", async () => {
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      const agent = await Agent.get("prototype")
+      const agent = await AgentDef.get("prototype")
       expect(agent).toBeDefined()
       expect(agent?.model?.providerID).toBe("anthropic")
       expect(agent?.model?.modelID).toBe("claude-3")
@@ -261,9 +261,9 @@ test("agent disable removes agent from list", async () => {
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      const explore = await Agent.get("explore")
+      const explore = await AgentDef.get("explore")
       expect(explore).toBeUndefined()
-      const agents = await Agent.list()
+      const agents = await AgentDef.list()
       const names = agents.map((a) => a.name)
       expect(names).not.toContain("explore")
     },
@@ -287,7 +287,7 @@ test("agent permission config merges with defaults", async () => {
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      const agent = await Agent.get("prototype")
+      const agent = await AgentDef.get("prototype")
       expect(agent).toBeDefined()
       // Specific pattern is denied
       expect(PermissionNext.evaluate("bash", "rm -rf *", agent!.permission).action).toBe("deny")
@@ -306,7 +306,7 @@ test("global permission config applies to all agents", async () => {
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      const agent = await Agent.get("prototype")
+      const agent = await AgentDef.get("prototype")
       expect(agent).toBeDefined()
       expect(evalPerm(agent, "bash")).toBe("deny")
     },
@@ -325,8 +325,8 @@ test("agent steps/maxSteps config sets steps property", async () => {
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      const agent = await Agent.get("prototype")
-      const ask = await Agent.get("ask")
+      const agent = await AgentDef.get("prototype")
+      const ask = await AgentDef.get("ask")
       expect(agent?.steps).toBe(50)
       expect(ask?.steps).toBe(100)
     },
@@ -344,7 +344,7 @@ test("agent mode can be overridden", async () => {
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      const explore = await Agent.get("explore")
+      const explore = await AgentDef.get("explore")
       expect(explore?.mode).toBe("primary")
     },
   })
@@ -361,7 +361,7 @@ test("agent name can be overridden", async () => {
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      const agent = await Agent.get("prototype")
+      const agent = await AgentDef.get("prototype")
       expect(agent?.name).toBe("Builder")
     },
   })
@@ -378,7 +378,7 @@ test("agent prompt can be set from config", async () => {
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      const agent = await Agent.get("prototype")
+      const agent = await AgentDef.get("prototype")
       expect(agent?.prompt).toBe("Custom system prompt")
     },
   })
@@ -398,7 +398,7 @@ test("unknown agent properties are placed into options", async () => {
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      const agent = await Agent.get("prototype")
+      const agent = await AgentDef.get("prototype")
       expect(agent?.options.random_property).toBe("hello")
       expect(agent?.options.another_random).toBe(123)
     },
@@ -421,7 +421,7 @@ test("agent options merge correctly", async () => {
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      const agent = await Agent.get("prototype")
+      const agent = await AgentDef.get("prototype")
       expect(agent?.options.custom_option).toBe(true)
       expect(agent?.options.another_option).toBe("value")
     },
@@ -446,8 +446,8 @@ test("multiple custom agents can be defined", async () => {
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      const agentA = await Agent.get("agent_a")
-      const agentB = await Agent.get("agent_b")
+      const agentA = await AgentDef.get("agent_a")
+      const agentB = await AgentDef.get("agent_b")
       expect(agentA?.description).toBe("Agent A")
       expect(agentA?.mode).toBe("subagent")
       expect(agentB?.description).toBe("Agent B")
@@ -456,12 +456,12 @@ test("multiple custom agents can be defined", async () => {
   })
 })
 
-test("Agent.get returns undefined for non-existent agent", async () => {
+test("AgentDef.get returns undefined for non-existent agent", async () => {
   await using tmp = await tmpdir()
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      const nonExistent = await Agent.get("does_not_exist")
+      const nonExistent = await AgentDef.get("does_not_exist")
       expect(nonExistent).toBeUndefined()
     },
   })
@@ -472,7 +472,7 @@ test("default permission includes doom_loop and external_directory as ask", asyn
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      const agent = await Agent.get("prototype")
+      const agent = await AgentDef.get("prototype")
       expect(evalPerm(agent, "doom_loop")).toBe("ask")
       expect(evalPerm(agent, "external_directory")).toBe("ask")
     },
@@ -484,7 +484,7 @@ test("webfetch is allowed by default", async () => {
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      const agent = await Agent.get("prototype")
+      const agent = await AgentDef.get("prototype")
       expect(evalPerm(agent, "webfetch")).toBe("allow")
     },
   })
@@ -506,7 +506,7 @@ test("legacy tools config converts to permissions", async () => {
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      const agent = await Agent.get("prototype")
+      const agent = await AgentDef.get("prototype")
       expect(evalPerm(agent, "bash")).toBe("deny")
       expect(evalPerm(agent, "read")).toBe("deny")
     },
@@ -528,7 +528,7 @@ test("legacy tools config maps write/edit/patch/multiedit to edit permission", a
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      const agent = await Agent.get("prototype")
+      const agent = await AgentDef.get("prototype")
       expect(evalPerm(agent, "edit")).toBe("deny")
     },
   })
@@ -546,7 +546,7 @@ test("Truncate.GLOB is allowed even when user denies external_directory globally
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      const agent = await Agent.get("prototype")
+      const agent = await AgentDef.get("prototype")
       expect(PermissionNext.evaluate("external_directory", Truncate.GLOB, agent!.permission).action).toBe("allow")
       expect(PermissionNext.evaluate("external_directory", Truncate.DIR, agent!.permission).action).toBe("deny")
       expect(PermissionNext.evaluate("external_directory", "/some/other/path", agent!.permission).action).toBe("deny")
@@ -570,7 +570,7 @@ test("Truncate.GLOB is allowed even when user denies external_directory per-agen
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      const agent = await Agent.get("prototype")
+      const agent = await AgentDef.get("prototype")
       expect(PermissionNext.evaluate("external_directory", Truncate.GLOB, agent!.permission).action).toBe("allow")
       expect(PermissionNext.evaluate("external_directory", Truncate.DIR, agent!.permission).action).toBe("deny")
       expect(PermissionNext.evaluate("external_directory", "/some/other/path", agent!.permission).action).toBe("deny")
@@ -593,7 +593,7 @@ test("explicit Truncate.GLOB deny is respected", async () => {
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      const agent = await Agent.get("prototype")
+      const agent = await AgentDef.get("prototype")
       expect(PermissionNext.evaluate("external_directory", Truncate.GLOB, agent!.permission).action).toBe("deny")
       expect(PermissionNext.evaluate("external_directory", Truncate.DIR, agent!.permission).action).toBe("deny")
     },
@@ -625,7 +625,7 @@ description: Permission skill.
     await Instance.provide({
       directory: tmp.path,
       fn: async () => {
-        const agent = await Agent.get("prototype")
+        const agent = await AgentDef.get("prototype")
         const skillDir = path.join(tmp.path, ".opencode", "skill", "perm-skill")
         const target = path.join(skillDir, "reference", "notes.md")
         expect(PermissionNext.evaluate("external_directory", target, agent!.permission).action).toBe("allow")
@@ -641,7 +641,7 @@ test("defaultAgent returns prototype when no default_agent config", async () => 
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      const agent = await Agent.defaultAgent()
+      const agent = await AgentDef.defaultAgent()
       expect(agent).toBe("prototype")
     },
   })
@@ -656,7 +656,7 @@ test("defaultAgent respects default_agent config set to ask", async () => {
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      const agent = await Agent.defaultAgent()
+      const agent = await AgentDef.defaultAgent()
       expect(agent).toBe("ask")
     },
   })
@@ -676,7 +676,7 @@ test("defaultAgent respects default_agent config set to custom agent with mode a
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      const agent = await Agent.defaultAgent()
+      const agent = await AgentDef.defaultAgent()
       expect(agent).toBe("my_custom")
     },
   })
@@ -691,7 +691,7 @@ test("defaultAgent throws when default_agent points to subagent", async () => {
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      await expect(Agent.defaultAgent()).rejects.toThrow('default agent "explore" is a subagent')
+      await expect(AgentDef.defaultAgent()).rejects.toThrow('default agent "explore" is a subagent')
     },
   })
 })
@@ -705,7 +705,7 @@ test("defaultAgent throws when default_agent points to hidden agent", async () =
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      await expect(Agent.defaultAgent()).rejects.toThrow('default agent "compaction" is hidden')
+      await expect(AgentDef.defaultAgent()).rejects.toThrow('default agent "compaction" is hidden')
     },
   })
 })
@@ -719,7 +719,7 @@ test("defaultAgent throws when default_agent points to non-existent agent", asyn
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      await expect(Agent.defaultAgent()).rejects.toThrow('default agent "does_not_exist" not found')
+      await expect(AgentDef.defaultAgent()).rejects.toThrow('default agent "does_not_exist" not found')
     },
   })
 })
@@ -735,7 +735,7 @@ test("defaultAgent returns ask when prototype is disabled and default_agent not 
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
-      const agent = await Agent.defaultAgent()
+      const agent = await AgentDef.defaultAgent()
       // prototype is disabled, so it should return ask (next primary agent)
       expect(agent).toBe("ask")
     },
@@ -757,7 +757,7 @@ test("defaultAgent throws when all primary agents are disabled", async () => {
     directory: tmp.path,
     fn: async () => {
       // prototype and ask are disabled, no primary-capable agents remain
-      await expect(Agent.defaultAgent()).rejects.toThrow("no primary visible agent found")
+      await expect(AgentDef.defaultAgent()).rejects.toThrow("no primary visible agent found")
     },
   })
 })

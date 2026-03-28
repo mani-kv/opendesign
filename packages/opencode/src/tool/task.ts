@@ -1,10 +1,10 @@
 import { Tool } from "./tool"
 import DESCRIPTION from "./task.txt"
 import z from "zod"
-import { AgentSession } from "../agent"
+import { Agent } from "../agent"
 import { MessageV2 } from "../agent/message-v2"
 import { Identifier } from "../id/id"
-import { Agent } from "../agent/agent"
+import { AgentDef } from "../agent/agent-def"
 import { AgentPrompt } from "../agent/prompt"
 import { Instance } from "../project/instance"
 import { iife } from "@/util/iife"
@@ -26,7 +26,7 @@ const parameters = z.object({
 })
 
 export const TaskTool = Tool.define("task", async (ctx) => {
-  const agents = await Agent.list().then((x) => x.filter((a) => a.mode !== "primary"))
+  const agents = await AgentDef.list().then((x) => x.filter((a) => a.mode !== "primary"))
 
   // Filter agents by permissions if agent provided
   const caller = ctx?.agent
@@ -59,18 +59,18 @@ export const TaskTool = Tool.define("task", async (ctx) => {
         })
       }
 
-      const agent = await Agent.get(params.subagent_type)
+      const agent = await AgentDef.get(params.subagent_type)
       if (!agent) throw new Error(`Unknown agent type: ${params.subagent_type} is not a valid agent type`)
 
       const hasTaskPermission = agent.permission.some((rule) => rule.permission === "task")
 
       const session = await iife(async () => {
         if (params.task_id) {
-          const found = await AgentSession.get(params.task_id).catch(() => {})
+          const found = await Agent.get(params.task_id).catch(() => {})
           if (found) return found
         }
 
-        return await AgentSession.create({
+        return await Agent.create({
           featureID: Instance.project.id,
           title: params.description + ` (@${agent.name} subagent)`,
           permission: [

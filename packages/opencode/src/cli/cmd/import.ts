@@ -1,6 +1,6 @@
 import type { Argv } from "yargs"
 import type { Session as SDKSession, Message, Part } from "@opencode-ai/sdk/v2"
-import { AgentSession } from "../../agent"
+import { Agent } from "../../agent"
 import { cmd } from "./cmd"
 import { bootstrap } from "../bootstrap"
 import { Database } from "../../storage/db"
@@ -88,7 +88,7 @@ export const ImportCommand = cmd({
     await bootstrap(process.cwd(), async () => {
       let exportData:
         | {
-            info: AgentSession.Info
+            info: Agent.Info
             messages: Array<{
               info: Message
               parts: Part[]
@@ -155,7 +155,7 @@ export const ImportCommand = cmd({
         return
       }
 
-      const row = { ...AgentSession.toRow(exportData.info), feature_id: Instance.project.id }
+      const row = { ...Agent.toRow(exportData.info), feature_id: Instance.project.id }
       Database.use((db) =>
         db
           .insert(AgentTable)

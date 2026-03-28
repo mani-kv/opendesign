@@ -1,8 +1,8 @@
 import { EOL } from "os"
 import { basename } from "path"
-import { Agent } from "../../../agent/agent"
+import { AgentDef } from "../../../agent/agent-def"
 import { Provider } from "../../../provider/provider"
-import { AgentSession } from "../../../agent"
+import { Agent } from "../../../agent"
 import type { MessageV2 } from "../../../agent/message-v2"
 import { Identifier } from "../../../id/id"
 import { ToolRegistry } from "../../../tool/registry"
@@ -33,7 +33,7 @@ export const AgentCommand = cmd({
   async handler(args) {
     await bootstrap(process.cwd(), async () => {
       const agentName = args.name as string
-      const agent = await Agent.get(agentName)
+      const agent = await AgentDef.get(agentName)
       if (!agent) {
         process.stderr.write(
           `Agent ${agentName} not found, run '${basename(process.execPath)} agent list' to get an agent list` + EOL,
@@ -69,12 +69,12 @@ export const AgentCommand = cmd({
   },
 })
 
-async function getAvailableTools(agent: Agent.Info) {
+async function getAvailableTools(agent: AgentDef.Info) {
   const model = agent.model ?? (await Provider.defaultModel())
   return ToolRegistry.tools(model, agent)
 }
 
-async function resolveTools(agent: Agent.Info, availableTools: Awaited<ReturnType<typeof getAvailableTools>>) {
+async function resolveTools(agent: AgentDef.Info, availableTools: Awaited<ReturnType<typeof getAvailableTools>>) {
   const disabled = PermissionNext.disabled(
     availableTools.map((tool) => tool.id),
     agent.permission,
@@ -111,8 +111,8 @@ function parseToolParams(input?: string) {
   return parsed as Record<string, unknown>
 }
 
-async function createToolContext(agent: Agent.Info) {
-  const session = await AgentSession.create({ featureID: Instance.project.id, title: `Debug tool run (${agent.name})` })
+async function createToolContext(agent: AgentDef.Info) {
+  const session = await Agent.create({ featureID: Instance.project.id, title: `Debug tool run (${agent.name})` })
   const messageID = Identifier.ascending("message")
   const model = agent.model ?? (await Provider.defaultModel())
   const now = Date.now()
@@ -143,7 +143,7 @@ async function createToolContext(agent: Agent.Info) {
       },
     },
   }
-  await AgentSession.updateMessage(message)
+  await Agent.updateMessage(message)
 
   const ruleset = PermissionNext.merge(agent.permission, session.permission ?? [])
 

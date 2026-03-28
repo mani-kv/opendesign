@@ -1,6 +1,6 @@
 import type { Argv } from "yargs"
 import { cmd } from "./cmd"
-import { AgentSession } from "../../agent"
+import { Agent } from "../../agent"
 import { bootstrap } from "../bootstrap"
 import { UI } from "../ui"
 import { Locale } from "../../util/locale"
@@ -58,12 +58,12 @@ export const SessionDeleteCommand = cmd({
   handler: async (args) => {
     await bootstrap(process.cwd(), async () => {
       try {
-        await AgentSession.get(args.agentID)
+        await Agent.get(args.agentID)
       } catch {
         UI.error(`Agent session not found: ${args.agentID}`)
         process.exit(1)
       }
-      await AgentSession.remove(args.agentID)
+      await Agent.remove(args.agentID)
       UI.println(UI.Style.TEXT_SUCCESS_BOLD + `Agent session ${args.agentID} deleted` + UI.Style.TEXT_NORMAL)
     })
   },
@@ -88,7 +88,7 @@ export const SessionListCommand = cmd({
   },
   handler: async (args) => {
     await bootstrap(process.cwd(), async () => {
-      const sessions = [...AgentSession.list({ limit: args.maxCount })]
+      const sessions = [...Agent.list({ limit: args.maxCount })]
 
       if (sessions.length === 0) {
         return
@@ -125,7 +125,7 @@ export const SessionListCommand = cmd({
   },
 })
 
-function formatSessionTable(sessions: AgentSession.Info[]): string {
+function formatSessionTable(sessions: Agent.Info[]): string {
   const lines: string[] = []
 
   const maxIdWidth = Math.max(20, ...sessions.map((s) => s.id.length))
@@ -144,7 +144,7 @@ function formatSessionTable(sessions: AgentSession.Info[]): string {
   return lines.join(EOL)
 }
 
-function formatSessionJSON(sessions: AgentSession.Info[]): string {
+function formatSessionJSON(sessions: Agent.Info[]): string {
   const jsonData = sessions.map((session) => ({
     id: session.id,
     title: session.title,

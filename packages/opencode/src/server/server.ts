@@ -15,7 +15,7 @@ import { Format } from "../format"
 // TODO: dropped - tui removed
 import { Instance } from "../project/instance"
 import { Vcs } from "../project/vcs"
-import { Agent } from "../agent/agent"
+import { AgentDef } from "../agent/agent-def"
 import { Skill } from "../skill/skill"
 import { Auth } from "../auth"
 import { Flag } from "../flag/flag"
@@ -410,24 +410,24 @@ export namespace Server {
         },
       )
       .get(
-        "/agent",
+        "/agent-def",
         describeRoute({
-          summary: "List agents",
-          description: "Get a list of all available AI agents in the OpenCode system.",
-          operationId: "app.agents",
+          summary: "List agent definitions",
+          description: "Get a list of all available AI agent definitions in the OpenCode system.",
+          operationId: "agent-def.list",
           responses: {
             200: {
-              description: "List of agents",
+              description: "List of agent definitions",
               content: {
                 "application/json": {
-                  schema: resolver(Agent.Info.array()),
+                  schema: resolver(AgentDef.Info.array()),
                 },
               },
             },
           },
         }),
         async (c) => {
-          const modes = await Agent.list()
+          const modes = await AgentDef.list()
           return c.json(modes)
         },
       )

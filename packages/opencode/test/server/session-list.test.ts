@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test"
 import path from "path"
 import { Instance } from "../../src/project/instance"
-import { AgentSession as Session } from "../../src/agent"
+import { Agent as Session } from "../../src/agent"
 import { Log } from "../../src/util/log"
 
 const projectRoot = path.join(__dirname, "../..")

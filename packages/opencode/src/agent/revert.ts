@@ -2,7 +2,7 @@ import z from "zod"
 import { Identifier } from "../id/id"
 import { Snapshot } from "../snapshot"
 import { MessageV2 } from "./message-v2"
-import { AgentSession } from "."
+import { Agent } from "."
 import { Log } from "../util/log"
 import { Database, eq } from "../storage/db"
 import { MessageTable } from "./message.sql"
@@ -24,9 +24,9 @@ export namespace AgentRevert {
 
   export async function revert(input: RevertInput) {
     AgentPrompt.assertNotBusy(input.agentID)
-    const all = await AgentSession.messages({ agentID: input.agentID })
+    const all = await Agent.messages({ agentID: input.agentID })
     let lastUser: MessageV2.User | undefined
-    const agent = await AgentSession.get(input.agentID)
+    const agent = await Agent.get(input.agentID)
 
     let revertInfo: { messageID: string; partID: string | undefined } | undefined
     const patches: Snapshot.Patch[] = []
@@ -59,7 +59,7 @@ export namespace AgentRevert {
       const rangeMessages = all.filter((msg) => msg.info.id >= revertInfo!.messageID)
       const diffs = await SessionSummary.computeDiff({ messages: rangeMessages })
       await Storage.write(["agent_diff", input.agentID], diffs)
-      Bus.publish(AgentSession.Event.Diff, {
+      Bus.publish(Agent.Event.Diff, {
         agentID: input.agentID,
         diff: diffs,
       })
@@ -69,10 +69,10 @@ export namespace AgentRevert {
 
   // TODO: unrevert not yet implemented for new agent architecture
   export async function unrevert(input: { agentID: string }) {
-    return AgentSession.get(input.agentID)
+    return Agent.get(input.agentID)
   }
 
-  export async function cleanup(_agent: AgentSession.Info) {
+  export async function cleanup(_agent: Agent.Info) {
     // Revert cleanup is simplified for agents — the old session revert/snapshot
     // fields have been removed from the schema. Revert state will be managed
     // differently in the new architecture. This is a no-op placeholder.

@@ -1,6 +1,6 @@
 import type { Argv } from "yargs"
 import { cmd } from "./cmd"
-import { AgentSession } from "../../agent"
+import { Agent } from "../../agent"
 import { bootstrap } from "../bootstrap"
 import { Database } from "../../storage/db"
 import { AgentTable } from "../../agent/agent.sql"
@@ -87,9 +87,9 @@ async function getCurrentProject(): Promise<Product.Info> {
   return Instance.project
 }
 
-async function getAllSessions(): Promise<AgentSession.Info[]> {
+async function getAllSessions(): Promise<Agent.Info[]> {
   const rows = Database.use((db) => db.select().from(AgentTable).all())
-  return rows.map((row) => AgentSession.fromRow(row))
+  return rows.map((row) => Agent.fromRow(row))
 }
 
 export async function aggregateSessionStats(days?: number, projectFilter?: string): Promise<SessionStats> {
@@ -167,7 +167,7 @@ export async function aggregateSessionStats(days?: number, projectFilter?: strin
     const batch = filteredSessions.slice(i, i + BATCH_SIZE)
 
     const batchPromises = batch.map(async (session) => {
-      const messages = await AgentSession.messages({ agentID: session.id })
+      const messages = await Agent.messages({ agentID: session.id })
 
       let sessionCost = 0
       let sessionTokens = { input: 0, output: 0, reasoning: 0, cache: { read: 0, write: 0 } }

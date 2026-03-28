@@ -9,7 +9,7 @@ import { ProviderTransform } from "../../src/provider/transform"
 import { ModelsDev } from "../../src/provider/models"
 import { Filesystem } from "../../src/util/filesystem"
 import { tmpdir } from "../fixture/fixture"
-import type { Agent } from "../../src/agent/agent"
+import type { AgentDef } from "../../src/agent/agent-def"
 import type { MessageV2 } from "../../src/agent/message-v2"
 
 describe("session.llm.hasToolCalls", () => {
@@ -273,7 +273,7 @@ describe("session.llm.stream", () => {
           permission: [{ permission: "*", pattern: "*", action: "allow" }],
           temperature: 0.4,
           topP: 0.8,
-        } satisfies Agent.Info
+        } satisfies AgentDef.Info
 
         const user = {
           id: "user-1",
@@ -402,7 +402,7 @@ describe("session.llm.stream", () => {
           options: {},
           permission: [{ permission: "*", pattern: "*", action: "allow" }],
           temperature: 0.2,
-        } satisfies Agent.Info
+        } satisfies AgentDef.Info
 
         const user = {
           id: "user-2",
@@ -525,7 +525,7 @@ describe("session.llm.stream", () => {
           permission: [{ permission: "*", pattern: "*", action: "allow" }],
           temperature: 0.4,
           topP: 0.9,
-        } satisfies Agent.Info
+        } satisfies AgentDef.Info
 
         const user = {
           id: "user-3",
@@ -626,7 +626,7 @@ describe("session.llm.stream", () => {
           permission: [{ permission: "*", pattern: "*", action: "allow" }],
           temperature: 0.3,
           topP: 0.8,
-        } satisfies Agent.Info
+        } satisfies AgentDef.Info
 
         const user = {
           id: "user-4",

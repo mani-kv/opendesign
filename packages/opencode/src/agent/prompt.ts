@@ -7,8 +7,8 @@ import { Identifier } from "../id/id"
 import { MessageV2 } from "./message-v2"
 import { Log } from "../util/log"
 import { AgentRevert } from "./revert"
-import { AgentSession } from "."
-import { Agent } from "./agent"
+import { Agent } from "."
+import { AgentDef } from "./agent-def"
 import { Provider } from "../provider/provider"
 import { type Tool as AITool, tool, jsonSchema, type ToolCallOptions, asSchema } from "ai"
 import { SessionCompaction } from "./compaction"
@@ -82,7 +82,7 @@ export namespace AgentPrompt {
 
   export function assertNotBusy(agentID: string) {
     const match = state()[agentID]
-    if (match) throw new AgentSession.BusyError(agentID)
+    if (match) throw new Agent.BusyError(agentID)
   }
 
   export const PromptInput = z.object({
@@ -153,11 +153,11 @@ export namespace AgentPrompt {
   export type PromptInput = z.infer<typeof PromptInput>
 
   export const prompt = fn(PromptInput, async (input) => {
-    const session = await AgentSession.get(input.agentID)
+    const session = await Agent.get(input.agentID)
     await AgentRevert.cleanup(session)
 
     const message = await createUserMessage(input)
-    await AgentSession.touch(input.agentID)
+    await Agent.touch(input.agentID)
 
     // this is backwards compatibility for allowing `tools` to be specified when
     // prompting
@@ -171,7 +171,7 @@ export namespace AgentPrompt {
     }
     if (permissions.length > 0) {
       session.permission = permissions
-      await AgentSession.setPermission({ agentID: session.id, permission: permissions })
+      await Agent.setPermission({ agentID: session.id, permission: permissions })
     }
 
     if (input.noReply === true) {
@@ -201,7 +201,7 @@ export namespace AgentPrompt {
 
         const stats = await fs.stat(filepath).catch(() => undefined)
         if (!stats) {
-          const agent = await Agent.get(name)
+          const agent = await AgentDef.get(name)
           if (agent) {
             parts.push({
               type: "agent",
@@ -287,7 +287,7 @@ export namespace AgentPrompt {
     let structuredOutput: unknown | undefined
 
     let step = 0
-    const session = await AgentSession.get(agentID)
+    const session = await Agent.get(agentID)
     while (true) {
       SessionStatus.set(agentID, { type: "busy" })
       log.info("loop", { step, agentID })
@@ -333,7 +333,7 @@ export namespace AgentPrompt {
       const model = await Provider.getModel(lastUser.model.providerID, lastUser.model.modelID).catch((e) => {
         if (Provider.ModelNotFoundError.isInstance(e)) {
           const hint = e.data.suggestions?.length ? ` Did you mean: ${e.data.suggestions.join(", ")}?` : ""
-          Bus.publish(AgentSession.Event.Error, {
+          Bus.publish(Agent.Event.Error, {
             agentID,
             error: new NamedError.Unknown({
               message: `Model not found: ${e.data.providerID}/${e.data.modelID}.${hint}`,
@@ -349,7 +349,7 @@ export namespace AgentPrompt {
       if (task?.type === "subtask") {
         const taskTool = await TaskTool.init()
         const taskModel = task.model ? await Provider.getModel(task.model.providerID, task.model.modelID) : model
-        const assistantMessage = (await AgentSession.updateMessage({
+        const assistantMessage = (await Agent.updateMessage({
           id: Identifier.ascending("message"),
           role: "assistant",
           parentID: lastUser.id,
@@ -374,7 +374,7 @@ export namespace AgentPrompt {
             created: Date.now(),
           },
         })) as MessageV2.Assistant
-        let part = (await AgentSession.updatePart({
+        let part = (await Agent.updatePart({
           id: Identifier.ascending("part"),
           messageID: assistantMessage.id,
           agentID: assistantMessage.agentID,
@@ -410,7 +410,7 @@ export namespace AgentPrompt {
           { args: taskArgs },
         )
         let executionError: Error | undefined
-        const taskAgent = await Agent.get(task.agent)
+        const taskAgent = await AgentDef.get(task.agent)
         const taskCtx: Tool.Context = {
           agent: task.agent,
           messageID: assistantMessage.id,
@@ -420,7 +420,7 @@ export namespace AgentPrompt {
           extra: { bypassAgentCheck: true },
           messages: msgs,
           async metadata(input) {
-            await AgentSession.updatePart({
+            await Agent.updatePart({
               ...part,
               type: "tool",
               state: {
@@ -460,9 +460,9 @@ export namespace AgentPrompt {
         )
         assistantMessage.finish = "tool-calls"
         assistantMessage.time.completed = Date.now()
-        await AgentSession.updateMessage(assistantMessage)
+        await Agent.updateMessage(assistantMessage)
         if (result && part.state.status === "running") {
-          await AgentSession.updatePart({
+          await Agent.updatePart({
             ...part,
             state: {
               status: "completed",
@@ -479,7 +479,7 @@ export namespace AgentPrompt {
           } satisfies MessageV2.ToolPart)
         }
         if (!result) {
-          await AgentSession.updatePart({
+          await Agent.updatePart({
             ...part,
             state: {
               status: "error",
@@ -508,8 +508,8 @@ export namespace AgentPrompt {
             agent: lastUser.agent,
             model: lastUser.model,
           }
-          await AgentSession.updateMessage(summaryUserMsg)
-          await AgentSession.updatePart({
+          await Agent.updateMessage(summaryUserMsg)
+          await Agent.updatePart({
             id: Identifier.ascending("part"),
             messageID: summaryUserMsg.id,
             agentID,
@@ -552,7 +552,7 @@ export namespace AgentPrompt {
       }
 
       // normal processing
-      const agent = await Agent.get(lastUser.agent)
+      const agent = await AgentDef.get(lastUser.agent)
       const maxSteps = agent.steps ?? Infinity
       const isLastStep = step >= maxSteps
       msgs = await insertReminders({
@@ -562,7 +562,7 @@ export namespace AgentPrompt {
       })
 
       const processor = SessionProcessor.create({
-        assistantMessage: (await AgentSession.updateMessage({
+        assistantMessage: (await Agent.updateMessage({
           id: Identifier.ascending("message"),
           parentID: lastUser.id,
           role: "assistant",
@@ -679,7 +679,7 @@ export namespace AgentPrompt {
       if (structuredOutput !== undefined) {
         processor.message.structured = structuredOutput
         processor.message.finish = processor.message.finish ?? "stop"
-        await AgentSession.updateMessage(processor.message)
+        await Agent.updateMessage(processor.message)
         break
       }
 
@@ -693,7 +693,7 @@ export namespace AgentPrompt {
             message: "Model did not produce structured output",
             retries: 0,
           }).toObject()
-          await AgentSession.updateMessage(processor.message)
+          await Agent.updateMessage(processor.message)
           break
         }
       }
@@ -731,9 +731,9 @@ export namespace AgentPrompt {
 
   /** @internal Exported for testing */
   export async function resolveTools(input: {
-    agent: Agent.Info
+    agent: AgentDef.Info
     model: Provider.Model
-    session: AgentSession.Info
+    session: Agent.Info
     tools?: Record<string, boolean>
     processor: SessionProcessor.Info
     bypassAgentCheck: boolean
@@ -753,7 +753,7 @@ export namespace AgentPrompt {
       metadata: async (val: { title?: string; metadata?: any }) => {
         const match = input.processor.partFromToolCall(options.toolCallId)
         if (match && match.state.status === "running") {
-          await AgentSession.updatePart({
+          await Agent.updatePart({
             ...match,
             state: {
               title: val.title,
@@ -951,7 +951,7 @@ export namespace AgentPrompt {
   }
 
   async function createUserMessage(input: PromptInput) {
-    const agent = await Agent.get(input.agent ?? (await Agent.defaultAgent()))
+    const agent = await AgentDef.get(input.agent ?? (await AgentDef.defaultAgent()))
 
     const model = input.model ?? agent.model ?? (await lastModel(input.agentID))
     const full =
@@ -1179,7 +1179,7 @@ export namespace AgentPrompt {
                   .catch((error) => {
                     log.error("failed to read file", { error })
                     const message = error instanceof Error ? error.message : error.toString()
-                    Bus.publish(AgentSession.Event.Error, {
+                    Bus.publish(Agent.Event.Error, {
                       agentID: input.agentID,
                       error: new NamedError.Unknown({
                         message,
@@ -1306,9 +1306,9 @@ export namespace AgentPrompt {
       },
     )
 
-    await AgentSession.updateMessage(info)
+    await Agent.updateMessage(info)
     for (const part of parts) {
-      await AgentSession.updatePart(part)
+      await Agent.updatePart(part)
     }
 
     return {
@@ -1317,7 +1317,7 @@ export namespace AgentPrompt {
     }
   }
 
-  async function insertReminders(input: { messages: MessageV2.WithParts[]; agent: Agent.Info; session: AgentSession.Info }) {
+  async function insertReminders(input: { messages: MessageV2.WithParts[]; agent: AgentDef.Info; session: Agent.Info }) {
     return input.messages
   }
 
@@ -1357,7 +1357,7 @@ export namespace AgentPrompt {
   export async function command(input: CommandInput) {
     log.info("command", input)
     const command = await Command.get(input.command)
-    const agentName = command.agent ?? input.agent ?? (await Agent.defaultAgent())
+    const agentName = command.agent ?? input.agent ?? (await AgentDef.defaultAgent())
 
     const raw = input.arguments.match(argsRegex) ?? []
     const args = raw.map((arg) => arg.replace(quoteTrimRegex, ""))
@@ -1409,7 +1409,7 @@ export namespace AgentPrompt {
         return Provider.parseModel(command.model)
       }
       if (command.agent) {
-        const cmdAgent = await Agent.get(command.agent)
+        const cmdAgent = await AgentDef.get(command.agent)
         if (cmdAgent?.model) {
           return cmdAgent.model
         }
@@ -1424,19 +1424,19 @@ export namespace AgentPrompt {
       if (Provider.ModelNotFoundError.isInstance(e)) {
         const { providerID, modelID, suggestions } = e.data
         const hint = suggestions?.length ? ` Did you mean: ${suggestions.join(", ")}?` : ""
-        Bus.publish(AgentSession.Event.Error, {
+        Bus.publish(Agent.Event.Error, {
           agentID: input.agentID,
           error: new NamedError.Unknown({ message: `Model not found: ${providerID}/${modelID}.${hint}` }).toObject(),
         })
       }
       throw e
     }
-    const agent = await Agent.get(agentName)
+    const agent = await AgentDef.get(agentName)
     if (!agent) {
-      const available = await Agent.list().then((agents) => agents.filter((a) => !a.hidden).map((a) => a.name))
+      const available = await AgentDef.list().then((agents) => agents.filter((a) => !a.hidden).map((a) => a.name))
       const hint = available.length ? ` Available agents: ${available.join(", ")}` : ""
       const error = new NamedError.Unknown({ message: `Agent not found: "${agentName}".${hint}` })
-      Bus.publish(AgentSession.Event.Error, {
+      Bus.publish(Agent.Event.Error, {
         agentID: input.agentID,
         error: error.toObject(),
       })
@@ -1462,7 +1462,7 @@ export namespace AgentPrompt {
         ]
       : [...templateParts, ...(input.parts ?? [])]
 
-    const userAgent = isSubtask ? (input.agent ?? (await Agent.defaultAgent())) : agentName
+    const userAgent = isSubtask ? (input.agent ?? (await AgentDef.defaultAgent())) : agentName
     const userModel = isSubtask
       ? input.model
         ? Provider.parseModel(input.model)
@@ -1499,12 +1499,12 @@ export namespace AgentPrompt {
   }
 
   async function ensureTitle(input: {
-    session: AgentSession.Info
+    session: Agent.Info
     history: MessageV2.WithParts[]
     providerID: string
     modelID: string
   }) {
-    if (!AgentSession.isDefaultTitle(input.session.title)) return
+    if (!Agent.isDefaultTitle(input.session.title)) return
 
     // Find first non-synthetic user message
     const firstRealUserIdx = input.history.findIndex(
@@ -1527,7 +1527,7 @@ export namespace AgentPrompt {
     const subtaskParts = firstRealUser.parts.filter((p) => p.type === "subtask") as MessageV2.SubtaskPart[]
     const hasOnlySubtaskParts = subtaskParts.length > 0 && firstRealUser.parts.every((p) => p.type === "subtask")
 
-    const agent = await Agent.get("title")
+    const agent = await AgentDef.get("title")
     if (!agent) return
     const model = await iife(async () => {
       if (agent.model) return await Provider.getModel(agent.model.providerID, agent.model.modelID)
@@ -1565,7 +1565,7 @@ export namespace AgentPrompt {
       if (!cleaned) return
 
       const title = cleaned.length > 100 ? cleaned.substring(0, 97) + "..." : cleaned
-      return AgentSession.setTitle({ agentID: input.session.id, title })
+      return Agent.setTitle({ agentID: input.session.id, title })
     }
   }
 }

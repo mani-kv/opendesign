@@ -10,7 +10,7 @@ import { Filesystem } from "../../util/filesystem"
 import { createOpencodeClient, type Message, type OpencodeClient, type ToolPart } from "@opencode-ai/sdk/v2"
 import { Server } from "../../server/server"
 import { Provider } from "../../provider/provider"
-import { Agent } from "../../agent/agent"
+import { AgentDef } from "../../agent/agent-def"
 import { PermissionNext } from "../../permission/next"
 import { Tool } from "../../tool/tool"
 import { GlobTool } from "../../tool/glob"
@@ -599,7 +599,7 @@ export const RunCommand = cmd({
           return args.agent
         }
 
-        const entry = await Agent.get(args.agent)
+        const entry = await AgentDef.get(args.agent)
         if (!entry) {
           UI.println(
             UI.Style.TEXT_WARNING_BOLD + "!",

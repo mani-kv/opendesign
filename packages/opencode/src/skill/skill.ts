@@ -10,7 +10,7 @@ import { Global } from "@/global"
 import { Filesystem } from "@/util/filesystem"
 import { Flag } from "@/flag/flag"
 import { Bus } from "@/bus"
-import { AgentSession } from "@/agent"
+import { Agent } from "@/agent"
 import { Discovery } from "./discovery"
 import { Glob } from "../util/glob"
 
@@ -58,7 +58,7 @@ export namespace Skill {
         const message = ConfigMarkdown.FrontmatterError.isInstance(err)
           ? err.data.message
           : `Failed to parse skill ${match}`
-        Bus.publish(AgentSession.Event.Error, { error: new NamedError.Unknown({ message }).toObject() })
+        Bus.publish(Agent.Event.Error, { error: new NamedError.Unknown({ message }).toObject() })
         log.error("failed to load skill", { skill: match, err })
         return undefined
       })

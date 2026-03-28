@@ -1,6 +1,6 @@
 import z from "zod"
 import type { MessageV2 } from "../agent/message-v2"
-import type { Agent } from "../agent/agent"
+import type { AgentDef } from "../agent/agent-def"
 import type { PermissionNext } from "../permission/next"
 import { Truncate } from "./truncation"
 
@@ -10,7 +10,7 @@ export namespace Tool {
   }
 
   export interface InitContext {
-    agent?: Agent.Info
+    agent?: AgentDef.Info
   }
 
   export type Context<M extends Metadata = Metadata> = {

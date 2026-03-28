@@ -3,7 +3,7 @@ import path from "path"
 import { Global } from "../global"
 import { Identifier } from "../id/id"
 import { PermissionNext } from "../permission/next"
-import type { Agent } from "../agent/agent"
+import type { AgentDef } from "../agent/agent-def"
 import { Scheduler } from "../scheduler"
 import { Filesystem } from "../util/filesystem"
 import { Glob } from "../util/glob"
@@ -42,13 +42,13 @@ export namespace Truncate {
     }
   }
 
-  function hasTaskTool(agent?: Agent.Info): boolean {
+  function hasTaskTool(agent?: AgentDef.Info): boolean {
     if (!agent?.permission) return false
     const rule = PermissionNext.evaluate("task", "*", agent.permission)
     return rule.action !== "deny"
   }
 
-  export async function output(text: string, options: Options = {}, agent?: Agent.Info): Promise<Result> {
+  export async function output(text: string, options: Options = {}, agent?: AgentDef.Info): Promise<Result> {
     const maxLines = options.maxLines ?? MAX_LINES
     const maxBytes = options.maxBytes ?? MAX_BYTES
     const direction = options.direction ?? "head"

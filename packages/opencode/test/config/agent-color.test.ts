@@ -3,7 +3,7 @@ import path from "path"
 import { tmpdir } from "../fixture/fixture"
 import { Instance } from "../../src/project/instance"
 import { Config } from "../../src/config/config"
-import { Agent as AgentSvc } from "../../src/agent/agent"
+import { AgentDef as AgentSvc } from "../../src/agent/agent-def"
 import { Color } from "../../src/util/color"
 
 test("agent color parsed from project config", async () => {

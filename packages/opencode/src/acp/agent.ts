@@ -35,7 +35,7 @@ import { Hash } from "../util/hash"
 import { ACPSessionManager } from "./session"
 import type { ACPConfig } from "./types"
 import { Provider } from "../provider/provider"
-import { Agent as AgentModule } from "../agent/agent"
+import { AgentDef } from "../agent/agent-def"
 import { Installation } from "@/installation"
 import { MessageV2 } from "@/agent/message-v2"
 import { Config } from "@/config/config"
@@ -1135,7 +1135,7 @@ export namespace ACP {
         this.sessionManager.get(sessionId).modeId ||
         (await (async () => {
           if (!availableModes.length) return undefined
-          const defaultAgentName = await AgentModule.defaultAgent()
+          const defaultAgentName = await AgentDef.defaultAgent()
           const resolvedModeId =
             availableModes.find((mode) => mode.name === defaultAgentName)?.id ?? availableModes[0].id
           this.sessionManager.setMode(sessionId, resolvedModeId)
@@ -1293,7 +1293,7 @@ export namespace ACP {
       if (!current) {
         this.sessionManager.setModel(session.id, model)
       }
-      const agent = session.modeId ?? (await AgentModule.defaultAgent())
+      const agent = session.modeId ?? (await AgentDef.defaultAgent())
 
       const parts: Array<
         | { type: "text"; text: string; synthetic?: boolean; ignored?: boolean }

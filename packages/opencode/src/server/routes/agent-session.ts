@@ -2,7 +2,7 @@ import { Hono } from "hono"
 import { stream } from "hono/streaming"
 import { describeRoute, validator, resolver } from "hono-openapi"
 import z from "zod"
-import { AgentSession } from "../../agent"
+import { Agent } from "../../agent"
 import { MessageV2 } from "../../agent/message-v2"
 import { AgentPrompt } from "../../agent/prompt"
 import { SessionCompaction } from "../../agent/compaction"
@@ -10,7 +10,7 @@ import { AgentRevert } from "../../agent/revert"
 import { SessionStatus } from "@/agent/status"
 import { SessionSummary } from "@/agent/summary"
 import { Todo } from "../../agent/todo"
-import { Agent } from "../../agent/agent"
+import { AgentDef } from "../../agent/agent-def"
 import { Snapshot } from "@/snapshot"
 import { Log } from "../../util/log"
 import { Instance } from "../../project/instance"
@@ -35,7 +35,7 @@ export const AgentSessionRoutes = lazy(() =>
             description: "List of agent sessions",
             content: {
               "application/json": {
-                schema: resolver(AgentSession.Info.array()),
+                schema: resolver(Agent.Info.array()),
               },
             },
           },
@@ -55,8 +55,8 @@ export const AgentSessionRoutes = lazy(() =>
       ),
       async (c) => {
         const query = c.req.valid("query")
-        const sessions: AgentSession.Info[] = []
-        for (const session of AgentSession.list({
+        const sessions: Agent.Info[] = []
+        for (const session of Agent.list({
           directory: query.directory,
           start: query.start,
           search: query.search,
@@ -102,7 +102,7 @@ export const AgentSessionRoutes = lazy(() =>
             description: "Get agent session",
             content: {
               "application/json": {
-                schema: resolver(AgentSession.Info),
+                schema: resolver(Agent.Info),
               },
             },
           },
@@ -112,13 +112,13 @@ export const AgentSessionRoutes = lazy(() =>
       validator(
         "param",
         z.object({
-          agentID: AgentSession.get.schema,
+          agentID: Agent.get.schema,
         }),
       ),
       async (c) => {
         const agentID = c.req.valid("param").agentID
         log.info("SEARCH", { url: c.req.url })
-        const agent = await AgentSession.get(agentID)
+        const agent = await Agent.get(agentID)
         return c.json(agent)
       },
     )
@@ -164,16 +164,16 @@ export const AgentSessionRoutes = lazy(() =>
             description: "Successfully created agent session",
             content: {
               "application/json": {
-                schema: resolver(AgentSession.Info),
+                schema: resolver(Agent.Info),
               },
             },
           },
         },
       }),
-      validator("json", AgentSession.create.schema.optional()),
+      validator("json", Agent.create.schema.optional()),
       async (c) => {
         const body = c.req.valid("json") ?? {}
-        const agent = await AgentSession.create({ featureID: Instance.project.id, ...body })
+        const agent = await Agent.create({ featureID: Instance.project.id, ...body })
         return c.json(agent)
       },
     )
@@ -198,12 +198,12 @@ export const AgentSessionRoutes = lazy(() =>
       validator(
         "param",
         z.object({
-          agentID: AgentSession.remove.schema,
+          agentID: Agent.remove.schema,
         }),
       ),
       async (c) => {
         const agentID = c.req.valid("param").agentID
-        await AgentSession.remove(agentID)
+        await Agent.remove(agentID)
         return c.json(true)
       },
     )
@@ -218,7 +218,7 @@ export const AgentSessionRoutes = lazy(() =>
             description: "Successfully updated agent session",
             content: {
               "application/json": {
-                schema: resolver(AgentSession.Info),
+                schema: resolver(Agent.Info),
               },
             },
           },
@@ -241,9 +241,9 @@ export const AgentSessionRoutes = lazy(() =>
         const agentID = c.req.valid("param").agentID
         const updates = c.req.valid("json")
 
-        let agent = await AgentSession.get(agentID)
+        let agent = await Agent.get(agentID)
         if (updates.title !== undefined) {
-          agent = await AgentSession.setTitle({ agentID, title: updates.title })
+          agent = await Agent.setTitle({ agentID, title: updates.title })
         }
 
         return c.json(agent)
@@ -274,11 +274,11 @@ export const AgentSessionRoutes = lazy(() =>
           agentID: Identifier.schema("agent").meta({ description: "Agent ID" }),
         }),
       ),
-      validator("json", AgentSession.initialize.schema.omit({ agentID: true })),
+      validator("json", Agent.initialize.schema.omit({ agentID: true })),
       async (c) => {
         const agentID = c.req.valid("param").agentID
         const body = c.req.valid("json")
-        await AgentSession.initialize({ ...body, agentID })
+        await Agent.initialize({ ...body, agentID })
         return c.json(true)
       },
     )
@@ -293,7 +293,7 @@ export const AgentSessionRoutes = lazy(() =>
             description: "200",
             content: {
               "application/json": {
-                schema: resolver(AgentSession.Info),
+                schema: resolver(Agent.Info),
               },
             },
           },
@@ -302,14 +302,14 @@ export const AgentSessionRoutes = lazy(() =>
       validator(
         "param",
         z.object({
-          agentID: AgentSession.fork.schema.shape.agentID,
+          agentID: Agent.fork.schema.shape.agentID,
         }),
       ),
-      validator("json", AgentSession.fork.schema.omit({ agentID: true })),
+      validator("json", Agent.fork.schema.omit({ agentID: true })),
       async (c) => {
         const agentID = c.req.valid("param").agentID
         const body = c.req.valid("json")
-        const result = await AgentSession.fork({ ...body, agentID })
+        const result = await Agent.fork({ ...body, agentID })
         return c.json(result)
       },
     )
@@ -416,14 +416,14 @@ export const AgentSessionRoutes = lazy(() =>
       async (c) => {
         const agentID = c.req.valid("param").agentID
         const body = c.req.valid("json")
-        const agent = await AgentSession.get(agentID)
+        const agent = await Agent.get(agentID)
         await AgentRevert.cleanup(agent)
-        const msgs = await AgentSession.messages({ agentID })
-        let currentAgent = await Agent.defaultAgent()
+        const msgs = await Agent.messages({ agentID })
+        let currentAgent = await AgentDef.defaultAgent()
         for (let i = msgs.length - 1; i >= 0; i--) {
           const info = msgs[i].info
           if (info.role === "user") {
-            currentAgent = info.agent || (await Agent.defaultAgent())
+            currentAgent = info.agent || (await AgentDef.defaultAgent())
             break
           }
         }
@@ -473,7 +473,7 @@ export const AgentSessionRoutes = lazy(() =>
       async (c) => {
         try {
           const query = c.req.valid("query")
-          const messages = await AgentSession.messages({
+          const messages = await Agent.messages({
             agentID: c.req.valid("param").agentID,
             limit: query.limit,
           })
@@ -560,7 +560,7 @@ export const AgentSessionRoutes = lazy(() =>
       async (c) => {
         const params = c.req.valid("param")
         AgentPrompt.assertNotBusy(params.agentID)
-        await AgentSession.removeMessage({
+        await Agent.removeMessage({
           agentID: params.agentID,
           messageID: params.messageID,
         })
@@ -594,7 +594,7 @@ export const AgentSessionRoutes = lazy(() =>
       ),
       async (c) => {
         const params = c.req.valid("param")
-        await AgentSession.removePart({
+        await Agent.removePart({
           agentID: params.agentID,
           messageID: params.messageID,
           partID: params.partID,
@@ -636,7 +636,7 @@ export const AgentSessionRoutes = lazy(() =>
             `Part mismatch: body.id='${body.id}' vs partID='${params.partID}', body.messageID='${body.messageID}' vs messageID='${params.messageID}', body.agentID='${body.agentID}' vs agentID='${params.agentID}'`,
           )
         }
-        const part = await AgentSession.updatePart(body)
+        const part = await Agent.updatePart(body)
         return c.json(part)
       },
     )
@@ -759,7 +759,7 @@ export const AgentSessionRoutes = lazy(() =>
             description: "Updated agent session",
             content: {
               "application/json": {
-                schema: resolver(AgentSession.Info),
+                schema: resolver(Agent.Info),
               },
             },
           },
@@ -794,7 +794,7 @@ export const AgentSessionRoutes = lazy(() =>
             description: "Updated agent session",
             content: {
               "application/json": {
-                schema: resolver(AgentSession.Info),
+                schema: resolver(Agent.Info),
               },
             },
           },
