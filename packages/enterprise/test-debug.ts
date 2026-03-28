@@ -5,13 +5,13 @@ async function test() {
   const shareInfo = await Share.create({ sessionID: "test-debug-" + Date.now() })
 
   const batch1: Share.Data[] = [
-    { type: "part", data: { id: "part1", sessionID: "session1", messageID: "msg1", type: "text", text: "Hello" } },
+    { type: "part", data: { id: "part1", agentID: "session1", messageID: "msg1", type: "text", text: "Hello" } },
   ]
 
   const batch2: Share.Data[] = [
     {
       type: "part",
-      data: { id: "part1", sessionID: "session1", messageID: "msg1", type: "text", text: "Hello Updated" },
+      data: { id: "part1", agentID: "session1", messageID: "msg1", type: "text", text: "Hello Updated" },
     },
   ]
 

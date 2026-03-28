@@ -1,4 +1,4 @@
-import { FileDiff, Message, Model, Part, Session } from "@opencode-ai/sdk/v2"
+import { Agent, FileDiff, Message, Model, Part } from "@opencode-ai/sdk/v2"
 import { fn } from "@opencode-ai/util/fn"
 import { iife } from "@opencode-ai/util/iife"
 import z from "zod"
@@ -15,7 +15,7 @@ export namespace Share {
   export const Data = z.discriminatedUnion("type", [
     z.object({
       type: z.literal("session"),
-      data: z.custom<Session>(),
+      data: z.custom<Agent>(),
     }),
     z.object({
       type: z.literal("message"),

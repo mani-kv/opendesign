@@ -21,7 +21,7 @@ describe.concurrent("core.share", () => {
     const data: Share.Data[] = [
       {
         type: "part",
-        data: { id: "part1", sessionID, messageID: "msg1", type: "text", text: "Hello" },
+        data: { id: "part1", agentID: sessionID, messageID: "msg1", type: "text", text: "Hello" },
       },
     ]
 
@@ -43,14 +43,14 @@ describe.concurrent("core.share", () => {
     const data1: Share.Data[] = [
       {
         type: "part",
-        data: { id: "part1", sessionID, messageID: "msg1", type: "text", text: "Hello" },
+        data: { id: "part1", agentID: sessionID, messageID: "msg1", type: "text", text: "Hello" },
       },
     ]
 
     const data2: Share.Data[] = [
       {
         type: "part",
-        data: { id: "part2", sessionID, messageID: "msg1", type: "text", text: "World" },
+        data: { id: "part2", agentID: sessionID, messageID: "msg1", type: "text", text: "World" },
       },
     ]
 
@@ -77,11 +77,11 @@ describe.concurrent("core.share", () => {
     const data: Share.Data[] = [
       {
         type: "part",
-        data: { id: "part1", sessionID, messageID: "msg1", type: "text", text: "Hello" },
+        data: { id: "part1", agentID: sessionID, messageID: "msg1", type: "text", text: "Hello" },
       },
       {
         type: "part",
-        data: { id: "part2", sessionID, messageID: "msg1", type: "text", text: "World" },
+        data: { id: "part2", agentID: sessionID, messageID: "msg1", type: "text", text: "World" },
       },
     ]
 
@@ -106,19 +106,19 @@ describe.concurrent("core.share", () => {
     const data1: Share.Data[] = [
       {
         type: "part",
-        data: { id: "part1", sessionID, messageID: "msg1", type: "text", text: "Hello" },
+        data: { id: "part1", agentID: sessionID, messageID: "msg1", type: "text", text: "Hello" },
       },
     ]
 
     const data2: Share.Data[] = [
       {
         type: "part",
-        data: { id: "part2", sessionID, messageID: "msg2", type: "text", text: "World" },
+        data: { id: "part2", agentID: sessionID, messageID: "msg2", type: "text", text: "World" },
       },
     ]
 
     const data3: Share.Data[] = [
-      { type: "part", data: { id: "part3", sessionID, messageID: "msg3", type: "text", text: "!" } },
+      { type: "part", data: { id: "part3", agentID: sessionID, messageID: "msg3", type: "text", text: "!" } },
     ]
 
     await Share.sync({
@@ -152,14 +152,14 @@ describe.concurrent("core.share", () => {
     const data1: Share.Data[] = [
       {
         type: "part",
-        data: { id: "part1", sessionID, messageID: "msg1", type: "text", text: "Hello" },
+        data: { id: "part1", agentID: sessionID, messageID: "msg1", type: "text", text: "Hello" },
       },
     ]
 
     const data2: Share.Data[] = [
       {
         type: "part",
-        data: { id: "part1", sessionID, messageID: "msg1", type: "text", text: "Hello Updated" },
+        data: { id: "part1", agentID: sessionID, messageID: "msg1", type: "text", text: "Hello Updated" },
       },
     ]
 
@@ -200,7 +200,7 @@ describe.concurrent("core.share", () => {
     const data: Share.Data[] = [
       {
         type: "part",
-        data: { id: "part1", sessionID, messageID: "msg1", type: "text", text: "Hello" },
+        data: { id: "part1", agentID: sessionID, messageID: "msg1", type: "text", text: "Hello" },
       },
     ]
 
@@ -223,7 +223,7 @@ describe.concurrent("core.share", () => {
     const data: Share.Data[] = [
       {
         type: "part",
-        data: { id: "part1", sessionID, messageID: "msg1", type: "text", text: "Test" },
+        data: { id: "part1", agentID: sessionID, messageID: "msg1", type: "text", text: "Test" },
       },
     ]
 
@@ -242,7 +242,7 @@ describe.concurrent("core.share", () => {
     const data: Share.Data[] = [
       {
         type: "part",
-        data: { id: "part1", sessionID, messageID: "msg1", type: "text", text: "Test" },
+        data: { id: "part1", agentID: sessionID, messageID: "msg1", type: "text", text: "Test" },
       },
     ]
 
@@ -260,10 +260,10 @@ describe.concurrent("core.share", () => {
 
     const data: Share.Data[] = [
       { type: "session", data: { id: sessionID, status: "running" } as any },
-      { type: "message", data: { id: "msg1", sessionID } as any },
+      { type: "message", data: { id: "msg1", agentID: sessionID } as any },
       {
         type: "part",
-        data: { id: "part1", sessionID, messageID: "msg1", type: "text", text: "Hello" },
+        data: { id: "part1", agentID: sessionID, messageID: "msg1", type: "text", text: "Hello" },
       },
     ]
 

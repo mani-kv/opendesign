@@ -1,4 +1,4 @@
-import { FileDiff, Message, Model, Part, Session, SessionStatus, UserMessage } from "@opencode-ai/sdk/v2"
+import { Agent, FileDiff, Message, Model, Part, SessionStatus, UserMessage } from "@opencode-ai/sdk/v2"
 import { SessionTurn } from "@opencode-ai/ui/session-turn"
 import { SessionReview } from "@opencode-ai/ui/session-review"
 import { DataProvider } from "@opencode-ai/ui/context"
@@ -49,7 +49,7 @@ const getData = query(async (shareID) => {
   const result: {
     sessionID: string
     shareID: string
-    session: Session[]
+    session: Agent[]
     session_diff: {
       [sessionID: string]: FileDiff[]
     }
@@ -90,8 +90,8 @@ const getData = query(async (shareID) => {
         result.session_diff[share.sessionID] = item.data
         break
       case "message":
-        result.message[item.data.sessionID] = result.message[item.data.sessionID] ?? []
-        result.message[item.data.sessionID].push(item.data)
+        result.message[item.data.agentID] = result.message[item.data.agentID] ?? []
+        result.message[item.data.agentID].push(item.data)
         break
       case "part":
         result.part[item.data.messageID] = result.part[item.data.messageID] ?? []
