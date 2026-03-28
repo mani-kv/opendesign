@@ -1,10 +1,10 @@
 import { sqliteTable, text, index } from "drizzle-orm/sqlite-core"
-import { ProjectTable } from "../project/project.sql"
+import { FeatureTable } from "../feature/feature.sql"
 import { Timestamps } from "../storage/schema.sql"
 
 export const AgentTable = sqliteTable("agent", {
   id: text().primaryKey(),
-  feature_id: text().notNull().references(() => ProjectTable.id, { onDelete: "cascade" }),
+  feature_id: text().notNull().references(() => FeatureTable.id, { onDelete: "cascade" }),
   annotation_id: text(),
   branch: text(),
   status: text().notNull().default("working"),

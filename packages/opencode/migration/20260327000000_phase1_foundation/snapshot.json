@@ -1,0 +1,10 @@
+{
+  "id": "phase1-foundation",
+  "prevId": "opendesign-v2",
+  "version": "6",
+  "dialect": "sqlite",
+  "tables": {},
+  "enums": {},
+  "schemas": {},
+  "_meta": { "schemas": {}, "tables": {}, "columns": {} }
+}

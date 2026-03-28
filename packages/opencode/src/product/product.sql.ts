@@ -5,6 +5,7 @@ export const ProductTable = sqliteTable("product", {
   id: text().primaryKey(),
   name: text().notNull(),
   directory: text().notNull(),
+  worktree: text().notNull(),
   git_root: text(),
   ...Timestamps,
 })

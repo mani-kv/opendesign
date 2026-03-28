@@ -1,4 +1,3 @@
-export { ProjectTable } from "../project/project.sql"
 export { ProductTable } from "../product/product.sql"
 export { DesignSystemTable } from "../design-system/design-system.sql"
 export { ProductDesignSystemTable } from "../design-system/product-design-system.sql"
