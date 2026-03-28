@@ -1,5 +1,5 @@
 import type { Argv } from "yargs"
-import type { Session as SDKSession, Message, Part } from "@opencode-ai/sdk/v2"
+import type { Agent as SDKAgent, Message, Part } from "@opencode-ai/sdk/v2"
 import { Agent } from "../../agent"
 import { cmd } from "./cmd"
 import { bootstrap } from "../bootstrap"
@@ -14,7 +14,7 @@ import { Filesystem } from "../../util/filesystem"
 
 /** Discriminated union returned by the ShareNext API (GET /api/shares/:id/data) */
 export type ShareData =
-  | { type: "session"; data: SDKSession }
+  | { type: "session"; data: SDKAgent }
   | { type: "message"; data: Message }
   | { type: "part"; data: Part }
   | { type: "session_diff"; data: unknown }
@@ -43,7 +43,7 @@ export function shouldAttachShareAuthHeaders(shareUrl: string, accountBaseUrl: s
  * This groups parts by their messageID to reconstruct the hierarchy before writing to disk.
  */
 export function transformShareData(shareData: ShareData[]): {
-  info: SDKSession
+  info: SDKAgent
   messages: Array<{ info: Message; parts: Part[] }>
 } | null {
   const sessionItem = shareData.find((d) => d.type === "session")

@@ -42,7 +42,7 @@ import { Config } from "@/config/config"
 import { Todo } from "@/agent/todo"
 import { z } from "zod"
 import { LoadAPIKeyError } from "ai"
-import type { AssistantMessage, Event, OpencodeClient, SessionMessageResponse, ToolPart } from "@opencode-ai/sdk/v2"
+import type { AgentMessageResponse, AssistantMessage, Event, OpencodeClient, ToolPart } from "@opencode-ai/sdk/v2"
 import { applyPatch } from "diff"
 
 type ModeOption = { id: string; name: string; description?: string }
@@ -78,8 +78,8 @@ export namespace ACP {
     sessionID: string,
     directory: string,
   ): Promise<void> {
-    const messages = await sdk.session
-      .messages({ sessionID, directory }, { throwOnError: true })
+    const messages = await sdk.agent
+      .messages({ agentID: sessionID, directory }, { throwOnError: true })
       .then((x) => x.data)
       .catch((error) => {
         log.error("failed to fetch messages for usage update", { error })
@@ -89,7 +89,7 @@ export namespace ACP {
     if (!messages) return
 
     const assistantMessages = messages.filter(
-      (m): m is { info: AssistantMessage; parts: SessionMessageResponse["parts"] } => m.info.role === "assistant",
+      (m): m is { info: AssistantMessage; parts: AgentMessageResponse["parts"] } => m.info.role === "assistant",
     )
 
     const lastAssistant = assistantMessages[assistantMessages.length - 1]
@@ -183,17 +183,17 @@ export namespace ACP {
       switch (event.type) {
         case "permission.asked": {
           const permission = event.properties
-          const session = this.sessionManager.tryGet(permission.sessionID)
+          const session = this.sessionManager.tryGet(permission.agentID)
           if (!session) return
 
-          const prev = this.permissionQueues.get(permission.sessionID) ?? Promise.resolve()
+          const prev = this.permissionQueues.get(permission.agentID) ?? Promise.resolve()
           const next = prev
             .then(async () => {
               const directory = session.cwd
 
               const res = await this.connection
                 .requestPermission({
-                  sessionId: permission.sessionID,
+                  sessionId: permission.agentID,
                   toolCall: {
                     toolCallId: permission.tool?.callID ?? permission.id,
                     status: "pending",
@@ -208,7 +208,7 @@ export namespace ACP {
                   log.error("failed to request permission from ACP", {
                     error,
                     permissionID: permission.id,
-                    sessionID: permission.sessionID,
+                    agentID: permission.agentID,
                   })
                   await this.sdk.permission.reply({
                     requestID: permission.id,
@@ -254,11 +254,11 @@ export namespace ACP {
               log.error("failed to handle permission", { error, permissionID: permission.id })
             })
             .finally(() => {
-              if (this.permissionQueues.get(permission.sessionID) === next) {
-                this.permissionQueues.delete(permission.sessionID)
+              if (this.permissionQueues.get(permission.agentID) === next) {
+                this.permissionQueues.delete(permission.agentID)
               }
             })
-          this.permissionQueues.set(permission.sessionID, next)
+          this.permissionQueues.set(permission.agentID, next)
           return
         }
 
@@ -266,7 +266,7 @@ export namespace ACP {
           log.info("message part updated", { event: event.properties })
           const props = event.properties
           const part = props.part
-          const session = this.sessionManager.tryGet(part.sessionID)
+          const session = this.sessionManager.tryGet(part.agentID)
           if (!session) return
           const sessionId = session.id
 
@@ -452,14 +452,14 @@ export namespace ACP {
 
         case "message.part.delta": {
           const props = event.properties
-          const session = this.sessionManager.tryGet(props.sessionID)
+          const session = this.sessionManager.tryGet(props.agentID)
           if (!session) return
           const sessionId = session.id
 
-          const message = await this.sdk.session
+          const message = await this.sdk.agent
             .message(
               {
-                sessionID: props.sessionID,
+                agentID: props.agentID,
                 messageID: props.messageID,
                 directory: session.cwd,
               },
@@ -618,10 +618,10 @@ export namespace ACP {
         })
 
         // Replay session history
-        const messages = await this.sdk.session
+        const messages = await this.sdk.agent
           .messages(
             {
-              sessionID: sessionId,
+              agentID: sessionId,
               directory,
             },
             { throwOnError: true },
@@ -669,7 +669,7 @@ export namespace ACP {
         const cursor = params.cursor ? Number(params.cursor) : undefined
         const limit = 100
 
-        const sessions = await this.sdk.session
+        const sessions = await this.sdk.experimental.session
           .list(
             {
               directory: params.cwd ?? undefined,
@@ -716,10 +716,10 @@ export namespace ACP {
       try {
         const model = await defaultModel(this.config, directory)
 
-        const forked = await this.sdk.session
+        const forked = await this.sdk.agent
           .fork(
             {
-              sessionID: params.sessionId,
+              agentID: params.sessionId,
               directory,
             },
             { throwOnError: true },
@@ -741,10 +741,10 @@ export namespace ACP {
           sessionId,
         })
 
-        const messages = await this.sdk.session
+        const messages = await this.sdk.agent
           .messages(
             {
-              sessionID: sessionId,
+              agentID: sessionId,
               directory,
             },
             { throwOnError: true },
@@ -805,10 +805,10 @@ export namespace ACP {
       }
     }
 
-    private async processMessage(message: SessionMessageResponse) {
+    private async processMessage(message: AgentMessageResponse) {
       log.debug("process message", message)
       if (message.info.role !== "assistant" && message.info.role !== "user") return
-      const sessionId = message.info.sessionID
+      const sessionId = message.info.agentID
 
       for (const part of message.parts) {
         if (part.type === "tool") {
@@ -1108,14 +1108,14 @@ export namespace ACP {
     }
 
     private async loadAvailableModes(directory: string): Promise<ModeOption[]> {
-      const agents = await this.config.sdk.app
-        .agents(
+      const agents = await this.config.sdk.agentDef
+        .list(
           {
             directory,
           },
           { throwOnError: true },
         )
-        .then((resp) => resp.data!)
+        .then((resp) => resp.data! as unknown as AgentDef.Info[])
 
       return agents
         .filter((agent) => agent.mode !== "subagent" && !agent.hidden)
@@ -1399,8 +1399,8 @@ export namespace ACP {
       })
 
       if (!cmd) {
-        const response = await this.sdk.session.prompt({
-          sessionID,
+        const response = await this.sdk.agent.prompt({
+          agentID: sessionID,
           model: {
             providerID: model.providerID,
             modelID: model.modelID,
@@ -1425,8 +1425,8 @@ export namespace ACP {
         .list({ directory }, { throwOnError: true })
         .then((x) => x.data!.find((c) => c.name === cmd.name))
       if (command) {
-        const response = await this.sdk.session.command({
-          sessionID,
+        const response = await this.sdk.agent.command({
+          agentID: sessionID,
           command: command.name,
           arguments: cmd.args,
           model: model.providerID + "/" + model.modelID,
@@ -1446,9 +1446,9 @@ export namespace ACP {
 
       switch (cmd.name) {
         case "compact":
-          await this.config.sdk.session.summarize(
+          await this.config.sdk.agent.summarize(
             {
-              sessionID,
+              agentID: sessionID,
               directory,
               providerID: model.providerID,
               modelID: model.modelID,
@@ -1468,9 +1468,9 @@ export namespace ACP {
 
     async cancel(params: CancelNotification) {
       const session = this.sessionManager.get(params.sessionId)
-      await this.config.sdk.session.abort(
+      await this.config.sdk.agent.abort(
         {
-          sessionID: params.sessionId,
+          agentID: params.sessionId,
           directory: session.cwd,
         },
         { throwOnError: true },

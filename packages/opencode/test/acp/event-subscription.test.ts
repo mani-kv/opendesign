@@ -62,7 +62,7 @@ function toolEvent(
     properties: {
       part: {
         id: `part_${opts.callID}`,
-        sessionID: sessionId,
+        agentID: sessionId,
         messageID: `msg_${opts.callID}`,
         type: "tool",
         callID: opts.callID,
@@ -158,7 +158,7 @@ function createFakeAgent() {
         return { stream: stream(opts?.signal) }
       },
     },
-    session: {
+    agent: {
       create: async (_params?: any) => {
         calls.sessionCreate++
         return {
@@ -219,8 +219,8 @@ function createFakeAgent() {
         }
       },
     },
-    app: {
-      agents: async () => {
+    agentDef: {
+      list: async () => {
         return {
           data: [
             {
@@ -274,7 +274,7 @@ describe("acp.agent event subscription", () => {
           payload: {
             type: "message.part.delta",
             properties: {
-              sessionID: sessionB,
+              agentID: sessionB,
               messageID: "msg_1",
               partID: "msg_1_part",
               field: "text",
@@ -313,7 +313,7 @@ describe("acp.agent event subscription", () => {
             payload: {
               type: "message.part.delta",
               properties: {
-                sessionID: sessionId,
+                agentID: sessionId,
                 messageID,
                 partID: `${messageID}_part`,
                 field: "text",
@@ -388,7 +388,7 @@ describe("acp.agent event subscription", () => {
             type: "permission.asked",
             properties: {
               id: "perm_1",
-              sessionID: sessionA,
+              agentID: sessionA,
               permission: "bash",
               patterns: ["*"],
               metadata: {},
@@ -447,7 +447,7 @@ describe("acp.agent event subscription", () => {
             type: "permission.asked",
             properties: {
               id: "perm_a",
-              sessionID: sessionA,
+              agentID: sessionA,
               permission: "bash",
               patterns: ["*"],
               metadata: {},
@@ -465,7 +465,7 @@ describe("acp.agent event subscription", () => {
           payload: {
             type: "message.part.delta",
             properties: {
-              sessionID: sessionB,
+              agentID: sessionB,
               messageID: "msg_b",
               partID: "msg_b_part",
               field: "text",
@@ -582,12 +582,12 @@ describe("acp.agent event subscription", () => {
         const sessionId = await agent.newSession({ cwd, mcpServers: [] } as any).then((x) => x.sessionId)
         const input = { command: "echo hi", description: "run command" }
 
-        sdk.session.messages = async () => ({
+        sdk.agent.messages = async () => ({
           data: [
             {
               info: {
                 role: "assistant",
-                sessionID: sessionId,
+                agentID: sessionId,
               },
               parts: [
                 {

@@ -379,33 +379,23 @@ export const RunCommand = cmd({
     }
 
     async function session(sdk: OpencodeClient) {
-      const baseID = args.continue ? (await sdk.session.list()).data?.find((s) => !s.parentID)?.id : args.session
+      const baseID = args.continue ? (await sdk.experimental.session.list({ roots: true })).data?.[0]?.id : args.session
 
       if (baseID && args.fork) {
-        const forked = await sdk.session.fork({ sessionID: baseID })
+        const forked = await sdk.agent.fork({ agentID: baseID })
         return forked.data?.id
       }
 
       if (baseID) return baseID
 
       const name = title()
-      const result = await sdk.session.create({ title: name, permission: rules })
+      const result = await sdk.agent.create({ title: name, permission: rules })
       return result.data?.id
     }
 
-    async function share(sdk: OpencodeClient, sessionID: string) {
-      const cfg = await sdk.config.get()
-      if (!cfg.data) return
-      if (cfg.data.share !== "auto" && !Flag.OPENCODE_AUTO_SHARE && !args.share) return
-      const res = await sdk.session.share({ sessionID }).catch((error) => {
-        if (error instanceof Error && error.message.includes("disabled")) {
-          UI.println(UI.Style.TEXT_DANGER_BOLD + "!  " + error.message)
-        }
-        return { error }
-      })
-      if (!res.error && "data" in res && res.data?.share?.url) {
-        UI.println(UI.Style.TEXT_INFO_BOLD + "~  " + res.data.share.url)
-      }
+    // TODO: share functionality removed - sdk.session.share no longer exists
+    async function share(_sdk: OpencodeClient, _sessionID: string) {
+      // share feature has been dropped
     }
 
     async function execute(sdk: OpencodeClient) {
@@ -459,7 +449,7 @@ export const RunCommand = cmd({
 
           if (event.type === "message.part.updated") {
             const part = event.properties.part
-            if (part.sessionID !== sessionID) continue
+            if (part.agentID !== sessionID) continue
 
             if (part.type === "tool" && (part.state.status === "completed" || part.state.status === "error")) {
               if (emit("tool_use", { part })) continue
@@ -521,9 +511,9 @@ export const RunCommand = cmd({
             }
           }
 
-          if (event.type === "session.error") {
+          if (event.type === "agent.error") {
             const props = event.properties
-            if (props.sessionID !== sessionID || !props.error) continue
+            if (props.agentID !== sessionID || !props.error) continue
             let err = String(props.error.name)
             if ("data" in props.error && props.error.data && "message" in props.error.data) {
               err = String(props.error.data.message)
@@ -543,7 +533,7 @@ export const RunCommand = cmd({
 
           if (event.type === "permission.asked") {
             const permission = event.properties
-            if (permission.sessionID !== sessionID) continue
+            if (permission.agentID !== sessionID) continue
             UI.println(
               UI.Style.TEXT_WARNING_BOLD + "!",
               UI.Style.TEXT_NORMAL +
@@ -563,9 +553,9 @@ export const RunCommand = cmd({
 
         // When attaching, validate against the running server instead of local Instance state.
         if (args.attach) {
-          const modes = await sdk.app
-            .agents(undefined, { throwOnError: true })
-            .then((x) => x.data ?? [])
+          const modes = await sdk.agentDef
+            .list(undefined, { throwOnError: true })
+            .then((x) => (x.data ?? []) as unknown as AgentDef.Info[])
             .catch(() => undefined)
 
           if (!modes) {
@@ -632,8 +622,8 @@ export const RunCommand = cmd({
       })
 
       if (args.command) {
-        await sdk.session.command({
-          sessionID,
+        await sdk.agent.command({
+          agentID: sessionID,
           agent,
           model: args.model,
           command: args.command,
@@ -642,8 +632,8 @@ export const RunCommand = cmd({
         })
       } else {
         const model = args.model ? Provider.parseModel(args.model) : undefined
-        await sdk.session.prompt({
-          sessionID,
+        await sdk.agent.prompt({
+          agentID: sessionID,
           agent,
           model,
           variant: args.variant,
