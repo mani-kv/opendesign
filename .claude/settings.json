@@ -61,7 +61,19 @@
       "Bash(for f:*)",
       "Bash(do sed:*)",
       "Bash(done)",
-      "Read(//Users/Mani/**)"
+      "Read(//Users/Mani/**)",
+      "Bash(timeout 60 bun ./packages/sdk/js/script/build.ts)",
+      "Bash(bun /Users/Mani/Desktop/SideProjects/opendesign/packages/sdk/js/script/build.ts)",
+      "Bash(do echo:*)",
+      "Bash(git status:*)",
+      "Bash(grep -n \"archived\\\\|status\" /Users/Mani/Desktop/SideProjects/opendesign/packages/app/src/context/global-sync/*.ts)",
+      "Bash(rm -f \"$HOME/Library/Application Support/opencode/opencode.db\"*)",
+      "Bash(rm -f \"$HOME/.local/share/opencode/opencode.db\"*)",
+      "Bash(ls /Users/Mani/Desktop/SideProjects/opendesign/packages/app/src/utils/*.test.ts)",
+      "Bash(timeout 15 bun dev serve)",
+      "Bash(export PATH=\"/Users/Mani/.bun/bin:$PATH\")",
+      "Bash(curl -s http://localhost:4096/product)",
+      "Bash(curl -s http://localhost:4096/permission)"
     ],
     "additionalDirectories": [
       "/tmp"

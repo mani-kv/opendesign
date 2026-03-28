@@ -25,6 +25,9 @@ CREATE TABLE IF NOT EXISTS `product` (
 	`directory` text NOT NULL,
 	`worktree` text NOT NULL,
 	`git_root` text,
+	`icon` text,
+	`commands` text,
+	`sandboxes` text,
 	`time_created` integer NOT NULL,
 	`time_updated` integer NOT NULL
 );--> statement-breakpoint

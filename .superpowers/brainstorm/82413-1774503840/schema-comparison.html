@@ -5,240 +5,468 @@
   <h3>Ideal Schema — Designed from Spec</h3>
   <div class="mockup">
     <div class="mockup-header">Entity Relationship Overview</div>
-    <div class="mockup-body" style="padding: 2rem; font-family: monospace; font-size: 11px;">
-      <div style="display: flex; flex-wrap: wrap; gap: 1rem;">
-
+    <div class="mockup-body" style="padding: 2rem; font-family: monospace; font-size: 11px">
+      <div style="display: flex; flex-wrap: wrap; gap: 1rem">
         <!-- Product -->
-        <div style="background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.3); border-radius: 8px; padding: 12px; min-width: 200px; flex: 1;">
-          <div style="color: #818cf8; font-weight: 700; margin-bottom: 8px;">PRODUCT</div>
-          <div style="color: #cbd5e1; line-height: 1.8;">
-            id TEXT PK<br/>
-            name TEXT<br/>
-            directory TEXT UNIQUE<br/>
-            git_root TEXT<br/>
-            created_at INTEGER<br/>
+        <div
+          style="
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            min-width: 200px;
+            flex: 1;
+          "
+        >
+          <div style="color: #818cf8; font-weight: 700; margin-bottom: 8px">PRODUCT</div>
+          <div style="color: #cbd5e1; line-height: 1.8">
+            id TEXT PK<br />
+            name TEXT<br />
+            directory TEXT UNIQUE<br />
+            git_root TEXT<br />
+            created_at INTEGER<br />
             updated_at INTEGER
           </div>
-          <div style="color: #64748b; font-size: 10px; margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 6px;">
+          <div
+            style="
+              color: #64748b;
+              font-size: 10px;
+              margin-top: 8px;
+              border-top: 1px solid rgba(255, 255, 255, 0.06);
+              padding-top: 6px;
+            "
+          >
             One per mono repo. Root entity.
           </div>
         </div>
 
         <!-- Design System -->
-        <div style="background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); border-radius: 8px; padding: 12px; min-width: 200px; flex: 1;">
-          <div style="color: #34d399; font-weight: 700; margin-bottom: 8px;">DESIGN_SYSTEM</div>
-          <div style="color: #cbd5e1; line-height: 1.8;">
-            id TEXT PK<br/>
-            name TEXT<br/>
-            figma_file_key TEXT<br/>
-            figma_file_name TEXT<br/>
-            tokens TEXT (JSON)<br/>
-            components TEXT (JSON)<br/>
-            styles TEXT (JSON)<br/>
-            last_synced_at INTEGER<br/>
-            created_at INTEGER<br/>
+        <div
+          style="
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            min-width: 200px;
+            flex: 1;
+          "
+        >
+          <div style="color: #34d399; font-weight: 700; margin-bottom: 8px">DESIGN_SYSTEM</div>
+          <div style="color: #cbd5e1; line-height: 1.8">
+            id TEXT PK<br />
+            name TEXT<br />
+            figma_file_key TEXT<br />
+            figma_file_name TEXT<br />
+            tokens TEXT (JSON)<br />
+            components TEXT (JSON)<br />
+            styles TEXT (JSON)<br />
+            last_synced_at INTEGER<br />
+            created_at INTEGER<br />
             updated_at INTEGER
           </div>
-          <div style="color: #64748b; font-size: 10px; margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 6px;">
+          <div
+            style="
+              color: #64748b;
+              font-size: 10px;
+              margin-top: 8px;
+              border-top: 1px solid rgba(255, 255, 255, 0.06);
+              padding-top: 6px;
+            "
+          >
             First-class entity. Shared across products.
           </div>
         </div>
 
         <!-- Product ↔ Design System -->
-        <div style="background: rgba(139,92,246,0.1); border: 1px solid rgba(139,92,246,0.3); border-radius: 8px; padding: 12px; min-width: 180px; flex: 0.7;">
-          <div style="color: #a78bfa; font-weight: 700; margin-bottom: 8px;">PRODUCT_DESIGN_SYSTEM</div>
-          <div style="color: #cbd5e1; line-height: 1.8;">
-            product_id TEXT → PRODUCT<br/>
-            design_system_id TEXT → DS<br/>
+        <div
+          style="
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            min-width: 180px;
+            flex: 0.7;
+          "
+        >
+          <div style="color: #a78bfa; font-weight: 700; margin-bottom: 8px">PRODUCT_DESIGN_SYSTEM</div>
+          <div style="color: #cbd5e1; line-height: 1.8">
+            product_id TEXT → PRODUCT<br />
+            design_system_id TEXT → DS<br />
             PRIMARY KEY (product_id, ds_id)
           </div>
-          <div style="color: #64748b; font-size: 10px; margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 6px;">
+          <div
+            style="
+              color: #64748b;
+              font-size: 10px;
+              margin-top: 8px;
+              border-top: 1px solid rgba(255, 255, 255, 0.06);
+              padding-top: 6px;
+            "
+          >
             Many-to-many join table.
           </div>
         </div>
 
         <!-- Feature -->
-        <div style="background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3); border-radius: 8px; padding: 12px; min-width: 220px; flex: 1;">
-          <div style="color: #fbbf24; font-weight: 700; margin-bottom: 8px;">FEATURE</div>
-          <div style="color: #cbd5e1; line-height: 1.8;">
-            id TEXT PK<br/>
-            product_id TEXT → PRODUCT<br/>
-            name TEXT<br/>
-            branch TEXT<br/>
-            status TEXT (active|completed|archived)<br/>
-            figma_url TEXT<br/>
-            canvas_state TEXT (JSON)<br/>
-            created_at INTEGER<br/>
+        <div
+          style="
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            min-width: 220px;
+            flex: 1;
+          "
+        >
+          <div style="color: #fbbf24; font-weight: 700; margin-bottom: 8px">FEATURE</div>
+          <div style="color: #cbd5e1; line-height: 1.8">
+            id TEXT PK<br />
+            product_id TEXT → PRODUCT<br />
+            name TEXT<br />
+            branch TEXT<br />
+            status TEXT (active|completed|archived)<br />
+            figma_url TEXT<br />
+            canvas_state TEXT (JSON)<br />
+            created_at INTEGER<br />
             updated_at INTEGER
           </div>
-          <div style="color: #64748b; font-size: 10px; margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 6px;">
+          <div
+            style="
+              color: #64748b;
+              font-size: 10px;
+              margin-top: 8px;
+              border-top: 1px solid rgba(255, 255, 255, 0.06);
+              padding-top: 6px;
+            "
+          >
             Exploration context within a product.
           </div>
         </div>
 
         <!-- Annotation -->
-        <div style="background: rgba(236,72,153,0.1); border: 1px solid rgba(236,72,153,0.3); border-radius: 8px; padding: 12px; min-width: 220px; flex: 1;">
-          <div style="color: #f472b6; font-weight: 700; margin-bottom: 8px;">ANNOTATION</div>
-          <div style="color: #cbd5e1; line-height: 1.8;">
-            id TEXT PK<br/>
-            feature_id TEXT → FEATURE<br/>
-            component_node_id TEXT<br/>
-            component_name TEXT<br/>
-            prompt TEXT<br/>
-            ds_slider REAL (0.0–1.0)<br/>
-            variation_count INTEGER<br/>
-            enrichments TEXT (JSON)<br/>
-            position_x REAL<br/>
-            position_y REAL<br/>
+        <div
+          style="
+            background: rgba(236, 72, 153, 0.1);
+            border: 1px solid rgba(236, 72, 153, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            min-width: 220px;
+            flex: 1;
+          "
+        >
+          <div style="color: #f472b6; font-weight: 700; margin-bottom: 8px">ANNOTATION</div>
+          <div style="color: #cbd5e1; line-height: 1.8">
+            id TEXT PK<br />
+            feature_id TEXT → FEATURE<br />
+            component_node_id TEXT<br />
+            component_name TEXT<br />
+            prompt TEXT<br />
+            ds_slider REAL (0.0–1.0)<br />
+            variation_count INTEGER<br />
+            enrichments TEXT (JSON)<br />
+            position_x REAL<br />
+            position_y REAL<br />
             created_at INTEGER
           </div>
-          <div style="color: #64748b; font-size: 10px; margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 6px;">
+          <div
+            style="
+              color: #64748b;
+              font-size: 10px;
+              margin-top: 8px;
+              border-top: 1px solid rgba(255, 255, 255, 0.06);
+              padding-top: 6px;
+            "
+          >
             User selects component → creates annotation → spawns agent.
           </div>
         </div>
 
         <!-- Agent -->
-        <div style="background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: 8px; padding: 12px; min-width: 220px; flex: 1;">
-          <div style="color: #f87171; font-weight: 700; margin-bottom: 8px;">AGENT</div>
-          <div style="color: #cbd5e1; line-height: 1.8;">
-            id TEXT PK<br/>
-            feature_id TEXT → FEATURE<br/>
-            annotation_id TEXT → ANNOTATION<br/>
-            branch TEXT<br/>
-            status TEXT (working|waiting|done)<br/>
-            color TEXT<br/>
-            created_at INTEGER<br/>
+        <div
+          style="
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            min-width: 220px;
+            flex: 1;
+          "
+        >
+          <div style="color: #f87171; font-weight: 700; margin-bottom: 8px">AGENT</div>
+          <div style="color: #cbd5e1; line-height: 1.8">
+            id TEXT PK<br />
+            feature_id TEXT → FEATURE<br />
+            annotation_id TEXT → ANNOTATION<br />
+            branch TEXT<br />
+            status TEXT (working|waiting|done)<br />
+            color TEXT<br />
+            created_at INTEGER<br />
             updated_at INTEGER
           </div>
-          <div style="color: #64748b; font-size: 10px; margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 6px;">
+          <div
+            style="
+              color: #64748b;
+              font-size: 10px;
+              margin-top: 8px;
+              border-top: 1px solid rgba(255, 255, 255, 0.06);
+              padding-top: 6px;
+            "
+          >
             One per annotation. Owns a branch + chat thread.
           </div>
         </div>
 
         <!-- Message (reuse pattern) -->
-        <div style="background: rgba(99,102,241,0.06); border: 1px solid rgba(99,102,241,0.15); border-radius: 8px; padding: 12px; min-width: 200px; flex: 1;">
-          <div style="color: #818cf8; font-weight: 700; margin-bottom: 8px;">MESSAGE</div>
-          <div style="color: #cbd5e1; line-height: 1.8;">
-            id TEXT PK<br/>
-            agent_id TEXT → AGENT<br/>
-            role TEXT (user|assistant)<br/>
-            data TEXT (JSON)<br/>
+        <div
+          style="
+            background: rgba(99, 102, 241, 0.06);
+            border: 1px solid rgba(99, 102, 241, 0.15);
+            border-radius: 8px;
+            padding: 12px;
+            min-width: 200px;
+            flex: 1;
+          "
+        >
+          <div style="color: #818cf8; font-weight: 700; margin-bottom: 8px">MESSAGE</div>
+          <div style="color: #cbd5e1; line-height: 1.8">
+            id TEXT PK<br />
+            agent_id TEXT → AGENT<br />
+            role TEXT (user|assistant)<br />
+            data TEXT (JSON)<br />
             created_at INTEGER
           </div>
-          <div style="color: #64748b; font-size: 10px; margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 6px;">
+          <div
+            style="
+              color: #64748b;
+              font-size: 10px;
+              margin-top: 8px;
+              border-top: 1px solid rgba(255, 255, 255, 0.06);
+              padding-top: 6px;
+            "
+          >
             Chat turns within an agent. Same pattern as existing.
           </div>
         </div>
 
         <!-- Part -->
-        <div style="background: rgba(99,102,241,0.06); border: 1px solid rgba(99,102,241,0.15); border-radius: 8px; padding: 12px; min-width: 200px; flex: 0.8;">
-          <div style="color: #818cf8; font-weight: 700; margin-bottom: 8px;">PART</div>
-          <div style="color: #cbd5e1; line-height: 1.8;">
-            id TEXT PK<br/>
-            message_id TEXT → MESSAGE<br/>
-            agent_id TEXT (denorm)<br/>
-            data TEXT (JSON)<br/>
+        <div
+          style="
+            background: rgba(99, 102, 241, 0.06);
+            border: 1px solid rgba(99, 102, 241, 0.15);
+            border-radius: 8px;
+            padding: 12px;
+            min-width: 200px;
+            flex: 0.8;
+          "
+        >
+          <div style="color: #818cf8; font-weight: 700; margin-bottom: 8px">PART</div>
+          <div style="color: #cbd5e1; line-height: 1.8">
+            id TEXT PK<br />
+            message_id TEXT → MESSAGE<br />
+            agent_id TEXT (denorm)<br />
+            data TEXT (JSON)<br />
             created_at INTEGER
           </div>
-          <div style="color: #64748b; font-size: 10px; margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 6px;">
+          <div
+            style="
+              color: #64748b;
+              font-size: 10px;
+              margin-top: 8px;
+              border-top: 1px solid rgba(255, 255, 255, 0.06);
+              padding-top: 6px;
+            "
+          >
             Message components. Kept as-is.
           </div>
         </div>
 
         <!-- Variation -->
-        <div style="background: rgba(14,165,233,0.1); border: 1px solid rgba(14,165,233,0.3); border-radius: 8px; padding: 12px; min-width: 220px; flex: 1;">
-          <div style="color: #38bdf8; font-weight: 700; margin-bottom: 8px;">VARIATION</div>
-          <div style="color: #cbd5e1; line-height: 1.8;">
-            id TEXT PK<br/>
-            agent_id TEXT → AGENT<br/>
-            annotation_id TEXT → ANNOTATION<br/>
-            label TEXT<br/>
-            rationale TEXT<br/>
-            files TEXT (JSON — Sandpack bundle)<br/>
-            status TEXT (pending|approved|dismissed)<br/>
-            position_x REAL<br/>
-            position_y REAL<br/>
+        <div
+          style="
+            background: rgba(14, 165, 233, 0.1);
+            border: 1px solid rgba(14, 165, 233, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            min-width: 220px;
+            flex: 1;
+          "
+        >
+          <div style="color: #38bdf8; font-weight: 700; margin-bottom: 8px">VARIATION</div>
+          <div style="color: #cbd5e1; line-height: 1.8">
+            id TEXT PK<br />
+            agent_id TEXT → AGENT<br />
+            annotation_id TEXT → ANNOTATION<br />
+            label TEXT<br />
+            rationale TEXT<br />
+            files TEXT (JSON — Sandpack bundle)<br />
+            status TEXT (pending|approved|dismissed)<br />
+            position_x REAL<br />
+            position_y REAL<br />
             created_at INTEGER
           </div>
-          <div style="color: #64748b; font-size: 10px; margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 6px;">
+          <div
+            style="
+              color: #64748b;
+              font-size: 10px;
+              margin-top: 8px;
+              border-top: 1px solid rgba(255, 255, 255, 0.06);
+              padding-top: 6px;
+            "
+          >
             Agent-generated prototype variation. Approving one updates the main prototype.
           </div>
         </div>
 
         <!-- Checkpoint -->
-        <div style="background: rgba(168,85,247,0.1); border: 1px solid rgba(168,85,247,0.3); border-radius: 8px; padding: 12px; min-width: 220px; flex: 1;">
-          <div style="color: #c084fc; font-weight: 700; margin-bottom: 8px;">CHECKPOINT</div>
-          <div style="color: #cbd5e1; line-height: 1.8;">
-            id TEXT PK<br/>
-            feature_id TEXT → FEATURE<br/>
-            parent_id TEXT → CHECKPOINT<br/>
-            variation_id TEXT → VARIATION<br/>
-            label TEXT<br/>
-            files TEXT (JSON — full Sandpack)<br/>
-            canvas_snapshot TEXT (JSON)<br/>
+        <div
+          style="
+            background: rgba(168, 85, 247, 0.1);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            min-width: 220px;
+            flex: 1;
+          "
+        >
+          <div style="color: #c084fc; font-weight: 700; margin-bottom: 8px">CHECKPOINT</div>
+          <div style="color: #cbd5e1; line-height: 1.8">
+            id TEXT PK<br />
+            feature_id TEXT → FEATURE<br />
+            parent_id TEXT → CHECKPOINT<br />
+            variation_id TEXT → VARIATION<br />
+            label TEXT<br />
+            files TEXT (JSON — full Sandpack)<br />
+            canvas_snapshot TEXT (JSON)<br />
             created_at INTEGER
           </div>
-          <div style="color: #64748b; font-size: 10px; margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 6px;">
+          <div
+            style="
+              color: #64748b;
+              font-size: 10px;
+              margin-top: 8px;
+              border-top: 1px solid rgba(255, 255, 255, 0.06);
+              padding-top: 6px;
+            "
+          >
             Sandpack snapshot on approval. Supports restore/fork/compare.
           </div>
         </div>
 
         <!-- Context Doc -->
-        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 12px; min-width: 200px; flex: 0.9;">
-          <div style="color: #94a3b8; font-weight: 700; margin-bottom: 8px;">CONTEXT_DOC</div>
-          <div style="color: #cbd5e1; line-height: 1.8;">
-            id TEXT PK<br/>
-            scope TEXT (global|product|feature)<br/>
-            scope_id TEXT<br/>
-            type TEXT (prd|research|guideline|...)<br/>
-            name TEXT<br/>
-            content TEXT<br/>
-            is_rule BOOLEAN<br/>
-            created_at INTEGER<br/>
+        <div
+          style="
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            padding: 12px;
+            min-width: 200px;
+            flex: 0.9;
+          "
+        >
+          <div style="color: #94a3b8; font-weight: 700; margin-bottom: 8px">CONTEXT_DOC</div>
+          <div style="color: #cbd5e1; line-height: 1.8">
+            id TEXT PK<br />
+            scope TEXT (global|product|feature)<br />
+            scope_id TEXT<br />
+            type TEXT (prd|research|guideline|...)<br />
+            name TEXT<br />
+            content TEXT<br />
+            is_rule BOOLEAN<br />
+            created_at INTEGER<br />
             updated_at INTEGER
           </div>
-          <div style="color: #64748b; font-size: 10px; margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 6px;">
+          <div
+            style="
+              color: #64748b;
+              font-size: 10px;
+              margin-top: 8px;
+              border-top: 1px solid rgba(255, 255, 255, 0.06);
+              padding-top: 6px;
+            "
+          >
             Files tab content. Rules go in context window, rest in RAG.
           </div>
         </div>
 
         <!-- Account (keep) -->
-        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 12px; min-width: 180px; flex: 0.7;">
-          <div style="color: #94a3b8; font-weight: 700; margin-bottom: 8px;">ACCOUNT</div>
-          <div style="color: #cbd5e1; line-height: 1.8;">
-            <span style="color: #64748b;">(kept as-is)</span><br/>
-            id, provider_id, provider<br/>
-            access_token, refresh_token<br/>
+        <div
+          style="
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            padding: 12px;
+            min-width: 180px;
+            flex: 0.7;
+          "
+        >
+          <div style="color: #94a3b8; font-weight: 700; margin-bottom: 8px">ACCOUNT</div>
+          <div style="color: #cbd5e1; line-height: 1.8">
+            <span style="color: #64748b">(kept as-is)</span><br />
+            id, provider_id, provider<br />
+            access_token, refresh_token<br />
             metadata, expires_at
           </div>
-          <div style="color: #64748b; font-size: 10px; margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 6px;">
+          <div
+            style="
+              color: #64748b;
+              font-size: 10px;
+              margin-top: 8px;
+              border-top: 1px solid rgba(255, 255, 255, 0.06);
+              padding-top: 6px;
+            "
+          >
             OAuth for Figma + other MCPs.
           </div>
         </div>
 
         <!-- MCP Config -->
-        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 12px; min-width: 180px; flex: 0.7;">
-          <div style="color: #94a3b8; font-weight: 700; margin-bottom: 8px;">MCP_CONFIG</div>
-          <div style="color: #cbd5e1; line-height: 1.8;">
-            id TEXT PK<br/>
-            product_id TEXT → PRODUCT<br/>
-            name TEXT<br/>
-            transport TEXT<br/>
-            command TEXT<br/>
-            env TEXT (JSON)<br/>
-            enabled BOOLEAN<br/>
+        <div
+          style="
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            padding: 12px;
+            min-width: 180px;
+            flex: 0.7;
+          "
+        >
+          <div style="color: #94a3b8; font-weight: 700; margin-bottom: 8px">MCP_CONFIG</div>
+          <div style="color: #cbd5e1; line-height: 1.8">
+            id TEXT PK<br />
+            product_id TEXT → PRODUCT<br />
+            name TEXT<br />
+            transport TEXT<br />
+            command TEXT<br />
+            env TEXT (JSON)<br />
+            enabled BOOLEAN<br />
             priority INTEGER
           </div>
-          <div style="color: #64748b; font-size: 10px; margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 6px;">
+          <div
+            style="
+              color: #64748b;
+              font-size: 10px;
+              margin-top: 8px;
+              border-top: 1px solid rgba(255, 255, 255, 0.06);
+              padding-top: 6px;
+            "
+          >
             Per-product MCP server configs with fallback priority.
           </div>
         </div>
-
       </div>
     </div>
   </div>
 </div>
 
-<div class="section" style="margin-top: 1.5rem; padding: 1rem; background: rgba(255,255,255,0.03); border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);">
-  <p style="color: #94a3b8; font-size: 13px;">Scroll down in terminal for the full comparison analysis.</p>
+<div
+  class="section"
+  style="
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  "
+>
+  <p style="color: #94a3b8; font-size: 13px">Scroll down in terminal for the full comparison analysis.</p>
 </div>

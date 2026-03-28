@@ -304,7 +304,7 @@ describe("Project.update", () => {
         projectID: "nonexistent-project-id",
         name: "Should Fail",
       }),
-    ).rejects.toThrow("Project not found: nonexistent-project-id")
+    ).rejects.toThrow("Product not found: nonexistent-project-id")
   })
 
   test("should emit GlobalBus event on update", async () => {
@@ -325,7 +325,7 @@ describe("Project.update", () => {
     })
 
     expect(eventFired).toBe(true)
-    expect(eventPayload.payload.type).toBe("project.updated")
+    expect(eventPayload.payload.type).toBe("product.updated")
     expect(eventPayload.payload.properties.name).toBe("Updated Name")
   })
 

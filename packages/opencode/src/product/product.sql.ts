@@ -7,5 +7,8 @@ export const ProductTable = sqliteTable("product", {
   directory: text().notNull(),
   worktree: text().notNull(),
   git_root: text(),
+  icon: text({ mode: "json" }),
+  commands: text({ mode: "json" }),
+  sandboxes: text({ mode: "json" }),
   ...Timestamps,
 })

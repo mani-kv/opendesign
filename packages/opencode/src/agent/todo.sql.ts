@@ -14,8 +14,5 @@ export const TodoTable = sqliteTable(
     position: integer().notNull(),
     ...Timestamps,
   },
-  (table) => [
-    primaryKey({ columns: [table.agent_id, table.position] }),
-    index("todo_agent_idx").on(table.agent_id),
-  ],
+  (table) => [primaryKey({ columns: [table.agent_id, table.position] }), index("todo_agent_idx").on(table.agent_id)],
 )

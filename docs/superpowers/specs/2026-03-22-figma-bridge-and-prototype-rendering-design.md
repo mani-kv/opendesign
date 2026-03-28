@@ -41,21 +41,21 @@ Response --> agent has structured frame data
 
 **Read tools (via Figma REST API):**
 
-| Tool | Purpose |
-|------|---------|
-| `figma_auth_status` | Check if user is authenticated |
+| Tool                  | Purpose                                                                      |
+| --------------------- | ---------------------------------------------------------------------------- |
+| `figma_auth_status`   | Check if user is authenticated                                               |
 | `figma_get_selection` | Return current selected frame URL + basic metadata (from Electron IPC state) |
-| `figma_get_frame` | Full node tree for a frame (via REST API `/v1/files/:key/nodes`) |
-| `figma_get_variables` | Design tokens/variables from the file (via REST API) |
-| `figma_get_styles` | Color, text, effect styles from the file (via REST API) |
-| `figma_get_image` | Rendered screenshot of a node (via REST API image export) |
+| `figma_get_frame`     | Full node tree for a frame (via REST API `/v1/files/:key/nodes`)             |
+| `figma_get_variables` | Design tokens/variables from the file (via REST API)                         |
+| `figma_get_styles`    | Color, text, effect styles from the file (via REST API)                      |
+| `figma_get_image`     | Rendered screenshot of a node (via REST API image export)                    |
 
 **Write tools (via figma-console MCP / Plugin API):**
 
-| Tool | Purpose |
-|------|---------|
+| Tool                     | Purpose                                                               |
+| ------------------------ | --------------------------------------------------------------------- |
 | `figma_create_component` | Create/modify components (proxied to figma-console's `figma_execute`) |
-| `figma_update_node` | Modify node properties (proxied to figma-console's `figma_execute`) |
+| `figma_update_node`      | Modify node properties (proxied to figma-console's `figma_execute`)   |
 
 The Figma REST API is primarily read-only. For mutations (creating components, modifying node properties), the MCP server proxies requests through the existing `figma-console` MCP server which has Plugin API access via `figma_execute`. The Electron MCP server translates high-level mutation requests into Plugin API code and delegates to figma-console.
 
@@ -79,6 +79,7 @@ Note: The existing `figmaInjectionScript()` in `packages/opendesign/src/figma/br
 - Single auth covers all Figma workspaces
 
 **Toolbar indicator:** The app titlebar shows a Figma connection status icon:
+
 - Green dot: authenticated and connected
 - Red dot: token expired or not authenticated
 - Clicking the indicator when red opens the OAuth flow to re-authenticate
@@ -94,30 +95,31 @@ Note: The existing `figmaInjectionScript()` in `packages/opendesign/src/figma/br
 #### 6. Figma-Write Agent Migration
 
 The existing `figma-write` subagent (described as using "webview injection bridge") is superseded by the new MCP-based approach. During implementation:
+
 - Update `figma-write` agent to use MCP tools instead of the injection bridge
 - Or merge its responsibilities into the `design` agent and deprecate `figma-write`
 
 #### 7. Error Handling
 
-| Scenario | Behavior |
-|----------|----------|
+| Scenario                        | Behavior                                                                       |
+| ------------------------------- | ------------------------------------------------------------------------------ |
 | Figma REST API rate limit (429) | MCP tool retries with exponential backoff (max 3 attempts), then returns error |
-| OAuth token expired | Auto-refresh via refresh token. If refresh fails, return `auth_required` error |
-| Network failure | MCP tool returns error with message; agent can retry or inform user |
-| Invalid frame/file key | Return structured error with details; agent handles gracefully |
-| figma-console not connected | Mutation tools return `unavailable` error; read tools still work |
+| OAuth token expired             | Auto-refresh via refresh token. If refresh fails, return `auth_required` error |
+| Network failure                 | MCP tool returns error with message; agent can retry or inform user            |
+| Invalid frame/file key          | Return structured error with details; agent handles gracefully                 |
+| figma-console not connected     | Mutation tools return `unavailable` error; read tools still work               |
 
 ### Existing Code to Build On
 
-| File | Status | What exists |
-|------|--------|-------------|
-| `packages/opendesign/src/figma/bridge.ts` | Partial | Message types, validation. Injection script is placeholder — to be replaced by preload approach |
-| `packages/opendesign/src/types/figma.ts` | Usable | FigmaFrame, FigmaSelection, FigmaTokenRef types |
-| `packages/app/src/pages/session/figma-tab-content.tsx` | Usable | Webview rendering (Electron `<webview>` with partition) |
-| `packages/app/src/utils/figma.ts` | Usable | URL parsing, embed URL construction |
-| `packages/opencode/src/agent/prompt/design.txt` | Usable | Design agent prompt |
-| `packages/opencode/src/agent/prompt/figma-write.txt` | To update | References injection bridge — needs update for MCP approach |
-| `packages/desktop-electron/src/mcp/` | New | Directory to be created for the MCP server |
+| File                                                   | Status    | What exists                                                                                     |
+| ------------------------------------------------------ | --------- | ----------------------------------------------------------------------------------------------- |
+| `packages/opendesign/src/figma/bridge.ts`              | Partial   | Message types, validation. Injection script is placeholder — to be replaced by preload approach |
+| `packages/opendesign/src/types/figma.ts`               | Usable    | FigmaFrame, FigmaSelection, FigmaTokenRef types                                                 |
+| `packages/app/src/pages/session/figma-tab-content.tsx` | Usable    | Webview rendering (Electron `<webview>` with partition)                                         |
+| `packages/app/src/utils/figma.ts`                      | Usable    | URL parsing, embed URL construction                                                             |
+| `packages/opencode/src/agent/prompt/design.txt`        | Usable    | Design agent prompt                                                                             |
+| `packages/opencode/src/agent/prompt/figma-write.txt`   | To update | References injection bridge — needs update for MCP approach                                     |
+| `packages/desktop-electron/src/mcp/`                   | New       | Directory to be created for the MCP server                                                      |
 
 ---
 
@@ -150,11 +152,11 @@ Note: The `prototype` agent in code is the **orchestrator** — it decomposes an
 
 New endpoints in `packages/opencode/src/server/server.ts`:
 
-| Endpoint | Purpose |
-|----------|---------|
-| `GET /agent/:agentId/files` | Returns file tree + contents for agent's branch |
-| `GET /agent/:agentId/files/:path` | Single file content |
-| `SSE /agent/:agentId/watch` | Real-time file change events as agent edits |
+| Endpoint                          | Purpose                                         |
+| --------------------------------- | ----------------------------------------------- |
+| `GET /agent/:agentId/files`       | Returns file tree + contents for agent's branch |
+| `GET /agent/:agentId/files/:path` | Single file content                             |
+| `SSE /agent/:agentId/watch`       | Real-time file change events as agent edits     |
 
 These endpoints use the existing server middleware for directory scoping. The agent's working directory already exists per the architecture doc: branch checkout at `~/.opendesign/projects/{projectId}/agents/{agentId}/`. The API reads from disk. Authentication follows the same pattern as existing session/message endpoints.
 
@@ -200,24 +202,24 @@ No Tailwind, no component library. Plain React + CSS. Agent matches Figma design
 
 #### 6. Error Handling
 
-| Scenario | Behavior |
-|----------|----------|
+| Scenario                               | Behavior                                                                      |
+| -------------------------------------- | ----------------------------------------------------------------------------- |
 | Agent-generated code has syntax errors | Sandpack shows error overlay with stack trace; user sees the error in preview |
-| Missing imports / runtime exceptions | Sandpack error boundary catches; preview shows error message |
-| Agent fails mid-task | Agent status shows error indicator; branch preserves partial work |
-| File state API unavailable | Preview shows "Loading..." skeleton; retries on reconnect |
+| Missing imports / runtime exceptions   | Sandpack error boundary catches; preview shows error message                  |
+| Agent fails mid-task                   | Agent status shows error indicator; branch preserves partial work             |
+| File state API unavailable             | Preview shows "Loading..." skeleton; retries on reconnect                     |
 
 #### 7. Branch Lifecycle
 
 Agents commit to their branches but **never auto-merge to main**. Branches remain independent until the user explicitly triggers a merge via the "Merge" feature (future work — see below).
 
-| Event | Action |
-|-------|--------|
-| Scenario agent dispatched | Branch `agent/{agentId}` created from `main` |
-| Agent completes | Branch committed, status updated to "done". Branch stays. |
-| Agent fails | Branch preserves partial work; user can retry or dismiss |
-| User dismisses agent | Branch deleted, working directory cleaned up |
-| Session ended | All branches retained for future sessions |
+| Event                     | Action                                                    |
+| ------------------------- | --------------------------------------------------------- |
+| Scenario agent dispatched | Branch `agent/{agentId}` created from `main`              |
+| Agent completes           | Branch committed, status updated to "done". Branch stays. |
+| Agent fails               | Branch preserves partial work; user can retry or dismiss  |
+| User dismisses agent      | Branch deleted, working directory cleaned up              |
+| Session ended             | All branches retained for future sessions                 |
 
 #### 8. Merge Flow (Future Feature)
 
@@ -233,15 +235,15 @@ This is why agents stay on branches — it preserves the ability to compare, com
 
 ### Existing Code to Build On
 
-| File | Status | What exists |
-|------|--------|-------------|
-| `packages/opencode/src/agent/agent.ts` | Usable | Orchestrator (`prototype`) and `scenario` agent definitions |
-| `packages/opencode/src/agent/prompt/agent.txt` | Usable | Orchestrator prompt (decompose + dispatch) |
-| `packages/opencode/src/agent/prompt/scenario.txt` | Usable | Scenario agent prompt (React + tokens) |
-| `packages/app/src/pages/session/agent-sandbox-tab-content.tsx` | To modify | Current SVG canvas → will host Sandpack |
-| `packages/app/src/pages/session/agent-sandbox/agent-node-card.tsx` | To modify | Agent node rendering in sandbox |
-| `packages/app/src/pages/session/agent-sandbox/sandpack-srcdoc.ts` | To replace | Hello-world template → real Sandpack config |
-| `docs/architecture.md` | Reference | Git branch model, agent lifecycle, merge flow |
+| File                                                               | Status     | What exists                                                 |
+| ------------------------------------------------------------------ | ---------- | ----------------------------------------------------------- |
+| `packages/opencode/src/agent/agent.ts`                             | Usable     | Orchestrator (`prototype`) and `scenario` agent definitions |
+| `packages/opencode/src/agent/prompt/agent.txt`                     | Usable     | Orchestrator prompt (decompose + dispatch)                  |
+| `packages/opencode/src/agent/prompt/scenario.txt`                  | Usable     | Scenario agent prompt (React + tokens)                      |
+| `packages/app/src/pages/session/agent-sandbox-tab-content.tsx`     | To modify  | Current SVG canvas → will host Sandpack                     |
+| `packages/app/src/pages/session/agent-sandbox/agent-node-card.tsx` | To modify  | Agent node rendering in sandbox                             |
+| `packages/app/src/pages/session/agent-sandbox/sandpack-srcdoc.ts`  | To replace | Hello-world template → real Sandpack config                 |
+| `docs/architecture.md`                                             | Reference  | Git branch model, agent lifecycle, merge flow               |
 
 ---
 
@@ -261,13 +263,13 @@ This is why agents stay on branches — it preserves the ability to compare, com
 
 ## Constraints & Decisions
 
-| Decision | Rationale |
-|----------|-----------|
-| Electron-only for Figma bridge | Webview requires Electron; web client has no Figma tab |
-| MCP over custom protocol | Agents already use MCP tools; no new patterns needed |
+| Decision                                     | Rationale                                                                                            |
+| -------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Electron-only for Figma bridge               | Webview requires Electron; web client has no Figma tab                                               |
+| MCP over custom protocol                     | Agents already use MCP tools; no new patterns needed                                                 |
 | REST API for reads, Plugin API for mutations | REST API is read-only for most operations; Plugin API (via figma-console) handles structural changes |
-| Branch-based file storage | Matches architecture.md; enables merge flow and visual conflict resolution |
-| Plain React + CSS | Universal, no framework lock-in; focus is visual fidelity not production code |
-| Single Sandpack instance (swapped) | Memory efficient; one preview at a time per user's preference. Branch state is persistent. |
-| Orchestrator delegates token writing | Keeps orchestrator read-only; setup subagent handles the one-time write to main |
-| No auto-merge to main | Agents stay on branches; enables future multi-select merge with visual diff |
+| Branch-based file storage                    | Matches architecture.md; enables merge flow and visual conflict resolution                           |
+| Plain React + CSS                            | Universal, no framework lock-in; focus is visual fidelity not production code                        |
+| Single Sandpack instance (swapped)           | Memory efficient; one preview at a time per user's preference. Branch state is persistent.           |
+| Orchestrator delegates token writing         | Keeps orchestrator read-only; setup subagent handles the one-time write to main                      |
+| No auto-merge to main                        | Agents stay on branches; enables future multi-select merge with visual diff                          |

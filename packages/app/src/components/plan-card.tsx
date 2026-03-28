@@ -10,9 +10,7 @@ export function PlanCard(props: {
   state?: PlanCardState
   onDispatch?: (scenarios: ScenarioPlan[]) => void
 }) {
-  const [scenarios, setScenarios] = createStore<ScenarioPlan[]>(
-    props.plan.scenarios.map((s) => ({ ...s })),
-  )
+  const [scenarios, setScenarios] = createStore<ScenarioPlan[]>(props.plan.scenarios.map((s) => ({ ...s })))
   const [addInput, setAddInput] = createSignal("")
 
   const state = () => props.state ?? "active"
@@ -69,12 +67,7 @@ export function PlanCard(props: {
               onClick={() => toggle(idx())}
             >
               <div class="mt-0.5 shrink-0">
-                <Show
-                  when={scenario.selected}
-                  fallback={
-                    <div class="w-4 h-4 rounded border border-border-base" />
-                  }
-                >
+                <Show when={scenario.selected} fallback={<div class="w-4 h-4 rounded border border-border-base" />}>
                   <div class="w-4 h-4 rounded bg-blue-500 flex items-center justify-center">
                     <Icon name="check" class="w-3 h-3 text-white" />
                   </div>

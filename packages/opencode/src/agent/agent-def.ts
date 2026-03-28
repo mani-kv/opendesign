@@ -131,7 +131,8 @@ export namespace AgentDef {
       specs: {
         name: "specs",
         label: "Specs",
-        description: "Specs mode. Generates PRDs, design specs, and documentation from project context and requirements.",
+        description:
+          "Specs mode. Generates PRDs, design specs, and documentation from project context and requirements.",
         options: {},
         prompt: PROMPT_SPECS,
         permission: PermissionNext.merge(
@@ -149,7 +150,8 @@ export namespace AgentDef {
       design: {
         name: "design",
         label: "Design",
-        description: "Design mode. Works directly with Figma to create and modify components, apply design tokens, and manage design system patterns.",
+        description:
+          "Design mode. Works directly with Figma to create and modify components, apply design tokens, and manage design system patterns.",
         options: {},
         prompt: PROMPT_DESIGN,
         permission: PermissionNext.merge(

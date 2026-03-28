@@ -8,22 +8,23 @@ The phase prioritizes architectural correctness over visual features. The output
 
 ## Decisions Made
 
-| Decision | Choice | Rationale |
-|----------|--------|-----------|
-| Phase ordering | Data model first (Approach B) | Clean foundation, no rewiring later |
-| Frontend routing | `/product/:productId/feature/:featureId?agent=x` | Feature is the "page"; agents are contextual via query param |
-| Session page | Coexist — new `feature.tsx` alongside `session.tsx` | Reuse sub-components, don't gut working infrastructure |
-| API routes | Update routes first, regenerate SDK | Prevents translation debt; frontend builds against correct types |
-| ProjectTable/ProductTable | Consolidate into ProductTable | One identity system, no dual-table confusion |
-| Agent FK | Fix to reference FeatureTable | Clean FK chain: Product → Feature → Agent |
-| Namespace naming | Agent→AgentDef, AgentSession→Agent | Do it now; we're already touching all files |
-| Route paths | `/session`→`/agent-session`, `/agent`→`/agent-files` | Eliminate naming confusion between agent instances and agent files |
+| Decision                  | Choice                                               | Rationale                                                          |
+| ------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------ |
+| Phase ordering            | Data model first (Approach B)                        | Clean foundation, no rewiring later                                |
+| Frontend routing          | `/product/:productId/feature/:featureId?agent=x`     | Feature is the "page"; agents are contextual via query param       |
+| Session page              | Coexist — new `feature.tsx` alongside `session.tsx`  | Reuse sub-components, don't gut working infrastructure             |
+| API routes                | Update routes first, regenerate SDK                  | Prevents translation debt; frontend builds against correct types   |
+| ProjectTable/ProductTable | Consolidate into ProductTable                        | One identity system, no dual-table confusion                       |
+| Agent FK                  | Fix to reference FeatureTable                        | Clean FK chain: Product → Feature → Agent                          |
+| Namespace naming          | Agent→AgentDef, AgentSession→Agent                   | Do it now; we're already touching all files                        |
+| Route paths               | `/session`→`/agent-session`, `/agent`→`/agent-files` | Eliminate naming confusion between agent instances and agent files |
 
 ## Step 0: Fix the Data Layer
 
 ### Problem
 
 The current schema has structural issues from the v2 migration:
+
 - `AgentTable.feature_id` references `ProjectTable.id` instead of `FeatureTable.id`
 - `ProductTable` and `ProjectTable` both represent "a directory with a git root" — redundant identity
 - `FeatureTable` exists but nothing points to it from agents
@@ -33,21 +34,25 @@ The current schema has structural issues from the v2 migration:
 **Consolidate `ProjectTable` → `ProductTable`:**
 
 The `ProjectTable` schema:
+
 ```
 id, name, worktree, git_root, ...Timestamps
 ```
 
 The `ProductTable` schema:
+
 ```
 id, name, directory, git_root, ...Timestamps
 ```
 
 These are the same entity. Consolidate by:
+
 1. Dropping `ProjectTable`. Renaming `ProductTable.directory` to match the field that `Instance` and bootstrap use (or updating those consumers).
 2. All code that imports `ProjectTable` switches to `ProductTable`.
 3. The `project.ts` module (`packages/opencode/src/project/project.ts`) is refactored into `product/index.ts` (see Step 2).
 
 **Fix FK chain:**
+
 ```
 ProductTable (id)
     ↓ product_id
@@ -64,6 +69,7 @@ AgentTable (id)
 New migration file: `packages/opencode/migration/<timestamp>_phase1_foundation/migration.sql`
 
 Since data loss is accepted:
+
 - Drop `project`, `agent` tables
 - Recreate `product` table (consolidated from project + product)
 - Recreate `agent` table with `feature_id` referencing `feature` table
@@ -85,6 +91,7 @@ Since data loss is accepted:
 The `Agent` namespace in `agent/agent.ts` defines agent types ("general", "title", "opendesign-agent", etc.). These are configuration/definitions, not instances.
 
 Rename:
+
 - `Agent` namespace → `AgentDef`
 - `agent/agent.ts` → `agent/agent-def.ts`
 - `Agent.Info` → `AgentDef.Info`
@@ -95,6 +102,7 @@ Rename:
 The `AgentSession` namespace in `agent/index.ts` manages agent instances (CRUD, messages, state). In the new model, this IS what an "agent" is.
 
 Rename:
+
 - `AgentSession` namespace → `Agent`
 - Stays in `agent/index.ts` (it's the main export of the agent module)
 - `AgentSession.Info` → `Agent.Info`
@@ -105,6 +113,7 @@ Rename:
 ### Cascade
 
 All files importing either namespace need updating. Key areas:
+
 - Server routes (`server/routes/agent-session.ts`, `server/server.ts`)
 - All tool implementations that reference `AgentSession`
 - Agent sub-modules (`prompt.ts`, `llm.ts`, `compaction.ts`, `revert.ts`, `status.ts`, `summary.ts`, `todo.ts`, etc.)
@@ -179,13 +188,20 @@ export namespace Feature {
   export function get(id: string): Promise<Info>
   export function list(input: { productID: string }): Generator<Info>
   export function remove(id: string): Promise<void>
-  export function update(input: { id: string; name?: string; status?: string; figmaUrl?: string; canvasState?: unknown }): Promise<Info>
+  export function update(input: {
+    id: string
+    name?: string
+    status?: string
+    figmaUrl?: string
+    canvasState?: unknown
+  }): Promise<Info>
 }
 ```
 
 ### project.ts Migration
 
 The existing `project.ts` handles:
+
 1. Directory discovery — finding/creating a project record for a directory
 2. VCS integration — git root detection
 3. Migration from global state — already gutted to a no-op
@@ -198,23 +214,23 @@ Items 1 and 2 move into `Product` namespace. The `migrateFromGlobal` no-op is de
 
 ### New: Product Routes (`/product`)
 
-| Method | Path | Operation ID | Description |
-|--------|------|-------------|-------------|
-| GET | `/product` | `product.list` | List all products |
-| POST | `/product` | `product.create` | Create a product |
-| GET | `/product/:productID` | `product.get` | Get a product |
-| PUT | `/product/:productID` | `product.update` | Update a product |
-| DELETE | `/product/:productID` | `product.remove` | Delete a product |
+| Method | Path                  | Operation ID     | Description       |
+| ------ | --------------------- | ---------------- | ----------------- |
+| GET    | `/product`            | `product.list`   | List all products |
+| POST   | `/product`            | `product.create` | Create a product  |
+| GET    | `/product/:productID` | `product.get`    | Get a product     |
+| PUT    | `/product/:productID` | `product.update` | Update a product  |
+| DELETE | `/product/:productID` | `product.remove` | Delete a product  |
 
 ### New: Feature Routes (`/feature`)
 
-| Method | Path | Operation ID | Description |
-|--------|------|-------------|-------------|
-| GET | `/feature` | `feature.list` | List features (query: `productID`) |
-| POST | `/feature` | `feature.create` | Create a feature |
-| GET | `/feature/:featureID` | `feature.get` | Get a feature |
-| PUT | `/feature/:featureID` | `feature.update` | Update a feature |
-| DELETE | `/feature/:featureID` | `feature.remove` | Delete a feature |
+| Method | Path                  | Operation ID     | Description                        |
+| ------ | --------------------- | ---------------- | ---------------------------------- |
+| GET    | `/feature`            | `feature.list`   | List features (query: `productID`) |
+| POST   | `/feature`            | `feature.create` | Create a feature                   |
+| GET    | `/feature/:featureID` | `feature.get`    | Get a feature                      |
+| PUT    | `/feature/:featureID` | `feature.update` | Update a feature                   |
+| DELETE | `/feature/:featureID` | `feature.remove` | Delete a feature                   |
 
 ### Renamed: Agent Session Routes (`/session` → `/agent-session`)
 
@@ -228,6 +244,7 @@ The route file `agent-session.ts` is unchanged internally (just import renames f
 ```
 
 All operation IDs update from `agent.session.*` to `agent.*`:
+
 - `agent.session.list` → `agent.list`
 - `agent.session.get` → `agent.get`
 - `agent.session.create` → `agent.create`
@@ -255,12 +272,14 @@ Bus events already use the correct domain names after the namespace rename. The 
 ## Step 4: SDK Regeneration
 
 Run `./script/generate.ts` after Steps 1-3 are complete. This:
+
 1. Starts the server with `bun dev generate`
 2. Extracts OpenAPI spec from the `/doc` endpoint
 3. Generates TypeScript SDK in `packages/sdk/js/`
 4. Runs formatter
 
 The generated SDK will have:
+
 - New types: `Product`, `Feature`
 - Renamed types: `AgentSession` → `Agent` (following the operation ID changes)
 - New methods: `client.product.list()`, `client.feature.create()`, etc.
@@ -293,6 +312,7 @@ The existing `/project/...` routes stay functional. OpenDesign navigation uses `
 ### ProductLayout
 
 Minimal layout component (similar to `ProjectLayout`):
+
 - Sets up the Product context (which product is active)
 - Renders sidebar + main content area
 - Passes `productId` from URL params to context
@@ -302,6 +322,7 @@ Minimal layout component (similar to `ProjectLayout`):
 New page: `packages/app/src/pages/feature.tsx`
 
 Layout structure:
+
 ```
 ┌─────────────────────────────────────────────────┐
 │  Feature Header (feature name, status, actions)  │
@@ -356,11 +377,13 @@ No OpenDesign route points to `session.tsx`. It stays functional at `/project/:p
 ### Cosmetic Rename
 
 The existing sidebar in `packages/app/src/pages/layout/` shows:
+
 - Workspace tiles → **not applicable** (workspaces already removed)
 - Project list → rename labels to "Products"
 - Session list within a project → rename labels to "Features"
 
 This is label/text changes in:
+
 - `sidebar-project.tsx` → references "products" in UI text
 - `sidebar-items.tsx` → list items link to `/product/:id/feature/:id` instead of `/project/:id/session/:id`
 
@@ -368,16 +391,17 @@ This is label/text changes in:
 
 Existing providers that need updating:
 
-| Provider | File | Change |
-|----------|------|--------|
-| `workspace.tsx` | `context/workspace.tsx` | May be dead code — workspaces removed. Verify and delete if unused. |
-| `sync.tsx` | `context/sync.tsx` | Keep for session page. `AgentChatProvider` handles feature page sync. |
-| `agents.tsx` | `context/agents.tsx` | Update imports from new SDK types (AgentDef instead of Agent) |
-| `project-scope.tsx` | `context/project-scope.tsx` | Either rename to product-scope or add a product-scope alongside |
-| `sdk.tsx` | `context/sdk.tsx` | Update SDK client method calls (`.session.*` → `.agent.*`, add `.product.*`, `.feature.*`) |
-| `global-sync.tsx` | `context/global-sync.tsx` | Update to sync products/features instead of projects/sessions |
+| Provider            | File                        | Change                                                                                     |
+| ------------------- | --------------------------- | ------------------------------------------------------------------------------------------ |
+| `workspace.tsx`     | `context/workspace.tsx`     | May be dead code — workspaces removed. Verify and delete if unused.                        |
+| `sync.tsx`          | `context/sync.tsx`          | Keep for session page. `AgentChatProvider` handles feature page sync.                      |
+| `agents.tsx`        | `context/agents.tsx`        | Update imports from new SDK types (AgentDef instead of Agent)                              |
+| `project-scope.tsx` | `context/project-scope.tsx` | Either rename to product-scope or add a product-scope alongside                            |
+| `sdk.tsx`           | `context/sdk.tsx`           | Update SDK client method calls (`.session.*` → `.agent.*`, add `.product.*`, `.feature.*`) |
+| `global-sync.tsx`   | `context/global-sync.tsx`   | Update to sync products/features instead of projects/sessions                              |
 
 New providers:
+
 - `context/product.tsx` — active product context (from URL param)
 - `context/feature.tsx` — active feature context (from URL param)
 - `context/agent-chat.tsx` — per-agent chat context (described above)
@@ -385,6 +409,7 @@ New providers:
 ## Testing Strategy
 
 ### Backend
+
 - Unit tests for `Product` namespace: create, get, list, remove, update
 - Unit tests for `Feature` namespace: same
 - Integration test: create Product → create Feature → create Agent → verify FK chain works
@@ -392,12 +417,14 @@ New providers:
 - Verify SDK generation produces correct types
 
 ### Frontend
+
 - `feature.tsx` renders without errors
 - Navigation: sidebar → product → feature → feature page loads
 - Agent chat: select agent → `MessageTimeline` renders messages → composer sends prompt
 - URL deep-linking: `/product/:id/feature/:id?agent=xyz` selects correct agent
 
 ### Regression
+
 - Existing `/project/:projectId/session/:id` routes still work
 - `session.tsx` renders correctly (no broken imports from rename)
 - All existing tests pass after namespace rename (update imports in test files)

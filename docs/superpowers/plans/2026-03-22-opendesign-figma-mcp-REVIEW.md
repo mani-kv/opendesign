@@ -25,6 +25,7 @@
 Task 4 creates `FigmaConnector` accepting `FigmaWSServer`, but Task 7 passes a `WSClient` with `as any`. The plan acknowledges this ("Extract an interface `CommandSender`") but buries it in a comment at the end of Task 7. This interface extraction MUST happen in Task 4 when creating the connector, not retroactively. Otherwise Task 4's code compiles against `FigmaWSServer` and Task 7 must refactor it.
 
 **Fix:** In Task 4, define `FigmaConnector` against an interface:
+
 ```typescript
 export interface CommandSender {
   sendCommand(method: string, params?: Record<string, unknown>, timeoutMs?: number): Promise<unknown>
@@ -33,6 +34,7 @@ export class FigmaConnector {
   constructor(private sender: CommandSender) {}
 }
 ```
+
 Then both `FigmaWSServer` and `WSClient` implement this interface.
 
 ---
@@ -40,18 +42,22 @@ Then both `FigmaWSServer` and `WSClient` implement this interface.
 **C2: WebSocket server export path won't resolve from Electron**
 
 Task 8, Step 1 imports:
+
 ```typescript
 import { FigmaWSServer } from "@opencode-ai/opendesign-figma-mcp/websocket-server"
 ```
+
 But `package.json` (Task 1) only defines `"main": "dist/index.js"` with no `exports` map. This import will fail at runtime in the Electron main process.
 
 **Fix:** Add an `exports` field to `packages/opendesign-figma-mcp/package.json`:
+
 ```json
 "exports": {
   ".": "./dist/index.js",
   "./websocket-server": "./dist/websocket-server.js"
 }
 ```
+
 And ensure the build step outputs `websocket-server.js` separately (the current `bun build src/index.ts --outdir dist` only bundles the entry point). Change to a multi-entry build or use separate build commands.
 
 ---
@@ -82,6 +88,7 @@ Option (a) is simplest and most robust.
 **I2: `figma-tab-content.tsx` cleanup is incomplete**
 
 Task 10 Step 8 says to "Remove `notifyApi` reference" and "revert to single `handleNav`", but the actual file (lines 102-111, 133-139) also has `notifySelection()` as a function and `handleInPageNav` as a separate handler. The plan should explicitly state that:
+
 - Line 102: `const notifyApi = ...` is removed entirely
 - Lines 109-111: `notifySelection` function is removed
 - Lines 133-139: `handleInPageNav` is removed, and `did-navigate-in-page` listener at line 145 should use `handleNav` instead
@@ -93,11 +100,13 @@ The plan says all this in prose but lacks precision about which event listener t
 **I3: `figmaAuthStatus` return type change is breaking**
 
 Task 8 Step 3 changes `figmaAuthStatus` from returning `boolean` to `{ authenticated: boolean, pluginConnected: boolean }`. This breaks:
+
 - `preload/index.ts` line 64: `figmaAuthStatus: () => ipcRenderer.invoke("figma-auth-status")`
 - `preload/types.ts` line 74: `figmaAuthStatus: () => Promise<boolean>`
 - Any renderer code that checks `if (await api.figmaAuthStatus())` directly
 
 **Fix:** Add this to Task 8 or Task 10:
+
 - Update `preload/types.ts` to change the return type
 - Update all renderer consumers (likely `titlebar.tsx`) to read `.authenticated` instead of treating the result as a boolean
 
@@ -139,23 +148,23 @@ If the monorepo uses explicit workspace paths in the root `package.json`, the ne
 
 ## Completeness Check: Spec Requirements vs Plan Tasks
 
-| Spec Requirement | Plan Coverage | Status |
-|---|---|---|
-| ~40 tools across 7 categories | Task 6 | Covered |
-| WebSocket server in Electron main | Task 3 + Task 8 | Covered |
-| MCP as stdio child process | Task 7 | Covered |
-| Plugin fork from figma-desktop-bridge | Task 2 | Covered |
-| Port range 9333-9342 | Task 2 + Task 3 | Covered |
-| OAuth token passing via env var | Task 8 | Covered (with I1 caveat) |
-| Config written to ~/.config/opencode/opencode.json | Task 8 | Covered |
-| Selection via plugin WebSocket (not REST) | Task 3 + Task 8 | Covered |
-| Remove figma-bridge preload | Task 10 | Covered |
-| Remove old figma-mcp-server.ts | Task 10 | Covered |
-| Add file_comments:write OAuth scope | Task 9 | Covered |
-| Simplify figma-selection.ts | Task 10 | Covered |
-| Simplify figma-tab-content.tsx | Task 10 | Covered |
-| Bootloader pattern (plugin UI loads from WS server) | Not explicitly in any task | MISSING |
-| Single instance constraint | Port fallback covers this | Covered |
+| Spec Requirement                                    | Plan Coverage              | Status                   |
+| --------------------------------------------------- | -------------------------- | ------------------------ |
+| ~40 tools across 7 categories                       | Task 6                     | Covered                  |
+| WebSocket server in Electron main                   | Task 3 + Task 8            | Covered                  |
+| MCP as stdio child process                          | Task 7                     | Covered                  |
+| Plugin fork from figma-desktop-bridge               | Task 2                     | Covered                  |
+| Port range 9333-9342                                | Task 2 + Task 3            | Covered                  |
+| OAuth token passing via env var                     | Task 8                     | Covered (with I1 caveat) |
+| Config written to ~/.config/opencode/opencode.json  | Task 8                     | Covered                  |
+| Selection via plugin WebSocket (not REST)           | Task 3 + Task 8            | Covered                  |
+| Remove figma-bridge preload                         | Task 10                    | Covered                  |
+| Remove old figma-mcp-server.ts                      | Task 10                    | Covered                  |
+| Add file_comments:write OAuth scope                 | Task 9                     | Covered                  |
+| Simplify figma-selection.ts                         | Task 10                    | Covered                  |
+| Simplify figma-tab-content.tsx                      | Task 10                    | Covered                  |
+| Bootloader pattern (plugin UI loads from WS server) | Not explicitly in any task | MISSING                  |
+| Single instance constraint                          | Port fallback covers this  | Covered                  |
 
 **Missing from plan:** The spec mentions "Bootloader pattern - Plugin UI loads dynamically from WebSocket server (from figma-console)" in the Constraints table. This means the plugin's `ui.html` may need to fetch its UI code from the WebSocket server at runtime rather than being statically bundled. The plan's Task 2 forks the plugin files statically. If the bootloader pattern is required, Task 3 needs to serve the plugin UI HTML from the WebSocket server endpoint, and `ui.html` needs to be a minimal loader. This may or may not be needed depending on whether this constraint was informational only.
 
@@ -164,11 +173,13 @@ If the monorepo uses explicit workspace paths in the root `package.json`, the ne
 ## Summary
 
 3 critical issues that will cause build/runtime failures if not addressed before implementation:
+
 1. Interface extraction for `CommandSender` must happen in Task 4, not Task 7
 2. Package exports map needed for Electron to import `websocket-server`
 3. `writeMcpConfig()` call ordering vs `startFigmaWS()` lifecycle
 
 3 important issues that will cause bugs or breaking changes:
+
 1. OAuth token staleness in already-running MCP process
 2. Incomplete figma-tab-content cleanup instructions
 3. `figmaAuthStatus` return type change breaks preload types and renderer

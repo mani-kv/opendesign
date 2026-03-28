@@ -14,8 +14,8 @@ test("agent color parsed from project config", async () => {
         JSON.stringify({
           $schema: "https://opencode.ai/config.json",
           agent: {
-            "prototype": { color: "#FFA500" },
-            "ask": { color: "primary" },
+            prototype: { color: "#FFA500" },
+            ask: { color: "primary" },
           },
         }),
       )
@@ -39,8 +39,8 @@ test("Agent.get includes color from config", async () => {
         JSON.stringify({
           $schema: "https://opencode.ai/config.json",
           agent: {
-            "ask": { color: "#A855F7" },
-            "prototype": { color: "accent" },
+            ask: { color: "#A855F7" },
+            prototype: { color: "accent" },
           },
         }),
       )

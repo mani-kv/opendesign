@@ -1,11 +1,7 @@
 import { Show } from "solid-js"
 import { createSandpackSrcdoc } from "./sandpack-srcdoc"
 
-export function SandpackPreview(props: {
-  files: Record<string, string>
-  loading: boolean
-  error: string | null
-}) {
+export function SandpackPreview(props: { files: Record<string, string>; loading: boolean; error: string | null }) {
   const srcdoc = () => createSandpackSrcdoc(props.files)
   const hasFiles = () => Object.keys(props.files).length > 0
 
@@ -25,12 +21,7 @@ export function SandpackPreview(props: {
         </div>
       </Show>
       <Show when={!props.loading && !props.error && hasFiles()}>
-        <iframe
-          srcdoc={srcdoc()}
-          class="flex-1 w-full border-0"
-          sandbox="allow-scripts"
-          title="Sandpack preview"
-        />
+        <iframe srcdoc={srcdoc()} class="flex-1 w-full border-0" sandbox="allow-scripts" title="Sandpack preview" />
       </Show>
       <Show when={!props.loading && !props.error && !hasFiles()}>
         <div class="flex-1 flex items-center justify-center">

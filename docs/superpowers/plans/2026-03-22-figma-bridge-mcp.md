@@ -14,26 +14,27 @@
 
 ## File Structure
 
-| File | Action | Responsibility |
-|------|--------|----------------|
-| `packages/desktop-electron/package.json` | Modify | Add @modelcontextprotocol/sdk dependency |
-| `packages/desktop-electron/src/main/figma-mcp-server.ts` | Create | MCP server implementation with all figma_* tools |
-| `packages/desktop-electron/src/main/figma-oauth.ts` | Create | OAuth flow: popup window, token storage/refresh |
-| `packages/desktop-electron/src/main/figma-rest-client.ts` | Create | Typed Figma REST API client wrapping fetch + auth |
-| `packages/desktop-electron/src/main/figma-selection.ts` | Create | Selection state manager (receives IPC from preload, exposes to MCP) |
-| `packages/desktop-electron/src/preload/figma-bridge.ts` | Create | Preload script for Figma webview: URL hash tracking, IPC to main |
-| `packages/desktop-electron/src/preload/index.ts` | Modify | Register figma bridge IPC channels in contextBridge |
-| `packages/desktop-electron/src/main/index.ts` | Modify | Spawn MCP server on app launch, wire IPC handlers |
-| `packages/app/src/components/titlebar.tsx` | Modify | Add Figma connection status indicator |
-| `packages/opencode/src/agent/agent.ts` | Modify | Update design agent prompt references |
-| `packages/opencode/src/agent/prompt/design.txt` | Modify | Reference MCP tools instead of injection bridge |
-| `packages/opencode/src/agent/prompt/figma-write.txt` | Modify | Update to use MCP tools |
+| File                                                      | Action | Responsibility                                                      |
+| --------------------------------------------------------- | ------ | ------------------------------------------------------------------- |
+| `packages/desktop-electron/package.json`                  | Modify | Add @modelcontextprotocol/sdk dependency                            |
+| `packages/desktop-electron/src/main/figma-mcp-server.ts`  | Create | MCP server implementation with all figma\_\* tools                  |
+| `packages/desktop-electron/src/main/figma-oauth.ts`       | Create | OAuth flow: popup window, token storage/refresh                     |
+| `packages/desktop-electron/src/main/figma-rest-client.ts` | Create | Typed Figma REST API client wrapping fetch + auth                   |
+| `packages/desktop-electron/src/main/figma-selection.ts`   | Create | Selection state manager (receives IPC from preload, exposes to MCP) |
+| `packages/desktop-electron/src/preload/figma-bridge.ts`   | Create | Preload script for Figma webview: URL hash tracking, IPC to main    |
+| `packages/desktop-electron/src/preload/index.ts`          | Modify | Register figma bridge IPC channels in contextBridge                 |
+| `packages/desktop-electron/src/main/index.ts`             | Modify | Spawn MCP server on app launch, wire IPC handlers                   |
+| `packages/app/src/components/titlebar.tsx`                | Modify | Add Figma connection status indicator                               |
+| `packages/opencode/src/agent/agent.ts`                    | Modify | Update design agent prompt references                               |
+| `packages/opencode/src/agent/prompt/design.txt`           | Modify | Reference MCP tools instead of injection bridge                     |
+| `packages/opencode/src/agent/prompt/figma-write.txt`      | Modify | Update to use MCP tools                                             |
 
 ---
 
 ### Task 1: Add MCP SDK Dependency
 
 **Files:**
+
 - Modify: `packages/desktop-electron/package.json`
 
 - [ ] **Step 1: Add @modelcontextprotocol/sdk**
@@ -64,6 +65,7 @@ git commit -m "chore(desktop): add @modelcontextprotocol/sdk dependency"
 A typed client that wraps `fetch` with automatic auth header injection and error handling for Figma REST API v1.
 
 **Files:**
+
 - Create: `packages/desktop-electron/src/main/figma-rest-client.ts`
 
 - [ ] **Step 1: Create the REST client**
@@ -139,7 +141,7 @@ export class FigmaRestClient {
     const scale = opts?.scale ?? 2
     const format = opts?.format ?? "png"
     const res = await this.request<{ images: Record<string, string> }>(
-      `/images/${fileKey}?ids=${nodeId}&scale=${scale}&format=${format}`
+      `/images/${fileKey}?ids=${nodeId}&scale=${scale}&format=${format}`,
     )
     return res.images[nodeId] ?? null
   }
@@ -166,6 +168,7 @@ git commit -m "feat(desktop): add typed Figma REST API client"
 Handle Figma OAuth popup, token storage in safeStorage, and automatic refresh.
 
 **Files:**
+
 - Create: `packages/desktop-electron/src/main/figma-oauth.ts`
 
 - [ ] **Step 1: Create the OAuth module**
@@ -250,7 +253,11 @@ export async function startOAuthFlow(): Promise<boolean> {
     win.webContents.on("will-redirect", async (_e, url) => {
       const parsed = new URL(url)
       const code = parsed.searchParams.get("code")
-      if (!code) { win.close(); resolve(false); return }
+      if (!code) {
+        win.close()
+        resolve(false)
+        return
+      }
 
       try {
         const res = await fetch("https://api.figma.com/v1/oauth/token", {
@@ -302,6 +309,7 @@ git commit -m "feat(desktop): add Figma OAuth flow with safeStorage token persis
 Receives IPC messages from the Figma webview preload and stores current selection.
 
 **Files:**
+
 - Create: `packages/desktop-electron/src/main/figma-selection.ts`
 
 - [ ] **Step 1: Create selection state module**
@@ -369,6 +377,7 @@ git commit -m "feat(desktop): add Figma selection state manager"
 Preload script injected into the Figma webview that tracks URL changes and sends selection updates via IPC.
 
 **Files:**
+
 - Create: `packages/desktop-electron/src/preload/figma-bridge.ts`
 - Modify: `packages/desktop-electron/src/preload/index.ts`
 
@@ -419,9 +428,10 @@ git commit -m "feat(desktop): add Figma webview preload bridge for selection tra
 
 ### Task 6: MCP Server Implementation
 
-The core MCP server that exposes all figma_* tools.
+The core MCP server that exposes all figma\_\* tools.
 
 **Files:**
+
 - Create: `packages/desktop-electron/src/main/figma-mcp-server.ts`
 
 - [ ] **Step 1: Create the MCP server with read tools**
@@ -456,22 +466,17 @@ export function createFigmaMcpServer() {
     }
   })
 
-  server.tool(
-    "figma_get_selection",
-    "Get the currently selected frame in the Figma webview",
-    {},
-    async () => {
-      const sel = getSelection()
-      return {
-        content: [
-          {
-            type: "text",
-            text: JSON.stringify(sel),
-          },
-        ],
-      }
+  server.tool("figma_get_selection", "Get the currently selected frame in the Figma webview", {}, async () => {
+    const sel = getSelection()
+    return {
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify(sel),
+        },
+      ],
     }
-  )
+  })
 
   server.tool(
     "figma_get_frame",
@@ -485,7 +490,7 @@ export function createFigmaMcpServer() {
       return {
         content: [{ type: "text", text: JSON.stringify(data) }],
       }
-    }
+    },
   )
 
   server.tool(
@@ -499,7 +504,7 @@ export function createFigmaMcpServer() {
       return {
         content: [{ type: "text", text: JSON.stringify(data) }],
       }
-    }
+    },
   )
 
   server.tool(
@@ -513,7 +518,7 @@ export function createFigmaMcpServer() {
       return {
         content: [{ type: "text", text: JSON.stringify(data) }],
       }
-    }
+    },
   )
 
   server.tool(
@@ -531,7 +536,7 @@ export function createFigmaMcpServer() {
       return {
         content: [{ type: "text", text: JSON.stringify({ imageUrl: url }) }],
       }
-    }
+    },
   )
 
   return server
@@ -559,6 +564,7 @@ git commit -m "feat(desktop): implement Figma MCP server with REST API read tool
 Spawn the MCP server on app launch, register IPC handlers for the webview bridge, and write the MCP config file for opencode to discover.
 
 **Files:**
+
 - Modify: `packages/desktop-electron/src/main/index.ts`
 
 - [ ] **Step 1: Read the current main process entry point**
@@ -578,21 +584,22 @@ import { isAuthenticated, startOAuthFlow, getAccessToken } from "./figma-oauth"
 // In initialize() or after setupServerConnection():
 
 // 1. Spawn MCP server as child process
-const mcpProcess = fork(
-  path.join(__dirname, "figma-mcp-server.js"),
-  ["--stdio"],
-  { stdio: ["pipe", "pipe", "pipe", "ipc"] }
-)
+const mcpProcess = fork(path.join(__dirname, "figma-mcp-server.js"), ["--stdio"], {
+  stdio: ["pipe", "pipe", "pipe", "ipc"],
+})
 
 // 2. Write MCP config for opencode to discover
 const mcpConfigPath = path.join(os.homedir(), ".opendesign", ".mcp-figma.json")
-fs.writeFileSync(mcpConfigPath, JSON.stringify({
-  "figma-bridge": {
-    type: "stdio",
-    command: process.execPath,
-    args: [path.join(__dirname, "figma-mcp-server.js"), "--stdio"],
-  }
-}))
+fs.writeFileSync(
+  mcpConfigPath,
+  JSON.stringify({
+    "figma-bridge": {
+      type: "stdio",
+      command: process.execPath,
+      args: [path.join(__dirname, "figma-mcp-server.js"), "--stdio"],
+    },
+  }),
+)
 
 // 3. Register IPC handlers for Figma bridge
 ipcMain.on("figma:selection-changed", (_event, url: string) => {
@@ -630,6 +637,7 @@ git commit -m "feat(desktop): wire Figma MCP server and bridge into Electron lif
 Add a clickable status dot to the titlebar showing Figma auth state.
 
 **Files:**
+
 - Modify: `packages/app/src/components/titlebar.tsx`
 
 - [ ] **Step 1: Read the current titlebar implementation**
@@ -695,6 +703,7 @@ git commit -m "feat(app): add Figma connection status indicator to titlebar"
 Update the design and figma-write agent prompts to reference MCP tools instead of injection bridge.
 
 **Files:**
+
 - Modify: `packages/opencode/src/agent/prompt/design.txt`
 - Modify: `packages/opencode/src/agent/prompt/figma-write.txt`
 
@@ -754,6 +763,7 @@ Expected: All existing tests pass (no regressions).
 - [ ] **Step 3: Manual verification checklist**
 
 Run the desktop app and verify:
+
 - [ ] Figma status dot appears in titlebar (red when not authenticated)
 - [ ] Clicking the dot opens OAuth popup
 - [ ] After auth, dot turns green

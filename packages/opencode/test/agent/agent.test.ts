@@ -226,7 +226,7 @@ test("custom agent config overrides native agent properties", async () => {
   await using tmp = await tmpdir({
     config: {
       agent: {
-        "prototype": {
+        prototype: {
           model: "anthropic/claude-3",
           description: "Custom build agent",
           temperature: 0.7,
@@ -274,7 +274,7 @@ test("agent permission config merges with defaults", async () => {
   await using tmp = await tmpdir({
     config: {
       agent: {
-        "prototype": {
+        prototype: {
           permission: {
             bash: {
               "rm -rf *": "deny",
@@ -317,8 +317,8 @@ test("agent steps/maxSteps config sets steps property", async () => {
   await using tmp = await tmpdir({
     config: {
       agent: {
-        "prototype": { steps: 50 },
-        "ask": { maxSteps: 100 },
+        prototype: { steps: 50 },
+        ask: { maxSteps: 100 },
       },
     },
   })
@@ -354,7 +354,7 @@ test("agent name can be overridden", async () => {
   await using tmp = await tmpdir({
     config: {
       agent: {
-        "prototype": { name: "Builder" },
+        prototype: { name: "Builder" },
       },
     },
   })
@@ -371,7 +371,7 @@ test("agent prompt can be set from config", async () => {
   await using tmp = await tmpdir({
     config: {
       agent: {
-        "prototype": { prompt: "Custom system prompt" },
+        prototype: { prompt: "Custom system prompt" },
       },
     },
   })
@@ -388,7 +388,7 @@ test("unknown agent properties are placed into options", async () => {
   await using tmp = await tmpdir({
     config: {
       agent: {
-        "prototype": {
+        prototype: {
           random_property: "hello",
           another_random: 123,
         },
@@ -409,7 +409,7 @@ test("agent options merge correctly", async () => {
   await using tmp = await tmpdir({
     config: {
       agent: {
-        "prototype": {
+        prototype: {
           options: {
             custom_option: true,
             another_option: "value",
@@ -494,7 +494,7 @@ test("legacy tools config converts to permissions", async () => {
   await using tmp = await tmpdir({
     config: {
       agent: {
-        "prototype": {
+        prototype: {
           tools: {
             bash: false,
             read: false,
@@ -517,7 +517,7 @@ test("legacy tools config maps write/edit/patch/multiedit to edit permission", a
   await using tmp = await tmpdir({
     config: {
       agent: {
-        "prototype": {
+        prototype: {
           tools: {
             write: false,
           },
@@ -559,7 +559,7 @@ test("Truncate.GLOB is allowed even when user denies external_directory per-agen
   await using tmp = await tmpdir({
     config: {
       agent: {
-        "prototype": {
+        prototype: {
           permission: {
             external_directory: "deny",
           },
@@ -728,7 +728,7 @@ test("defaultAgent returns ask when prototype is disabled and default_agent not 
   await using tmp = await tmpdir({
     config: {
       agent: {
-        "prototype": { disable: true },
+        prototype: { disable: true },
       },
     },
   })
@@ -746,10 +746,10 @@ test("defaultAgent throws when all primary agents are disabled", async () => {
   await using tmp = await tmpdir({
     config: {
       agent: {
-        "prototype": { disable: true },
-        "ask": { disable: true },
-        "specs": { disable: true },
-        "design": { disable: true },
+        prototype: { disable: true },
+        ask: { disable: true },
+        specs: { disable: true },
+        design: { disable: true },
       },
     },
   })

@@ -123,7 +123,10 @@ export function Titlebar() {
     if (platform.platform !== "desktop") return
     const api = (window as unknown as { api?: { figmaStartAuth?: () => Promise<boolean> } }).api
     if (!api?.figmaStartAuth) return
-    void api.figmaStartAuth().then(() => checkFigmaAuth()).catch(() => undefined)
+    void api
+      .figmaStartAuth()
+      .then(() => checkFigmaAuth())
+      .catch(() => undefined)
   }
 
   const getWin = () => {

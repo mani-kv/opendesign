@@ -15,16 +15,16 @@
 
 ## File Structure
 
-| File | Action | Responsibility |
-|------|--------|----------------|
-| `packages/opencode/src/server/routes/agent-files.ts` | Create | File state API: GET /agent/:agentId/files, GET /agent/:agentId/files/:path, SSE watch |
-| `packages/opencode/src/server/server.ts` | Modify | Mount agent-files routes |
-| `packages/app/src/pages/session/agent-sandbox-tab-content.tsx` | Modify | Replace SVG canvas with Sandpack preview |
-| `packages/app/src/pages/session/agent-sandbox/sandpack-srcdoc.ts` | Rewrite | Real Sandpack HTML template with React runtime |
-| `packages/app/src/pages/session/agent-sandbox/sandpack-preview.tsx` | Create | Sandpack preview component (iframe + file loading) |
-| `packages/app/src/pages/session/agent-sandbox/use-agent-files.ts` | Create | Hook to fetch + subscribe to agent branch files |
-| `packages/opencode/src/agent/agent.ts` | Modify | Add token-setup subagent definition |
-| `packages/opencode/src/agent/prompt/token-setup.txt` | Create | Prompt for the token injection subagent |
+| File                                                                | Action  | Responsibility                                                                        |
+| ------------------------------------------------------------------- | ------- | ------------------------------------------------------------------------------------- |
+| `packages/opencode/src/server/routes/agent-files.ts`                | Create  | File state API: GET /agent/:agentId/files, GET /agent/:agentId/files/:path, SSE watch |
+| `packages/opencode/src/server/server.ts`                            | Modify  | Mount agent-files routes                                                              |
+| `packages/app/src/pages/session/agent-sandbox-tab-content.tsx`      | Modify  | Replace SVG canvas with Sandpack preview                                              |
+| `packages/app/src/pages/session/agent-sandbox/sandpack-srcdoc.ts`   | Rewrite | Real Sandpack HTML template with React runtime                                        |
+| `packages/app/src/pages/session/agent-sandbox/sandpack-preview.tsx` | Create  | Sandpack preview component (iframe + file loading)                                    |
+| `packages/app/src/pages/session/agent-sandbox/use-agent-files.ts`   | Create  | Hook to fetch + subscribe to agent branch files                                       |
+| `packages/opencode/src/agent/agent.ts`                              | Modify  | Add token-setup subagent definition                                                   |
+| `packages/opencode/src/agent/prompt/token-setup.txt`                | Create  | Prompt for the token injection subagent                                               |
 
 ---
 
@@ -33,6 +33,7 @@
 Expose agent branch file contents via HTTP.
 
 **Files:**
+
 - Create: `packages/opencode/src/server/routes/agent-files.ts`
 - Modify: `packages/opencode/src/server/server.ts`
 
@@ -138,6 +139,7 @@ git commit -m "feat(opencode): add file state API for agent branch files"
 Stream real-time file change events as agents edit files.
 
 **Files:**
+
 - Modify: `packages/opencode/src/server/routes/agent-files.ts`
 
 - [ ] **Step 1: Add SSE watch endpoint**
@@ -202,6 +204,7 @@ git commit -m "feat(opencode): add SSE watch endpoint for live agent file change
 Replace the hello-world template with a real Sandpack-style React runtime.
 
 **Files:**
+
 - Rewrite: `packages/app/src/pages/session/agent-sandbox/sandpack-srcdoc.ts`
 
 - [ ] **Step 1: Read the current sandpack-srcdoc.ts**
@@ -353,6 +356,7 @@ git commit -m "feat(app): rewrite Sandpack template with React runtime and modul
 SolidJS hook that fetches agent branch files and subscribes to SSE for live updates.
 
 **Files:**
+
 - Create: `packages/app/src/pages/session/agent-sandbox/use-agent-files.ts`
 
 - [ ] **Step 1: Create the hook**
@@ -454,6 +458,7 @@ git commit -m "feat(app): add useAgentFiles hook for fetching and subscribing to
 Component that takes agent files and renders them in a Sandpack iframe.
 
 **Files:**
+
 - Create: `packages/app/src/pages/session/agent-sandbox/sandpack-preview.tsx`
 
 - [ ] **Step 1: Create the preview component**
@@ -516,6 +521,7 @@ git commit -m "feat(app): add SandpackPreview component for rendering agent prot
 Wire everything together: agent selection → file fetch → Sandpack preview.
 
 **Files:**
+
 - Modify: `packages/app/src/pages/session/agent-sandbox-tab-content.tsx`
 
 - [ ] **Step 1: Read the current agent-sandbox-tab-content.tsx**
@@ -581,6 +587,7 @@ git commit -m "feat(app): replace SVG canvas with Sandpack preview in agent sand
 A lightweight subagent that pulls design tokens from Figma and writes `tokens.css` to the project's main branch.
 
 **Files:**
+
 - Create: `packages/opencode/src/agent/prompt/token-setup.txt`
 - Modify: `packages/opencode/src/agent/agent.ts`
 
@@ -674,6 +681,7 @@ Expected: All existing tests pass.
 - [ ] **Step 3: Manual verification checklist**
 
 Run the app and verify:
+
 - [ ] Agent sandbox panel shows when agents are present
 - [ ] Selecting an agent loads its branch files (if branch exists)
 - [ ] Sandpack preview renders React + CSS code

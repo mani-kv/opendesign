@@ -14,22 +14,23 @@
 
 ## File Structure
 
-| File | Action | Responsibility |
-|---|---|---|
-| `packages/desktop-electron/src/main/figma-selection.ts` | Modify | Add debounced node metadata fetch + IPC emit to BrowserWindow |
-| `packages/desktop-electron/src/main/index.ts` | Modify | Pass mainWindow ref to selection module, wire thumbnail IPC |
-| `packages/desktop-electron/src/preload/index.ts` | Modify | Add `onFigmaSelection` and `onFigmaThumbnail` IPC listeners |
-| `packages/desktop-electron/src/preload/types.ts` | Modify | Add new methods to `ElectronAPI` type |
-| `packages/app/src/context/prompt.tsx` | Modify | Add `FigmaContextItem` type, extend `ContextItem` union, update `contextItemKey` |
-| `packages/app/src/components/prompt-input/context-items.tsx` | Modify | Add `Switch`/`Match` for figma vs file chip rendering |
-| `packages/app/src/components/prompt-input/build-request-parts.ts` | Modify | Add type guard + figma serialization in `buildRequestParts` |
-| `packages/app/src/components/prompt-input.tsx` | Modify | Wire IPC listener → prompt context (auto-attach/dismiss logic) |
+| File                                                              | Action | Responsibility                                                                   |
+| ----------------------------------------------------------------- | ------ | -------------------------------------------------------------------------------- |
+| `packages/desktop-electron/src/main/figma-selection.ts`           | Modify | Add debounced node metadata fetch + IPC emit to BrowserWindow                    |
+| `packages/desktop-electron/src/main/index.ts`                     | Modify | Pass mainWindow ref to selection module, wire thumbnail IPC                      |
+| `packages/desktop-electron/src/preload/index.ts`                  | Modify | Add `onFigmaSelection` and `onFigmaThumbnail` IPC listeners                      |
+| `packages/desktop-electron/src/preload/types.ts`                  | Modify | Add new methods to `ElectronAPI` type                                            |
+| `packages/app/src/context/prompt.tsx`                             | Modify | Add `FigmaContextItem` type, extend `ContextItem` union, update `contextItemKey` |
+| `packages/app/src/components/prompt-input/context-items.tsx`      | Modify | Add `Switch`/`Match` for figma vs file chip rendering                            |
+| `packages/app/src/components/prompt-input/build-request-parts.ts` | Modify | Add type guard + figma serialization in `buildRequestParts`                      |
+| `packages/app/src/components/prompt-input.tsx`                    | Modify | Wire IPC listener → prompt context (auto-attach/dismiss logic)                   |
 
 ---
 
 ### Task 1: Extend Figma Selection Module with Debounced Node Fetch + IPC
 
 **Files:**
+
 - Modify: `packages/desktop-electron/src/main/figma-selection.ts`
 
 This task adds: debounce timer, REST API call for node name/type, IPC emit to BrowserWindow, and background thumbnail fetch.
@@ -140,6 +141,7 @@ git commit -m "feat(desktop-electron): add debounced node metadata fetch and IPC
 ### Task 2: Wire Selection Bridge in Electron Main Process
 
 **Files:**
+
 - Modify: `packages/desktop-electron/src/main/index.ts`
 
 - [ ] **Step 1: Import and call initSelectionBridge**
@@ -175,6 +177,7 @@ git commit -m "feat(desktop-electron): wire figma selection bridge with REST cli
 ### Task 3: Add Preload IPC Listeners
 
 **Files:**
+
 - Modify: `packages/desktop-electron/src/preload/types.ts`
 - Modify: `packages/desktop-electron/src/preload/index.ts`
 
@@ -218,6 +221,7 @@ onFigmaThumbnail: (cb) => {
 ```
 
 Add the import for the type:
+
 ```typescript
 import type { ..., FigmaSelectionData } from "./types"
 ```
@@ -234,6 +238,7 @@ git commit -m "feat(desktop-electron): add figma selection and thumbnail IPC lis
 ### Task 4: Extend Prompt Context System with FigmaContextItem
 
 **Files:**
+
 - Modify: `packages/app/src/context/prompt.tsx`
 
 - [ ] **Step 1: Add FigmaContextItem type and extend union**
@@ -254,10 +259,13 @@ export type FigmaContextItem = {
 ```
 
 Change the `ContextItem` type (line 51) from:
+
 ```typescript
 export type ContextItem = FileContextItem
 ```
+
 to:
+
 ```typescript
 export type ContextItem = FileContextItem | FigmaContextItem
 ```
@@ -310,6 +318,7 @@ git commit -m "feat(app): add FigmaContextItem type to prompt context system"
 ### Task 5: Update Context Chip UI for Figma Items
 
 **Files:**
+
 - Modify: `packages/app/src/components/prompt-input/context-items.tsx`
 
 - [ ] **Step 1: Add Switch/Match structure**
@@ -337,9 +346,7 @@ Replace the `<For>` body (lines 23-83) with:
             <Tooltip
               value={
                 <span class="flex max-w-[300px]">
-                  <span class="text-text-invert-base truncate-start [unicode-bidi:plaintext] min-w-0">
-                    {directory}
-                  </span>
+                  <span class="text-text-invert-base truncate-start [unicode-bidi:plaintext] min-w-0">{directory}</span>
                   <span class="shrink-0">{filename}</span>
                 </span>
               }
@@ -391,11 +398,12 @@ Replace the `<For>` body (lines 23-83) with:
       </Match>
       <Match when={item.type === "figma" && item} keyed>
         {(figmaItem) => {
-          const label = () => figmaItem.nodeName
-            ? figmaItem.nodeName.length > 14
-              ? figmaItem.nodeName.slice(0, 14) + "…"
-              : figmaItem.nodeName
-            : figmaItem.nodeId ?? "Figma"
+          const label = () =>
+            figmaItem.nodeName
+              ? figmaItem.nodeName.length > 14
+                ? figmaItem.nodeName.slice(0, 14) + "…"
+                : figmaItem.nodeName
+              : (figmaItem.nodeId ?? "Figma")
           const subtitle = () => figmaItem.nodeType?.toLowerCase() ?? ""
 
           return (
@@ -464,6 +472,7 @@ git commit -m "feat(app): add figma context chip rendering with Switch/Match"
 ### Task 6: Update Message Serialization for Figma Context
 
 **Files:**
+
 - Modify: `packages/app/src/components/prompt-input/build-request-parts.ts`
 
 - [ ] **Step 1: Add type guard and figma serialization**
@@ -500,6 +509,7 @@ type ContextEntry = ContextFile | ContextFigma
 ```
 
 Update `BuildRequestPartsInput.context` type:
+
 ```typescript
 context: ContextEntry[]
 ```
@@ -517,14 +527,18 @@ const context = input.context.flatMap((item) => {
       item.fileKey ? `File: ${item.fileKey}` : null,
       item.nodeId ? `Node ID: ${item.nodeId}` : null,
       item.url ? `URL: ${item.url}` : null,
-    ].filter(Boolean).join("\n")
+    ]
+      .filter(Boolean)
+      .join("\n")
 
-    const parts: PromptRequestPart[] = [{
-      id: Identifier.ascending("part"),
-      type: "text",
-      text,
-      synthetic: true,
-    }]
+    const parts: PromptRequestPart[] = [
+      {
+        id: Identifier.ascending("part"),
+        type: "text",
+        text,
+        synthetic: true,
+      },
+    ]
 
     if (item.thumbnail) {
       parts.push({
@@ -591,6 +605,7 @@ git commit -m "feat(app): serialize figma context items as text + thumbnail in r
 ### Task 7: Wire IPC Listener to Prompt Context (Auto-attach + Dismiss)
 
 **Files:**
+
 - Modify: `packages/app/src/components/prompt-input.tsx`
 
 - [ ] **Step 1: Identify the right location for the IPC wiring**
@@ -598,6 +613,7 @@ git commit -m "feat(app): serialize figma context items as text + thumbnail in r
 Read `packages/app/src/components/prompt-input.tsx` to find where `onMount`/`onCleanup` are used and where `usePrompt()` is called. The figma selection listener should be added in the same component that manages the prompt context.
 
 Look for the existing pattern — likely an `onMount` or `createEffect` block. The listener should:
+
 1. Check `platform.platform === "desktop"`
 2. Access `window.api.onFigmaSelection`
 3. Call `prompt.context.add()` / `prompt.context.remove()`
@@ -615,10 +631,14 @@ const [dismissedFigmaNode, setDismissedFigmaNode] = createSignal<string | null>(
 
 onMount(() => {
   if (platform.platform !== "desktop") return
-  const api = (window as unknown as { api?: {
-    onFigmaSelection?: (cb: (sel: any) => void) => () => void
-    onFigmaThumbnail?: (cb: (data: { nodeId: string; thumbnail: string }) => void) => () => void
-  } }).api
+  const api = (
+    window as unknown as {
+      api?: {
+        onFigmaSelection?: (cb: (sel: any) => void) => () => void
+        onFigmaThumbnail?: (cb: (data: { nodeId: string; thumbnail: string }) => void) => () => void
+      }
+    }
+  ).api
   if (!api?.onFigmaSelection) return
 
   const unsub1 = api.onFigmaSelection((sel) => {
@@ -670,11 +690,13 @@ onMount(() => {
 With `ContextItem` now a union, several existing lines in `prompt-input.tsx` access `FileContextItem`-specific fields without narrowing. Fix these:
 
 1. **commentCount memo** (accesses `.comment`): Add type guard:
+
    ```typescript
    prompt.context.items().filter((item) => item.type === "file" && !!item.comment?.trim()).length
    ```
 
 2. **active callback** (accesses `.commentID`, `.path`): Add type guard:
+
    ```typescript
    const active = (item: PromptContextItem) => {
      if (item.type !== "file") return false
@@ -683,6 +705,7 @@ With `ContextItem` now a union, several existing lines in `prompt-input.tsx` acc
    ```
 
 3. **openComment callback** (accesses `.path`, `.commentID`): Add type guard:
+
    ```typescript
    const openComment = (item: PromptContextItem) => {
      if (item.type !== "file") return
@@ -693,7 +716,6 @@ With `ContextItem` now a union, several existing lines in `prompt-input.tsx` acc
 4. **Any other lines accessing `.path`, `.comment`, `.selection`, `.commentID`, `.commentOrigin`, `.preview`** on a `ContextItem` — add `item.type === "file"` guard.
 
 - [ ] **Step 4: Wire dismiss callback to track dismissed node**
-
 
 In the existing `remove` handler for context items (where `props.remove(item)` is called from the context chip), add tracking. This is already handled — when the user clicks dismiss on a figma chip, `prompt.context.remove(item.key)` fires. We need to intercept the removal for figma items to set the dismiss flag.
 
@@ -737,6 +759,7 @@ git commit -m "feat(app): wire figma selection IPC to prompt context with auto-a
 ### Task 8: Typecheck and Integration Verification
 
 **Files:**
+
 - All modified files
 
 - [ ] **Step 1: Run full typecheck**

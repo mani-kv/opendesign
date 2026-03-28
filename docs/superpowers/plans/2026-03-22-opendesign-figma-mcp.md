@@ -14,39 +14,40 @@
 
 ## File Structure
 
-| File | Action | Responsibility |
-|---|---|---|
-| `packages/opendesign-figma-mcp/package.json` | Create | Package manifest, dependencies, bin entry |
-| `packages/opendesign-figma-mcp/tsconfig.json` | Create | TypeScript config |
-| `packages/opendesign-figma-mcp/figma-plugin/manifest.json` | Create | Figma plugin manifest (forked, updated id/name/ports) |
-| `packages/opendesign-figma-mcp/figma-plugin/code.js` | Create | Figma plugin worker (forked from figma-desktop-bridge) |
-| `packages/opendesign-figma-mcp/figma-plugin/ui.html` | Create | Plugin UI — WebSocket client (forked, port range 9333-9342) |
-| `packages/opendesign-figma-mcp/src/index.ts` | Create | CLI entry point (`--stdio` mode for MCP child process) |
-| `packages/opendesign-figma-mcp/src/websocket-server.ts` | Create | WebSocket server (forked from core/websocket-server) |
-| `packages/opendesign-figma-mcp/src/websocket-connector.ts` | Create | Bridges MCP tool calls ↔ WebSocket commands to plugin |
-| `packages/opendesign-figma-mcp/src/mcp-server.ts` | Create | MCP server setup, tool registration orchestrator |
-| `packages/opendesign-figma-mcp/src/tools/selection.ts` | Create | Selection & structure tools (6) |
-| `packages/opendesign-figma-mcp/src/tools/components.ts` | Create | Component & design system tools (8) |
-| `packages/opendesign-figma-mcp/src/tools/variables.ts` | Create | Token & variable tools (8) |
-| `packages/opendesign-figma-mcp/src/tools/creation.ts` | Create | Design creation & mutation tools (12) |
-| `packages/opendesign-figma-mcp/src/tools/comments.ts` | Create | Comment tools (3) |
-| `packages/opendesign-figma-mcp/src/tools/parity.ts` | Create | Design-code parity tools (2) |
-| `packages/opendesign-figma-mcp/src/tools/execute.ts` | Create | Escape hatch — run arbitrary plugin code (1) |
-| `packages/opendesign-figma-mcp/src/rest-client.ts` | Create | Figma REST API client (forked, uses OAuth token from env) |
-| `packages/desktop-electron/src/main/figma-ws.ts` | Create | Starts WebSocket server in Electron main, forwards selection IPC |
-| `packages/desktop-electron/src/main/index.ts` | Modify | Wire figma-ws on startup, update config writer |
-| `packages/desktop-electron/src/main/figma-oauth.ts` | Modify | Add `file_comments:write` scope |
-| `packages/desktop-electron/src/main/figma-selection.ts` | Modify | Simplify — receive selection from WebSocket, no REST API |
-| `packages/desktop-electron/src/preload/index.ts` | Modify | Remove figmaBridgePreload, figmaNotifyUrl, onFigmaThumbnail |
-| `packages/desktop-electron/src/preload/types.ts` | Modify | Remove corresponding type definitions |
-| `packages/desktop-electron/electron.vite.config.ts` | Modify | Remove figma-bridge preload entry |
-| `packages/app/src/pages/session/figma-tab-content.tsx` | Modify | Remove preload/notification code, revert to simple webview |
+| File                                                       | Action | Responsibility                                                   |
+| ---------------------------------------------------------- | ------ | ---------------------------------------------------------------- |
+| `packages/opendesign-figma-mcp/package.json`               | Create | Package manifest, dependencies, bin entry                        |
+| `packages/opendesign-figma-mcp/tsconfig.json`              | Create | TypeScript config                                                |
+| `packages/opendesign-figma-mcp/figma-plugin/manifest.json` | Create | Figma plugin manifest (forked, updated id/name/ports)            |
+| `packages/opendesign-figma-mcp/figma-plugin/code.js`       | Create | Figma plugin worker (forked from figma-desktop-bridge)           |
+| `packages/opendesign-figma-mcp/figma-plugin/ui.html`       | Create | Plugin UI — WebSocket client (forked, port range 9333-9342)      |
+| `packages/opendesign-figma-mcp/src/index.ts`               | Create | CLI entry point (`--stdio` mode for MCP child process)           |
+| `packages/opendesign-figma-mcp/src/websocket-server.ts`    | Create | WebSocket server (forked from core/websocket-server)             |
+| `packages/opendesign-figma-mcp/src/websocket-connector.ts` | Create | Bridges MCP tool calls ↔ WebSocket commands to plugin           |
+| `packages/opendesign-figma-mcp/src/mcp-server.ts`          | Create | MCP server setup, tool registration orchestrator                 |
+| `packages/opendesign-figma-mcp/src/tools/selection.ts`     | Create | Selection & structure tools (6)                                  |
+| `packages/opendesign-figma-mcp/src/tools/components.ts`    | Create | Component & design system tools (8)                              |
+| `packages/opendesign-figma-mcp/src/tools/variables.ts`     | Create | Token & variable tools (8)                                       |
+| `packages/opendesign-figma-mcp/src/tools/creation.ts`      | Create | Design creation & mutation tools (12)                            |
+| `packages/opendesign-figma-mcp/src/tools/comments.ts`      | Create | Comment tools (3)                                                |
+| `packages/opendesign-figma-mcp/src/tools/parity.ts`        | Create | Design-code parity tools (2)                                     |
+| `packages/opendesign-figma-mcp/src/tools/execute.ts`       | Create | Escape hatch — run arbitrary plugin code (1)                     |
+| `packages/opendesign-figma-mcp/src/rest-client.ts`         | Create | Figma REST API client (forked, uses OAuth token from env)        |
+| `packages/desktop-electron/src/main/figma-ws.ts`           | Create | Starts WebSocket server in Electron main, forwards selection IPC |
+| `packages/desktop-electron/src/main/index.ts`              | Modify | Wire figma-ws on startup, update config writer                   |
+| `packages/desktop-electron/src/main/figma-oauth.ts`        | Modify | Add `file_comments:write` scope                                  |
+| `packages/desktop-electron/src/main/figma-selection.ts`    | Modify | Simplify — receive selection from WebSocket, no REST API         |
+| `packages/desktop-electron/src/preload/index.ts`           | Modify | Remove figmaBridgePreload, figmaNotifyUrl, onFigmaThumbnail      |
+| `packages/desktop-electron/src/preload/types.ts`           | Modify | Remove corresponding type definitions                            |
+| `packages/desktop-electron/electron.vite.config.ts`        | Modify | Remove figma-bridge preload entry                                |
+| `packages/app/src/pages/session/figma-tab-content.tsx`     | Modify | Remove preload/notification code, revert to simple webview       |
 
 ---
 
 ### Task 1: Scaffold Package
 
 **Files:**
+
 - Create: `packages/opendesign-figma-mcp/package.json`
 - Create: `packages/opendesign-figma-mcp/tsconfig.json`
 - Create: `packages/opendesign-figma-mcp/src/index.ts` (minimal entry)
@@ -98,6 +99,7 @@ Reference the root tsconfig, set `outDir` to `dist`, target ESNext.
 - [ ] **Step 4: Create minimal entry point**
 
 `packages/opendesign-figma-mcp/src/index.ts`:
+
 ```typescript
 #!/usr/bin/env node
 console.log("opendesign-figma-mcp starting...")
@@ -114,6 +116,7 @@ cd /Users/Mani/Desktop/SideProjects/opendesign && bun install
 ```bash
 bun run --cwd packages/opendesign-figma-mcp dev
 ```
+
 Expected: prints "opendesign-figma-mcp starting..."
 
 - [ ] **Step 7: Commit**
@@ -128,6 +131,7 @@ git commit -m "feat(opendesign-figma-mcp): scaffold package with dependencies"
 ### Task 2: Fork Figma Plugin
 
 **Files:**
+
 - Create: `packages/opendesign-figma-mcp/figma-plugin/manifest.json`
 - Create: `packages/opendesign-figma-mcp/figma-plugin/code.js`
 - Create: `packages/opendesign-figma-mcp/figma-plugin/ui.html`
@@ -143,6 +147,7 @@ cp /Users/Mani/.npm/_npx/b547afed9fcf6dcb/node_modules/figma-console-mcp/figma-d
 - [ ] **Step 2: Update manifest.json**
 
 Change:
+
 - `id` → `"opendesign-figma-bridge"` (unique plugin ID)
 - `name` → `"OpenDesign Bridge"`
 - Keep all permissions: `teamlibrary`, `dynamic-page`, `inspect`, `enablePrivatePluginApi: true`
@@ -151,6 +156,7 @@ Change:
 - [ ] **Step 3: Update port range in ui.html**
 
 Find and replace port scanning range from `9223-9232` to `9333-9342` in `ui.html`. Search for `9223` and replace all instances:
+
 - Default port: `9223` → `9333`
 - Port range end: `9232` → `9342`
 - Any references to the port range in comments
@@ -178,6 +184,7 @@ git commit -m "feat(opendesign-figma-mcp): fork figma-desktop-bridge plugin with
 ### Task 3: Build WebSocket Server
 
 **Files:**
+
 - Create: `packages/opendesign-figma-mcp/src/websocket-server.ts`
 
 Fork the WebSocket server from figma-console-mcp's `dist/core/websocket-server.d.ts` / `dist/local.js`. This is the core bridge between the plugin and MCP tools.
@@ -185,6 +192,7 @@ Fork the WebSocket server from figma-console-mcp's `dist/core/websocket-server.d
 - [ ] **Step 1: Read the figma-console WebSocket server source**
 
 Read the compiled `dist/local.js` to understand the `FigmaWebSocketServer` class implementation. Key parts to extract:
+
 - Port scanning logic (adapt to 9333-9342)
 - Client connection handling (tracking by fileKey)
 - `sendCommand(method, params, timeout, targetFileKey)` — the RPC call mechanism
@@ -222,19 +230,31 @@ export class FigmaWSServer extends EventEmitter {
     // Close all connections and server
   }
 
-  async sendCommand(method: string, params: Record<string, unknown> = {}, timeoutMs = 15000, targetFileKey?: string): Promise<unknown> {
+  async sendCommand(
+    method: string,
+    params: Record<string, unknown> = {},
+    timeoutMs = 15000,
+    targetFileKey?: string,
+  ): Promise<unknown> {
     // Send JSON-RPC to plugin, wait for response
   }
 
-  getActiveFileKey(): string | null { return this.activeFileKey }
-  isConnected(): boolean { return this.clients.size > 0 }
-  getPort(): number { return this.port }
+  getActiveFileKey(): string | null {
+    return this.activeFileKey
+  }
+  isConnected(): boolean {
+    return this.clients.size > 0
+  }
+  getPort(): number {
+    return this.port
+  }
 }
 ```
 
 Follow the exact protocol from figma-console: message format `{ id, method, params }`, response matching by ID, FILE_INFO handling, SELECTION_CHANGE forwarding.
 
 Emit events:
+
 - `"connected"` — plugin connected
 - `"disconnected"` — plugin disconnected
 - `"selection"` — selection changed `{ nodeId, nodeName, nodeType, fileKey }`
@@ -257,6 +277,7 @@ git commit -m "feat(opendesign-figma-mcp): add WebSocket server for plugin commu
 ### Task 4: Build WebSocket Connector (MCP ↔ Plugin Bridge)
 
 **Files:**
+
 - Create: `packages/opendesign-figma-mcp/src/types.ts`
 - Create: `packages/opendesign-figma-mcp/src/websocket-connector.ts`
 
@@ -318,6 +339,7 @@ git commit -m "feat(opendesign-figma-mcp): add CommandSender interface and WebSo
 ### Task 5: Build REST Client (OAuth-based)
 
 **Files:**
+
 - Create: `packages/opendesign-figma-mcp/src/rest-client.ts`
 
 Fork from the existing `figma-rest-client.ts` in desktop-electron. Uses `FIGMA_OAUTH_TOKEN` env var instead of PAT.
@@ -372,6 +394,7 @@ git commit -m "feat(opendesign-figma-mcp): add OAuth-based REST client for libra
 ### Task 6: Register MCP Tools (~40 tools)
 
 **Files:**
+
 - Create: `packages/opendesign-figma-mcp/src/mcp-server.ts`
 - Create: `packages/opendesign-figma-mcp/src/tools/selection.ts`
 - Create: `packages/opendesign-figma-mcp/src/tools/components.ts`
@@ -415,6 +438,7 @@ export function createMcpServer(connector: FigmaConnector, restClient: FigmaRest
 For each tool file, follow the registration pattern from figma-console. Each file exports a `register*Tools(server, connector, ...)` function that calls `server.tool(name, description, schema, handler)`.
 
 **Example — `tools/selection.ts`:**
+
 ```typescript
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
 import { z } from "zod"
@@ -426,12 +450,17 @@ export function registerSelectionTools(server: McpServer, connector: FigmaConnec
     return { content: [{ type: "text", text: JSON.stringify(result) }] }
   })
 
-  server.tool("figma_get_file_data", "Get file/page structure", {
-    depth: z.number().optional().describe("How deep to traverse the node tree"),
-  }, async ({ depth }) => {
-    const result = await connector.getFileData({ depth })
-    return { content: [{ type: "text", text: JSON.stringify(result) }] }
-  })
+  server.tool(
+    "figma_get_file_data",
+    "Get file/page structure",
+    {
+      depth: z.number().optional().describe("How deep to traverse the node tree"),
+    },
+    async ({ depth }) => {
+      const result = await connector.getFileData({ depth })
+      return { content: [{ type: "text", text: JSON.stringify(result) }] }
+    },
+  )
 
   // ... figma_get_status, figma_list_open_files, figma_navigate, figma_take_screenshot
 }
@@ -440,6 +469,7 @@ export function registerSelectionTools(server: McpServer, connector: FigmaConnec
 Reference figma-console's tool registration in `dist/local.js` for exact tool names, descriptions, zod schemas, and handler logic. Adapt each handler to use the `FigmaConnector` instead of figma-console's internal connector.
 
 **Tool files to create:**
+
 - `tools/selection.ts` — 6 tools (get_selection, get_file_data, get_status, list_open_files, navigate, take_screenshot)
 - `tools/components.ts` — 8 tools (get_component, get_component_details, get_component_for_development, get_component_image, search_components, get_library_components, get_design_system_summary, get_design_system_kit)
 - `tools/variables.ts` — 8 tools (get_variables, get_token_values, get_styles, browse_tokens, create_variable, batch_create_variables, update_variable, batch_update_variables)
@@ -466,11 +496,13 @@ git commit -m "feat(opendesign-figma-mcp): register ~40 MCP tools across 7 categ
 ### Task 7: Wire MCP Entry Point (stdio mode)
 
 **Files:**
+
 - Modify: `packages/opendesign-figma-mcp/src/index.ts`
 
 - [ ] **Step 1: Implement the stdio entry point**
 
 The MCP server runs as a child process. It:
+
 1. Connects to the WebSocket server (localhost:9333) as a **client** (not server — the Electron main process hosts the server)
 2. Creates the MCP server with all tools
 3. Starts stdio transport
@@ -520,8 +552,14 @@ class WSClient implements CommandSender {
         reject(new Error(`Timeout: ${method}`))
       }, timeoutMs)
       this.pending.set(id, {
-        resolve: (v: unknown) => { clearTimeout(timeout); resolve(v) },
-        reject: (e: unknown) => { clearTimeout(timeout); reject(e) },
+        resolve: (v: unknown) => {
+          clearTimeout(timeout)
+          resolve(v)
+        },
+        reject: (e: unknown) => {
+          clearTimeout(timeout)
+          reject(e)
+        },
       })
       this.ws!.send(JSON.stringify({ id, method, params }))
     })
@@ -538,7 +576,7 @@ async function main() {
       break
     } catch {
       if (i === 9) throw new Error(`Cannot connect to WebSocket on port ${port}`)
-      await new Promise(r => setTimeout(r, 1000))
+      await new Promise((r) => setTimeout(r, 1000))
     }
   }
 
@@ -563,6 +601,7 @@ Note: The `FigmaConnector` currently takes a `FigmaWSServer` but the MCP child p
 cd packages/opendesign-figma-mcp && bun run build
 node dist/index.js --stdio
 ```
+
 Expected: connects to localhost:9333 (will fail if no server running — that's fine, just verify it starts and retries)
 
 - [ ] **Step 3: Commit**
@@ -577,6 +616,7 @@ git commit -m "feat(opendesign-figma-mcp): implement stdio MCP entry point with 
 ### Task 8: Wire WebSocket Server into Electron Main Process
 
 **Files:**
+
 - Create: `packages/desktop-electron/src/main/figma-ws.ts`
 - Modify: `packages/desktop-electron/src/main/index.ts`
 
@@ -687,7 +727,9 @@ function updateMcpToken(token: string) {
       config.mcp["opendesign-figma"].env.FIGMA_OAUTH_TOKEN = token
       writeFileSync(configPath, JSON.stringify(config, null, 2), "utf-8")
     }
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 }
 ```
 
@@ -702,6 +744,7 @@ ipcMain.handle("figma-plugin-status", () => isFigmaPluginConnected())
 ```
 
 And add to preload `types.ts` and `index.ts`:
+
 ```typescript
 // types.ts
 figmaPluginStatus: () => Promise<boolean>
@@ -730,15 +773,19 @@ git commit -m "feat(desktop-electron): wire WebSocket server and MCP config into
 ### Task 9: Update OAuth Scopes
 
 **Files:**
+
 - Modify: `packages/desktop-electron/src/main/figma-oauth.ts`
 
 - [ ] **Step 1: Add file_comments:write scope**
 
 Change:
+
 ```typescript
 const SCOPES = "file_content:read,file_metadata:read,file_comments:read,file_dev_resources:read"
 ```
+
 To:
+
 ```typescript
 const SCOPES = "file_content:read,file_metadata:read,file_comments:read,file_comments:write,file_dev_resources:read"
 ```
@@ -757,6 +804,7 @@ git commit -m "feat(desktop-electron): add file_comments:write scope for comment
 ### Task 10: Cleanup Old Code
 
 **Files:**
+
 - Remove: `packages/desktop-electron/src/preload/figma-bridge.ts`
 - Remove: `packages/desktop-electron/src/main/figma-mcp-server.ts`
 - Modify: `packages/desktop-electron/src/preload/index.ts`
@@ -785,6 +833,7 @@ rm packages/desktop-electron/src/main/figma-mcp-server.ts
 - [ ] **Step 4: Clean up preload/types.ts**
 
 Remove:
+
 - `figmaBridgePreload: () => Promise<string>`
 - `figmaNotifyUrl: (url: string) => void`
 - `onFigmaThumbnail` listener type
@@ -792,6 +841,7 @@ Remove:
 - [ ] **Step 5: Clean up preload/index.ts**
 
 Remove:
+
 - `figmaBridgePreload` method
 - `figmaNotifyUrl` method
 - `onFigmaThumbnail` listener
@@ -799,6 +849,7 @@ Remove:
 - [ ] **Step 6: Clean up main/index.ts IPC handlers**
 
 Remove:
+
 - `ipcMain.handle("figma-bridge-preload", ...)`
 - `ipcMain.on("figma:selection-changed", ...)` — plugin sends selection via WebSocket now
 - Old `writeMcpConfig()` function (replaced in Task 8)
@@ -813,6 +864,7 @@ Keep: `FigmaSelection` type, `getSelection()`, `updateSelection()`, `onSelection
 - [ ] **Step 8: Simplify figma-tab-content.tsx**
 
 Remove:
+
 - `figmaPreload` signal and `onMount` that fetches preload path
 - `notifySelection()` function
 - `handleInPageNav` — revert to single `handleNav` for both `did-navigate` and `did-navigate-in-page`
@@ -845,6 +897,7 @@ git commit -m "refactor: remove old REST API selection tracking, figma-bridge pr
 ### Task 11: End-to-End Integration Test
 
 **Files:**
+
 - All packages
 
 - [ ] **Step 1: Build the MCP package**

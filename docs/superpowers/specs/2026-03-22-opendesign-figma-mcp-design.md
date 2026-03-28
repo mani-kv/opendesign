@@ -89,77 +89,77 @@ Default: **9333**, fallback through **9334-9342**. Chosen to avoid collision wit
 
 ### Selection & Structure (6 tools)
 
-| Tool | Source | Description |
-|---|---|---|
-| `figma_get_selection` | Plugin API | Selected node(s) with name, type, full properties |
-| `figma_get_file_data` | Plugin API | Page/file tree structure |
-| `figma_get_status` | Plugin API | Connection status, active file, current page |
-| `figma_list_open_files` | Plugin API | All files with active plugin connections |
-| `figma_navigate` | Plugin API | Zoom to / select a specific node |
-| `figma_take_screenshot` | Plugin API | Capture viewport or specific node as PNG |
+| Tool                    | Source     | Description                                       |
+| ----------------------- | ---------- | ------------------------------------------------- |
+| `figma_get_selection`   | Plugin API | Selected node(s) with name, type, full properties |
+| `figma_get_file_data`   | Plugin API | Page/file tree structure                          |
+| `figma_get_status`      | Plugin API | Connection status, active file, current page      |
+| `figma_list_open_files` | Plugin API | All files with active plugin connections          |
+| `figma_navigate`        | Plugin API | Zoom to / select a specific node                  |
+| `figma_take_screenshot` | Plugin API | Capture viewport or specific node as PNG          |
 
 ### Components & Design System (8 tools)
 
-| Tool | Source | Description |
-|---|---|---|
-| `figma_get_component` | Plugin API | Single component metadata |
-| `figma_get_component_details` | Plugin API | Full properties, variants, allowed values |
-| `figma_get_component_for_development` | Plugin API | Dev-ready spec + image |
-| `figma_get_component_image` | Plugin API | Rendered PNG of a component |
-| `figma_search_components` | Plugin API | Search by name in current file |
-| `figma_get_library_components` | REST API + OAuth | Search published libraries (other files) |
-| `figma_get_design_system_summary` | Plugin API | Overview of tokens, components, styles |
-| `figma_get_design_system_kit` | Plugin API | Full design system dump in one call |
+| Tool                                  | Source           | Description                               |
+| ------------------------------------- | ---------------- | ----------------------------------------- |
+| `figma_get_component`                 | Plugin API       | Single component metadata                 |
+| `figma_get_component_details`         | Plugin API       | Full properties, variants, allowed values |
+| `figma_get_component_for_development` | Plugin API       | Dev-ready spec + image                    |
+| `figma_get_component_image`           | Plugin API       | Rendered PNG of a component               |
+| `figma_search_components`             | Plugin API       | Search by name in current file            |
+| `figma_get_library_components`        | REST API + OAuth | Search published libraries (other files)  |
+| `figma_get_design_system_summary`     | Plugin API       | Overview of tokens, components, styles    |
+| `figma_get_design_system_kit`         | Plugin API       | Full design system dump in one call       |
 
 ### Tokens & Variables (8 tools)
 
-| Tool | Source | Description |
-|---|---|---|
-| `figma_get_variables` | Plugin API | All variable collections and values |
-| `figma_get_token_values` | Plugin API | Resolved token values across modes |
-| `figma_get_styles` | Plugin API | Color, text, effect styles |
-| `figma_browse_tokens` | Plugin API | Browse token hierarchy |
-| `figma_create_variable` | Plugin API | Create a single token |
+| Tool                           | Source     | Description                         |
+| ------------------------------ | ---------- | ----------------------------------- |
+| `figma_get_variables`          | Plugin API | All variable collections and values |
+| `figma_get_token_values`       | Plugin API | Resolved token values across modes  |
+| `figma_get_styles`             | Plugin API | Color, text, effect styles          |
+| `figma_browse_tokens`          | Plugin API | Browse token hierarchy              |
+| `figma_create_variable`        | Plugin API | Create a single token               |
 | `figma_batch_create_variables` | Plugin API | Create up to 100 tokens in one call |
-| `figma_update_variable` | Plugin API | Update a single token value |
-| `figma_batch_update_variables` | Plugin API | Update up to 100 token values |
+| `figma_update_variable`        | Plugin API | Update a single token value         |
+| `figma_batch_update_variables` | Plugin API | Update up to 100 token values       |
 
 ### Design Creation & Mutation (12 tools)
 
-| Tool | Source | Description |
-|---|---|---|
-| `figma_create_child` | Plugin API | Create frame, text, rectangle, etc. inside a parent |
-| `figma_clone_node` | Plugin API | Duplicate a node |
-| `figma_instantiate_component` | Plugin API | Create instance from component key |
-| `figma_set_instance_properties` | Plugin API | Set variant, text overrides, boolean props |
-| `figma_set_fills` | Plugin API | Set fill colors |
-| `figma_set_strokes` | Plugin API | Set strokes |
-| `figma_set_text` | Plugin API | Set text content and style |
-| `figma_set_image_fill` | Plugin API | Set image as fill |
-| `figma_move_node` | Plugin API | Reposition a node |
-| `figma_resize_node` | Plugin API | Change node size |
-| `figma_rename_node` | Plugin API | Rename a node |
-| `figma_delete_node` | Plugin API | Remove a node |
+| Tool                            | Source     | Description                                         |
+| ------------------------------- | ---------- | --------------------------------------------------- |
+| `figma_create_child`            | Plugin API | Create frame, text, rectangle, etc. inside a parent |
+| `figma_clone_node`              | Plugin API | Duplicate a node                                    |
+| `figma_instantiate_component`   | Plugin API | Create instance from component key                  |
+| `figma_set_instance_properties` | Plugin API | Set variant, text overrides, boolean props          |
+| `figma_set_fills`               | Plugin API | Set fill colors                                     |
+| `figma_set_strokes`             | Plugin API | Set strokes                                         |
+| `figma_set_text`                | Plugin API | Set text content and style                          |
+| `figma_set_image_fill`          | Plugin API | Set image as fill                                   |
+| `figma_move_node`               | Plugin API | Reposition a node                                   |
+| `figma_resize_node`             | Plugin API | Change node size                                    |
+| `figma_rename_node`             | Plugin API | Rename a node                                       |
+| `figma_delete_node`             | Plugin API | Remove a node                                       |
 
 ### Comments (3 tools)
 
-| Tool | Source | Description |
-|---|---|---|
-| `figma_get_comments` | REST API + OAuth | Read comments on file/node |
-| `figma_post_comment` | REST API + OAuth | Add a comment (groundwork for future @agent flow) |
-| `figma_delete_comment` | REST API + OAuth | Remove a comment |
+| Tool                   | Source           | Description                                       |
+| ---------------------- | ---------------- | ------------------------------------------------- |
+| `figma_get_comments`   | REST API + OAuth | Read comments on file/node                        |
+| `figma_post_comment`   | REST API + OAuth | Add a comment (groundwork for future @agent flow) |
+| `figma_delete_comment` | REST API + OAuth | Remove a comment                                  |
 
 ### Design-Code Parity (2 tools)
 
-| Tool | Source | Description |
-|---|---|---|
-| `figma_check_design_parity` | Plugin API | Compare design vs code implementation |
-| `figma_lint_design` | Plugin API | Check for design issues, missing styles |
+| Tool                        | Source     | Description                             |
+| --------------------------- | ---------- | --------------------------------------- |
+| `figma_check_design_parity` | Plugin API | Compare design vs code implementation   |
+| `figma_lint_design`         | Plugin API | Check for design issues, missing styles |
 
 ### Escape Hatch (1 tool)
 
-| Tool | Source | Description |
-|---|---|---|
+| Tool            | Source     | Description                     |
+| --------------- | ---------- | ------------------------------- |
 | `figma_execute` | Plugin API | Run arbitrary Figma plugin code |
 
 ## Selection Chip Integration
@@ -197,10 +197,10 @@ On startup, the Electron app writes/merges an MCP entry into the **global config
       "command": ["<path-to-opendesign-figma-mcp-bin>", "--stdio"],
       "env": {
         "FIGMA_OAUTH_TOKEN": "<token>",
-        "OPENDESIGN_FIGMA_PORT": "9333"
-      }
-    }
-  }
+        "OPENDESIGN_FIGMA_PORT": "9333",
+      },
+    },
+  },
 }
 ```
 
@@ -212,47 +212,47 @@ The MCP child process needs the OAuth token for REST API calls (library search, 
 
 ## What Gets Removed
 
-| Current code | Action |
-|---|---|
-| `figma-selection.ts` — `resolveNodeName()`, `fetchThumbnail()` | Remove |
-| `figma-selection.ts` — `initSelectionBridge(win, FigmaRestClient)` | Simplify — no REST client, just BrowserWindow ref for IPC |
+| Current code                                                                              | Action                                                                            |
+| ----------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `figma-selection.ts` — `resolveNodeName()`, `fetchThumbnail()`                            | Remove                                                                            |
+| `figma-selection.ts` — `initSelectionBridge(win, FigmaRestClient)`                        | Simplify — no REST client, just BrowserWindow ref for IPC                         |
 | `figma-rest-client.ts` usage in `main/index.ts` (`wireMenu` creates client for selection) | Remove from `wireMenu()`. File stays — used inside MCP package for REST API tools |
-| `figma-bridge.ts` preload file | Remove |
-| `electron.vite.config.ts` — `"figma-bridge"` preload entry | Remove |
-| `preload/index.ts` — `figmaBridgePreload` and `figmaNotifyUrl` methods | Remove |
-| `preload/types.ts` — `figmaBridgePreload` and `figmaNotifyUrl` type definitions | Remove |
-| `main/index.ts` — `ipcMain.handle("figma-bridge-preload", ...)` handler | Remove |
-| `main/index.ts` — `ipcMain.on("figma:selection-changed", ...)` handler | Remove — plugin sends selection via WebSocket now |
-| `figma-mcp-server.ts` (old standalone MCP server) | Remove — replaced by `packages/opendesign-figma-mcp` |
-| `main/index.ts` — `writeMcpConfig()` writing `.mcp-figma.json` | Replace — write to `~/.config/opencode/opencode.json` instead |
-| `figma-tab-content.tsx` — `figmaPreload` signal, `notifySelection()`, `handleInPageNav` | Remove — plugin handles selection, revert to single `handleNav` |
-| `preload/types.ts` — `onFigmaThumbnail` type | Remove |
-| `preload/index.ts` — `onFigmaThumbnail` listener | Remove |
+| `figma-bridge.ts` preload file                                                            | Remove                                                                            |
+| `electron.vite.config.ts` — `"figma-bridge"` preload entry                                | Remove                                                                            |
+| `preload/index.ts` — `figmaBridgePreload` and `figmaNotifyUrl` methods                    | Remove                                                                            |
+| `preload/types.ts` — `figmaBridgePreload` and `figmaNotifyUrl` type definitions           | Remove                                                                            |
+| `main/index.ts` — `ipcMain.handle("figma-bridge-preload", ...)` handler                   | Remove                                                                            |
+| `main/index.ts` — `ipcMain.on("figma:selection-changed", ...)` handler                    | Remove — plugin sends selection via WebSocket now                                 |
+| `figma-mcp-server.ts` (old standalone MCP server)                                         | Remove — replaced by `packages/opendesign-figma-mcp`                              |
+| `main/index.ts` — `writeMcpConfig()` writing `.mcp-figma.json`                            | Replace — write to `~/.config/opencode/opencode.json` instead                     |
+| `figma-tab-content.tsx` — `figmaPreload` signal, `notifySelection()`, `handleInPageNav`   | Remove — plugin handles selection, revert to single `handleNav`                   |
+| `preload/types.ts` — `onFigmaThumbnail` type                                              | Remove                                                                            |
+| `preload/index.ts` — `onFigmaThumbnail` listener                                          | Remove                                                                            |
 
 ## What Stays Unchanged
 
-| Code | Why |
-|---|---|
-| `packages/app/src/context/prompt.tsx` — `FigmaContextItem` type | Same data shape, different source |
-| `packages/app/src/components/prompt-input/context-items.tsx` — Figma chip UI | Unchanged |
-| `packages/app/src/components/prompt-input/build-request-parts.ts` — Figma serialization | Unchanged |
-| `packages/app/src/components/prompt-input.tsx` — IPC listener, auto-attach, dismiss | Same IPC channel `figma:selection-updated` |
-| `packages/app/src/components/titlebar.tsx` — Figma icon + OAuth | Still needed for REST API auth |
-| `packages/desktop-electron/src/main/figma-oauth.ts` | Still needed, token shared with MCP |
+| Code                                                                                    | Why                                        |
+| --------------------------------------------------------------------------------------- | ------------------------------------------ |
+| `packages/app/src/context/prompt.tsx` — `FigmaContextItem` type                         | Same data shape, different source          |
+| `packages/app/src/components/prompt-input/context-items.tsx` — Figma chip UI            | Unchanged                                  |
+| `packages/app/src/components/prompt-input/build-request-parts.ts` — Figma serialization | Unchanged                                  |
+| `packages/app/src/components/prompt-input.tsx` — IPC listener, auto-attach, dismiss     | Same IPC channel `figma:selection-updated` |
+| `packages/app/src/components/titlebar.tsx` — Figma icon + OAuth                         | Still needed for REST API auth             |
+| `packages/desktop-electron/src/main/figma-oauth.ts`                                     | Still needed, token shared with MCP        |
 
 ## Constraints
 
-| Constraint | Decision |
-|---|---|
-| Port range | 9333-9342, avoids figma-console collision |
-| No PAT | OAuth only, token passed via env var to MCP child process |
-| Plugin distribution | Community (production), dev import (testing) |
-| Two-process split | WebSocket server in Electron main process, MCP server as stdio child process spawned by opencode |
-| ~40 tools | Curated subset, no FigJam/Slides/console debugging |
-| Bootloader pattern | Plugin UI loads dynamically from WebSocket server (from figma-console) |
-| Selection via plugin | No REST API for selection, no rate limit concerns |
-| OAuth scopes | Must add `file_comments:write` to `figma-oauth.ts` SCOPES for comment tools. Users re-auth once. |
-| Single instance | Only one Electron instance should run the WebSocket server. Port fallback handles accidental collisions. |
+| Constraint           | Decision                                                                                                 |
+| -------------------- | -------------------------------------------------------------------------------------------------------- |
+| Port range           | 9333-9342, avoids figma-console collision                                                                |
+| No PAT               | OAuth only, token passed via env var to MCP child process                                                |
+| Plugin distribution  | Community (production), dev import (testing)                                                             |
+| Two-process split    | WebSocket server in Electron main process, MCP server as stdio child process spawned by opencode         |
+| ~40 tools            | Curated subset, no FigJam/Slides/console debugging                                                       |
+| Bootloader pattern   | Plugin UI loads dynamically from WebSocket server (from figma-console)                                   |
+| Selection via plugin | No REST API for selection, no rate limit concerns                                                        |
+| OAuth scopes         | Must add `file_comments:write` to `figma-oauth.ts` SCOPES for comment tools. Users re-auth once.         |
+| Single instance      | Only one Electron instance should run the WebSocket server. Port fallback handles accidental collisions. |
 
 ## Out of Scope (this spec)
 

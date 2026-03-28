@@ -14,12 +14,17 @@ export function registerSelectionTools(server: McpServer, connector: FigmaConnec
     return { content: [{ type: "text" as const, text: JSON.stringify(result) }] }
   })
 
-  srv.tool("figma_get_file_data", "Get file/page structure with node tree", {
-    depth: z.number().optional().describe("How deep to traverse the node tree"),
-  }, async (params: any) => {
-    const result = await connector.getFileData({ depth: params.depth })
-    return { content: [{ type: "text" as const, text: JSON.stringify(result) }] }
-  })
+  srv.tool(
+    "figma_get_file_data",
+    "Get file/page structure with node tree",
+    {
+      depth: z.number().optional().describe("How deep to traverse the node tree"),
+    },
+    async (params: any) => {
+      const result = await connector.getFileData({ depth: params.depth })
+      return { content: [{ type: "text" as const, text: JSON.stringify(result) }] }
+    },
+  )
 
   srv.tool("figma_get_status", "Get connection status and active file info", {}, async () => {
     const result = await connector.getStatus()
@@ -31,19 +36,33 @@ export function registerSelectionTools(server: McpServer, connector: FigmaConnec
     return { content: [{ type: "text" as const, text: JSON.stringify(result) }] }
   })
 
-  srv.tool("figma_navigate", "Navigate to a specific node in Figma", {
-    nodeId: z.string().describe("The node ID to navigate to"),
-  }, async (params: any) => {
-    const result = await connector.navigate({ nodeId: params.nodeId })
-    return { content: [{ type: "text" as const, text: JSON.stringify(result) }] }
-  })
+  srv.tool(
+    "figma_navigate",
+    "Navigate to a specific node in Figma",
+    {
+      nodeId: z.string().describe("The node ID to navigate to"),
+    },
+    async (params: any) => {
+      const result = await connector.navigate({ nodeId: params.nodeId })
+      return { content: [{ type: "text" as const, text: JSON.stringify(result) }] }
+    },
+  )
 
-  srv.tool("figma_take_screenshot", "Take a screenshot of the current view or specific node", {
-    nodeId: z.string().optional().describe("Node ID to screenshot (current view if omitted)"),
-    scale: z.number().optional().describe("Scale factor (default 1)"),
-    format: z.string().optional().describe("Image format: png or jpg"),
-  }, async (params: any) => {
-    const result = await connector.takeScreenshot({ nodeId: params.nodeId, scale: params.scale, format: params.format })
-    return { content: [{ type: "text" as const, text: JSON.stringify(result) }] }
-  })
+  srv.tool(
+    "figma_take_screenshot",
+    "Take a screenshot of the current view or specific node",
+    {
+      nodeId: z.string().optional().describe("Node ID to screenshot (current view if omitted)"),
+      scale: z.number().optional().describe("Scale factor (default 1)"),
+      format: z.string().optional().describe("Image format: png or jpg"),
+    },
+    async (params: any) => {
+      const result = await connector.takeScreenshot({
+        nodeId: params.nodeId,
+        scale: params.scale,
+        format: params.format,
+      })
+      return { content: [{ type: "text" as const, text: JSON.stringify(result) }] }
+    },
+  )
 }

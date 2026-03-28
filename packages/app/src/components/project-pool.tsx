@@ -67,7 +67,12 @@ export function ProjectPool(props: { content: Component }) {
       const { projectId, sessionId } = parseKey(k)
       const dir = resolveDirectory(projectId, home())
       const [, setStore] = globalSync.child(dir, { bootstrap: false })
-      if (sessionId) setStore(produce((draft) => { dropSessionCaches(draft as Parameters<typeof dropSessionCaches>[0], [sessionId]) }))
+      if (sessionId)
+        setStore(
+          produce((draft) => {
+            dropSessionCaches(draft as Parameters<typeof dropSessionCaches>[0], [sessionId])
+          }),
+        )
     }
   })
 

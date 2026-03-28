@@ -6,7 +6,10 @@
     <div class="letter">A</div>
     <div class="content">
       <h3>Canvas-First: Extend Rust/WASM Canvas</h3>
-      <p>Add wireframe primitives (section, button, text, image, list, nav) directly to canvas-core in Rust. Figma data maps into these Rust node types. All interaction (draw, select, drag, resize) happens in the WASM canvas.</p>
+      <p>
+        Add wireframe primitives (section, button, text, image, list, nav) directly to canvas-core in Rust. Figma data
+        maps into these Rust node types. All interaction (draw, select, drag, resize) happens in the WASM canvas.
+      </p>
       <div class="pros-cons">
         <div class="pros">
           <h4>Pros</h4>
@@ -34,7 +37,11 @@
     <div class="letter">B</div>
     <div class="content">
       <h3>Web-First: SVG/HTML Wireframe Canvas</h3>
-      <p>Build the wireframe canvas as a SolidJS SVG/HTML layer (extending the existing agent-sandbox SVG canvas). Wireframe components are SolidJS components. Figma data maps into a TypeScript scene graph. The Rust canvas is used only for visual diff overlays later.</p>
+      <p>
+        Build the wireframe canvas as a SolidJS SVG/HTML layer (extending the existing agent-sandbox SVG canvas).
+        Wireframe components are SolidJS components. Figma data maps into a TypeScript scene graph. The Rust canvas is
+        used only for visual diff overlays later.
+      </p>
       <div class="pros-cons">
         <div class="pros">
           <h4>Pros</h4>
@@ -62,7 +69,11 @@
     <div class="letter">C</div>
     <div class="content">
       <h3>Hybrid: Web Wireframes + Rust Preview</h3>
-      <p>Wireframe editing in SolidJS/SVG (fast iteration). When a Figma design is imported, show a rasterized preview image on the Rust canvas alongside the SVG wireframe decomposition. The Rust canvas handles the preview image layer; the SVG layer handles wireframe manipulation.</p>
+      <p>
+        Wireframe editing in SolidJS/SVG (fast iteration). When a Figma design is imported, show a rasterized preview
+        image on the Rust canvas alongside the SVG wireframe decomposition. The Rust canvas handles the preview image
+        layer; the SVG layer handles wireframe manipulation.
+      </p>
       <div class="pros-cons">
         <div class="pros">
           <h4>Pros</h4>
@@ -86,12 +97,26 @@
   </div>
 </div>
 
-<div class="section" style="margin-top: 2rem; padding: 1.5rem; background: rgba(255,255,255,0.03); border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);">
+<div
+  class="section"
+  style="
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  "
+>
   <h3>⭐ Recommendation: Option B (Web-First)</h3>
-  <p style="color: #aaa; line-height: 1.6;">
-    For an MVP wireframe sketchpad, the web layer wins on iteration speed. Wireframe components are just SolidJS components — you can design, tweak, and add new ones in minutes, not hours of Rust compilation. The existing SVG canvas already has pan/zoom/drag/selection. Text rendering is free. The design system palette is a natural web UI element.
+  <p style="color: #aaa; line-height: 1.6">
+    For an MVP wireframe sketchpad, the web layer wins on iteration speed. Wireframe components are just SolidJS
+    components — you can design, tweak, and add new ones in minutes, not hours of Rust compilation. The existing SVG
+    canvas already has pan/zoom/drag/selection. Text rendering is free. The design system palette is a natural web UI
+    element.
   </p>
-  <p style="color: #aaa; line-height: 1.6; margin-top: 0.75rem;">
-    The Rust canvas isn't wasted — it becomes the foundation for visual diff rendering later (P1), where GPU acceleration actually matters. And you can always migrate wireframe rendering to Rust later if SVG becomes a bottleneck (it won't for wireframes).
+  <p style="color: #aaa; line-height: 1.6; margin-top: 0.75rem">
+    The Rust canvas isn't wasted — it becomes the foundation for visual diff rendering later (P1), where GPU
+    acceleration actually matters. And you can always migrate wireframe rendering to Rust later if SVG becomes a
+    bottleneck (it won't for wireframes).
   </p>
 </div>

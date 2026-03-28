@@ -105,15 +105,15 @@ The spec mentions the chip showing `nodeName` and `nodeType` but does not specif
 
 ## Summary
 
-| # | Severity | Finding |
-|---|----------|---------|
-| C-1 | Critical | `context-items.tsx` assumes all items are files; will crash on Figma items |
-| C-2 | Critical | `buildRequestParts` will crash; Layer 6 serialization location unspecified |
-| M-1 | Moderate | Dismiss flag storage location unspecified; persistence behavior unclear |
+| #   | Severity | Finding                                                                      |
+| --- | -------- | ---------------------------------------------------------------------------- |
+| C-1 | Critical | `context-items.tsx` assumes all items are files; will crash on Figma items   |
+| C-2 | Critical | `buildRequestParts` will crash; Layer 6 serialization location unspecified   |
+| M-1 | Moderate | Dismiss flag storage location unspecified; persistence behavior unclear      |
 | M-2 | Moderate | No "deselect" event; chip reflects URL navigation, not true canvas selection |
-| M-3 | Moderate | Thumbnail race condition when rapidly changing selections |
-| m-1 | Minor | contextItemKey null-nodeId edge case |
-| m-2 | Minor | Missing type export location clarity |
-| m-3 | Minor | Missing i18n keys for Figma chip |
+| M-3 | Moderate | Thumbnail race condition when rapidly changing selections                    |
+| m-1 | Minor    | contextItemKey null-nodeId edge case                                         |
+| m-2 | Minor    | Missing type export location clarity                                         |
+| m-3 | Minor    | Missing i18n keys for Figma chip                                             |
 
 **Recommendation:** Fix C-1 and C-2 before implementation begins -- they represent code that will fail at runtime. M-1 through M-3 should be addressed in the spec to avoid implementation ambiguity. Minor items can be resolved during implementation.

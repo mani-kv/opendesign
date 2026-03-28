@@ -89,7 +89,9 @@ export class FigmaConnector {
     return this.sender.sendCommand("CREATE_VARIABLE", params)
   }
 
-  batchCreateVariables(params: { variables: Array<{ collectionId: string; name: string; type: string; value: unknown }> }): Promise<unknown> {
+  batchCreateVariables(params: {
+    variables: Array<{ collectionId: string; name: string; type: string; value: unknown }>
+  }): Promise<unknown> {
     return this.sender.sendCommand("BATCH_CREATE_VARIABLES", params)
   }
 
@@ -97,7 +99,9 @@ export class FigmaConnector {
     return this.sender.sendCommand("UPDATE_VARIABLE", params)
   }
 
-  batchUpdateVariables(params: { updates: Array<{ variableId: string; value: unknown; modeId?: string }> }): Promise<unknown> {
+  batchUpdateVariables(params: {
+    updates: Array<{ variableId: string; value: unknown; modeId?: string }>
+  }): Promise<unknown> {
     return this.sender.sendCommand("BATCH_UPDATE_VARIABLES", params)
   }
 
@@ -161,7 +165,9 @@ export class FigmaConnector {
     return this.sender.sendCommand("CHECK_DESIGN_PARITY", params)
   }
 
-  lintDesign(params: { nodeId?: string; rules?: string[]; maxDepth?: number; maxFindings?: number } = {}): Promise<unknown> {
+  lintDesign(
+    params: { nodeId?: string; rules?: string[]; maxDepth?: number; maxFindings?: number } = {},
+  ): Promise<unknown> {
     return this.sender.sendCommand("LINT_DESIGN", params)
   }
 

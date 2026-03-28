@@ -5,113 +5,281 @@
   <h3>Canvas Layout During Exploration</h3>
   <div class="mockup">
     <div class="mockup-header">Live Prototype + Agent Variations</div>
-    <div class="mockup-body" style="padding: 2rem; position: relative;">
-      <div style="display: flex; gap: 2rem; align-items: flex-start; flex-wrap: wrap;">
-
+    <div class="mockup-body" style="padding: 2rem; position: relative">
+      <div style="display: flex; gap: 2rem; align-items: flex-start; flex-wrap: wrap">
         <!-- Main prototype -->
-        <div style="min-width: 260px; flex: 1.2;">
-          <div style="color: #34d399; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
-            <div style="width: 6px; height: 6px; background: #34d399; border-radius: 50%;"></div>
+        <div style="min-width: 260px; flex: 1.2">
+          <div
+            style="
+              color: #34d399;
+              font-size: 10px;
+              text-transform: uppercase;
+              letter-spacing: 1px;
+              margin-bottom: 8px;
+              display: flex;
+              align-items: center;
+              gap: 6px;
+            "
+          >
+            <div style="width: 6px; height: 6px; background: #34d399; border-radius: 50%"></div>
             Live Prototype (Sandpack)
           </div>
-          <div style="background: #0f172a; border: 2px solid #1e293b; border-radius: 12px; overflow: hidden;">
+          <div style="background: #0f172a; border: 2px solid #1e293b; border-radius: 12px; overflow: hidden">
             <!-- Fake app UI -->
-            <div style="background: #1e293b; padding: 8px 12px; display: flex; align-items: center; gap: 8px;">
-              <div style="width: 8px; height: 8px; background: #ef4444; border-radius: 50%;"></div>
-              <div style="width: 8px; height: 8px; background: #eab308; border-radius: 50%;"></div>
-              <div style="width: 8px; height: 8px; background: #22c55e; border-radius: 50%;"></div>
-              <div style="color: #64748b; font-size: 10px; margin-left: auto;">localhost:3000</div>
+            <div style="background: #1e293b; padding: 8px 12px; display: flex; align-items: center; gap: 8px">
+              <div style="width: 8px; height: 8px; background: #ef4444; border-radius: 50%"></div>
+              <div style="width: 8px; height: 8px; background: #eab308; border-radius: 50%"></div>
+              <div style="width: 8px; height: 8px; background: #22c55e; border-radius: 50%"></div>
+              <div style="color: #64748b; font-size: 10px; margin-left: auto">localhost:3000</div>
             </div>
-            <div style="padding: 16px;">
-              <div style="background: #334155; height: 10px; width: 40%; border-radius: 3px; margin-bottom: 16px;"></div>
+            <div style="padding: 16px">
+              <div style="background: #334155; height: 10px; width: 40%; border-radius: 3px; margin-bottom: 16px"></div>
               <!-- Carousel section - selected for exploration -->
-              <div style="outline: 2px solid rgba(99,102,241,0.5); outline-offset: 4px; border-radius: 8px; padding: 0; margin-bottom: 16px;">
-                <div style="display: flex; gap: 8px;">
-                  <div style="background: linear-gradient(135deg, #6366f1, #8b5cf6); height: 60px; flex: 1; border-radius: 6px;"></div>
-                  <div style="background: linear-gradient(135deg, #6366f1, #8b5cf6); height: 60px; flex: 1; border-radius: 6px;"></div>
-                  <div style="background: linear-gradient(135deg, #6366f1, #8b5cf6); height: 60px; flex: 1; border-radius: 6px;"></div>
+              <div
+                style="
+                  outline: 2px solid rgba(99, 102, 241, 0.5);
+                  outline-offset: 4px;
+                  border-radius: 8px;
+                  padding: 0;
+                  margin-bottom: 16px;
+                "
+              >
+                <div style="display: flex; gap: 8px">
+                  <div
+                    style="
+                      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+                      height: 60px;
+                      flex: 1;
+                      border-radius: 6px;
+                    "
+                  ></div>
+                  <div
+                    style="
+                      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+                      height: 60px;
+                      flex: 1;
+                      border-radius: 6px;
+                    "
+                  ></div>
+                  <div
+                    style="
+                      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+                      height: 60px;
+                      flex: 1;
+                      border-radius: 6px;
+                    "
+                  ></div>
                 </div>
-                <div style="color: #818cf8; font-size: 9px; margin-top: 4px;">🔍 Carousel · Agent A exploring</div>
+                <div style="color: #818cf8; font-size: 9px; margin-top: 4px">🔍 Carousel · Agent A exploring</div>
               </div>
               <!-- List section - also being explored -->
-              <div style="outline: 2px solid rgba(245,158,11,0.5); outline-offset: 4px; border-radius: 8px;">
-                <div style="display: flex; flex-direction: column; gap: 6px;">
-                  <div style="background: #1e293b; border: 1px solid #334155; height: 20px; border-radius: 4px;"></div>
-                  <div style="background: #1e293b; border: 1px solid #334155; height: 20px; border-radius: 4px;"></div>
-                  <div style="background: #1e293b; border: 1px solid #334155; height: 20px; border-radius: 4px;"></div>
+              <div style="outline: 2px solid rgba(245, 158, 11, 0.5); outline-offset: 4px; border-radius: 8px">
+                <div style="display: flex; flex-direction: column; gap: 6px">
+                  <div style="background: #1e293b; border: 1px solid #334155; height: 20px; border-radius: 4px"></div>
+                  <div style="background: #1e293b; border: 1px solid #334155; height: 20px; border-radius: 4px"></div>
+                  <div style="background: #1e293b; border: 1px solid #334155; height: 20px; border-radius: 4px"></div>
                 </div>
-                <div style="color: #fbbf24; font-size: 9px; margin-top: 4px;">🔍 List · Agent B exploring</div>
+                <div style="color: #fbbf24; font-size: 9px; margin-top: 4px">🔍 List · Agent B exploring</div>
               </div>
             </div>
           </div>
         </div>
 
         <!-- Variations panel -->
-        <div style="min-width: 280px; flex: 1.5;">
-          <div style="color: #818cf8; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">Agent A: Carousel Variations</div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div style="min-width: 280px; flex: 1.5">
+          <div
+            style="color: #818cf8; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px"
+          >
+            Agent A: Carousel Variations
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px">
             <!-- Variation 1 -->
-            <div style="background: #0f172a; border: 1px solid #334155; border-radius: 8px; overflow: hidden; cursor: pointer;">
-              <div style="padding: 10px;">
-                <div style="display: flex; gap: 4px;">
-                  <div style="background: linear-gradient(135deg, #ec4899, #f43f5e); height: 40px; flex: 1; border-radius: 4px;"></div>
-                  <div style="background: linear-gradient(135deg, #ec4899, #f43f5e); height: 40px; flex: 1; border-radius: 4px; opacity: 0.5;"></div>
+            <div
+              style="
+                background: #0f172a;
+                border: 1px solid #334155;
+                border-radius: 8px;
+                overflow: hidden;
+                cursor: pointer;
+              "
+            >
+              <div style="padding: 10px">
+                <div style="display: flex; gap: 4px">
+                  <div
+                    style="
+                      background: linear-gradient(135deg, #ec4899, #f43f5e);
+                      height: 40px;
+                      flex: 1;
+                      border-radius: 4px;
+                    "
+                  ></div>
+                  <div
+                    style="
+                      background: linear-gradient(135deg, #ec4899, #f43f5e);
+                      height: 40px;
+                      flex: 1;
+                      border-radius: 4px;
+                      opacity: 0.5;
+                    "
+                  ></div>
                 </div>
               </div>
-              <div style="padding: 6px 10px; border-top: 1px solid #1e293b; display: flex; justify-content: space-between; align-items: center;">
-                <span style="color: #94a3b8; font-size: 10px;">Stacked overlap</span>
-                <span style="color: #22c55e; font-size: 16px; cursor: pointer;" title="Approve">✓</span>
+              <div
+                style="
+                  padding: 6px 10px;
+                  border-top: 1px solid #1e293b;
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                "
+              >
+                <span style="color: #94a3b8; font-size: 10px">Stacked overlap</span>
+                <span style="color: #22c55e; font-size: 16px; cursor: pointer" title="Approve">✓</span>
               </div>
             </div>
             <!-- Variation 2 -->
-            <div style="background: #0f172a; border: 1px solid #334155; border-radius: 8px; overflow: hidden; cursor: pointer;">
-              <div style="padding: 10px;">
-                <div style="background: linear-gradient(135deg, #14b8a6, #0ea5e9); height: 40px; border-radius: 4px;"></div>
-                <div style="display: flex; gap: 4px; margin-top: 4px;">
-                  <div style="width: 6px; height: 6px; background: #475569; border-radius: 50%;"></div>
-                  <div style="width: 6px; height: 6px; background: #94a3b8; border-radius: 50%;"></div>
-                  <div style="width: 6px; height: 6px; background: #475569; border-radius: 50%;"></div>
+            <div
+              style="
+                background: #0f172a;
+                border: 1px solid #334155;
+                border-radius: 8px;
+                overflow: hidden;
+                cursor: pointer;
+              "
+            >
+              <div style="padding: 10px">
+                <div
+                  style="background: linear-gradient(135deg, #14b8a6, #0ea5e9); height: 40px; border-radius: 4px"
+                ></div>
+                <div style="display: flex; gap: 4px; margin-top: 4px">
+                  <div style="width: 6px; height: 6px; background: #475569; border-radius: 50%"></div>
+                  <div style="width: 6px; height: 6px; background: #94a3b8; border-radius: 50%"></div>
+                  <div style="width: 6px; height: 6px; background: #475569; border-radius: 50%"></div>
                 </div>
               </div>
-              <div style="padding: 6px 10px; border-top: 1px solid #1e293b; display: flex; justify-content: space-between; align-items: center;">
-                <span style="color: #94a3b8; font-size: 10px;">Full-bleed hero</span>
-                <span style="color: #22c55e; font-size: 16px; cursor: pointer;" title="Approve">✓</span>
+              <div
+                style="
+                  padding: 6px 10px;
+                  border-top: 1px solid #1e293b;
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                "
+              >
+                <span style="color: #94a3b8; font-size: 10px">Full-bleed hero</span>
+                <span style="color: #22c55e; font-size: 16px; cursor: pointer" title="Approve">✓</span>
               </div>
             </div>
             <!-- Variation 3 -->
-            <div style="background: #0f172a; border: 1px solid #334155; border-radius: 8px; overflow: hidden; cursor: pointer;">
-              <div style="padding: 10px;">
-                <div style="display: flex; flex-direction: column; gap: 3px;">
-                  <div style="background: linear-gradient(90deg, #f59e0b, #f97316); height: 18px; border-radius: 3px;"></div>
-                  <div style="background: linear-gradient(90deg, #f59e0b, #f97316); height: 18px; border-radius: 3px; opacity: 0.6;"></div>
-                  <div style="background: linear-gradient(90deg, #f59e0b, #f97316); height: 18px; border-radius: 3px; opacity: 0.3;"></div>
+            <div
+              style="
+                background: #0f172a;
+                border: 1px solid #334155;
+                border-radius: 8px;
+                overflow: hidden;
+                cursor: pointer;
+              "
+            >
+              <div style="padding: 10px">
+                <div style="display: flex; flex-direction: column; gap: 3px">
+                  <div
+                    style="background: linear-gradient(90deg, #f59e0b, #f97316); height: 18px; border-radius: 3px"
+                  ></div>
+                  <div
+                    style="
+                      background: linear-gradient(90deg, #f59e0b, #f97316);
+                      height: 18px;
+                      border-radius: 3px;
+                      opacity: 0.6;
+                    "
+                  ></div>
+                  <div
+                    style="
+                      background: linear-gradient(90deg, #f59e0b, #f97316);
+                      height: 18px;
+                      border-radius: 3px;
+                      opacity: 0.3;
+                    "
+                  ></div>
                 </div>
               </div>
-              <div style="padding: 6px 10px; border-top: 1px solid #1e293b; display: flex; justify-content: space-between; align-items: center;">
-                <span style="color: #94a3b8; font-size: 10px;">Vertical stack</span>
-                <span style="color: #22c55e; font-size: 16px; cursor: pointer;" title="Approve">✓</span>
+              <div
+                style="
+                  padding: 6px 10px;
+                  border-top: 1px solid #1e293b;
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                "
+              >
+                <span style="color: #94a3b8; font-size: 10px">Vertical stack</span>
+                <span style="color: #22c55e; font-size: 16px; cursor: pointer" title="Approve">✓</span>
               </div>
             </div>
             <!-- Variation 4 -->
-            <div style="background: #0f172a; border: 1px solid #334155; border-radius: 8px; overflow: hidden; cursor: pointer;">
-              <div style="padding: 10px;">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3px;">
-                  <div style="background: linear-gradient(135deg, #a78bfa, #6366f1); height: 18px; border-radius: 3px;"></div>
-                  <div style="background: linear-gradient(135deg, #a78bfa, #6366f1); height: 18px; border-radius: 3px;"></div>
-                  <div style="background: linear-gradient(135deg, #a78bfa, #6366f1); height: 18px; border-radius: 3px;"></div>
-                  <div style="background: linear-gradient(135deg, #a78bfa, #6366f1); height: 18px; border-radius: 3px;"></div>
+            <div
+              style="
+                background: #0f172a;
+                border: 1px solid #334155;
+                border-radius: 8px;
+                overflow: hidden;
+                cursor: pointer;
+              "
+            >
+              <div style="padding: 10px">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3px">
+                  <div
+                    style="background: linear-gradient(135deg, #a78bfa, #6366f1); height: 18px; border-radius: 3px"
+                  ></div>
+                  <div
+                    style="background: linear-gradient(135deg, #a78bfa, #6366f1); height: 18px; border-radius: 3px"
+                  ></div>
+                  <div
+                    style="background: linear-gradient(135deg, #a78bfa, #6366f1); height: 18px; border-radius: 3px"
+                  ></div>
+                  <div
+                    style="background: linear-gradient(135deg, #a78bfa, #6366f1); height: 18px; border-radius: 3px"
+                  ></div>
                 </div>
               </div>
-              <div style="padding: 6px 10px; border-top: 1px solid #1e293b; display: flex; justify-content: space-between; align-items: center;">
-                <span style="color: #94a3b8; font-size: 10px;">Grid layout</span>
-                <span style="color: #22c55e; font-size: 16px; cursor: pointer;" title="Approve">✓</span>
+              <div
+                style="
+                  padding: 6px 10px;
+                  border-top: 1px solid #1e293b;
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                "
+              >
+                <span style="color: #94a3b8; font-size: 10px">Grid layout</span>
+                <span style="color: #22c55e; font-size: 16px; cursor: pointer" title="Approve">✓</span>
               </div>
             </div>
           </div>
 
-          <div style="color: #fbbf24; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-top: 20px; margin-bottom: 8px;">Agent B: List Variations</div>
-          <div style="color: #64748b; font-size: 11px; display: flex; align-items: center; gap: 8px;">
-            <div style="width: 12px; height: 12px; border: 2px solid #fbbf24; border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+          <div
+            style="
+              color: #fbbf24;
+              font-size: 10px;
+              text-transform: uppercase;
+              letter-spacing: 1px;
+              margin-top: 20px;
+              margin-bottom: 8px;
+            "
+          >
+            Agent B: List Variations
+          </div>
+          <div style="color: #64748b; font-size: 11px; display: flex; align-items: center; gap: 8px">
+            <div
+              style="
+                width: 12px;
+                height: 12px;
+                border: 2px solid #fbbf24;
+                border-top-color: transparent;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+              "
+            ></div>
             Generating 4 variations...
           </div>
         </div>
@@ -120,129 +288,238 @@
   </div>
 </div>
 
-<div class="section" style="margin-top: 2rem;">
+<div class="section" style="margin-top: 2rem">
   <h3>Approval & Checkpoint Flow</h3>
   <div class="mockup">
     <div class="mockup-header">Approve → Update Prototype → Checkpoint</div>
-    <div class="mockup-body" style="padding: 2rem;">
-      <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
-
+    <div class="mockup-body" style="padding: 2rem">
+      <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap">
         <!-- Before -->
-        <div style="text-align: center; flex: 1; min-width: 150px;">
-          <div style="color: #64748b; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">Before</div>
-          <div style="background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px; height: 80px;">
-            <div style="display: flex; gap: 4px; height: 100%;">
-              <div style="background: #6366f1; flex: 1; border-radius: 4px;"></div>
-              <div style="background: #6366f1; flex: 1; border-radius: 4px;"></div>
-              <div style="background: #6366f1; flex: 1; border-radius: 4px;"></div>
+        <div style="text-align: center; flex: 1; min-width: 150px">
+          <div
+            style="color: #64748b; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px"
+          >
+            Before
+          </div>
+          <div style="background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px; height: 80px">
+            <div style="display: flex; gap: 4px; height: 100%">
+              <div style="background: #6366f1; flex: 1; border-radius: 4px"></div>
+              <div style="background: #6366f1; flex: 1; border-radius: 4px"></div>
+              <div style="background: #6366f1; flex: 1; border-radius: 4px"></div>
             </div>
           </div>
-          <div style="color: #94a3b8; font-size: 10px; margin-top: 4px;">Original carousel</div>
+          <div style="color: #94a3b8; font-size: 10px; margin-top: 4px">Original carousel</div>
         </div>
 
         <!-- Arrow + Approve action -->
-        <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
-          <div style="background: #22c55e; color: #0f172a; font-size: 10px; font-weight: 700; padding: 4px 12px; border-radius: 20px;">✓ Approve</div>
-          <div style="color: #475569; font-size: 18px;">→</div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 4px">
+          <div
+            style="
+              background: #22c55e;
+              color: #0f172a;
+              font-size: 10px;
+              font-weight: 700;
+              padding: 4px 12px;
+              border-radius: 20px;
+            "
+          >
+            ✓ Approve
+          </div>
+          <div style="color: #475569; font-size: 18px">→</div>
         </div>
 
         <!-- After -->
-        <div style="text-align: center; flex: 1; min-width: 150px;">
-          <div style="color: #34d399; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">After</div>
-          <div style="background: #0f172a; border: 2px solid #22c55e; border-radius: 8px; padding: 12px; height: 80px;">
-            <div style="background: linear-gradient(135deg, #14b8a6, #0ea5e9); height: 100%; border-radius: 4px;"></div>
-            <div style="display: flex; gap: 4px; margin-top: 4px; justify-content: center;">
-              <div style="width: 6px; height: 6px; background: #94a3b8; border-radius: 50%;"></div>
-              <div style="width: 6px; height: 6px; background: #475569; border-radius: 50%;"></div>
-              <div style="width: 6px; height: 6px; background: #475569; border-radius: 50%;"></div>
+        <div style="text-align: center; flex: 1; min-width: 150px">
+          <div
+            style="color: #34d399; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px"
+          >
+            After
+          </div>
+          <div style="background: #0f172a; border: 2px solid #22c55e; border-radius: 8px; padding: 12px; height: 80px">
+            <div style="background: linear-gradient(135deg, #14b8a6, #0ea5e9); height: 100%; border-radius: 4px"></div>
+            <div style="display: flex; gap: 4px; margin-top: 4px; justify-content: center">
+              <div style="width: 6px; height: 6px; background: #94a3b8; border-radius: 50%"></div>
+              <div style="width: 6px; height: 6px; background: #475569; border-radius: 50%"></div>
+              <div style="width: 6px; height: 6px; background: #475569; border-radius: 50%"></div>
             </div>
           </div>
-          <div style="color: #34d399; font-size: 10px; margin-top: 4px;">Prototype updated in-place</div>
+          <div style="color: #34d399; font-size: 10px; margin-top: 4px">Prototype updated in-place</div>
         </div>
 
         <!-- Arrow + Checkpoint -->
-        <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
-          <div style="color: #475569; font-size: 18px;">→</div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 4px">
+          <div style="color: #475569; font-size: 18px">→</div>
         </div>
 
         <!-- Checkpoint -->
-        <div style="text-align: center; flex: 0.8; min-width: 130px;">
-          <div style="color: #a78bfa; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">Auto-checkpoint</div>
-          <div style="background: rgba(139,92,246,0.1); border: 1px solid rgba(139,92,246,0.3); border-radius: 8px; padding: 12px;">
-            <div style="color: #a78bfa; font-size: 20px; margin-bottom: 4px;">📌</div>
-            <div style="color: #e2e8f0; font-size: 11px; font-weight: 600;">v3</div>
-            <div style="color: #94a3b8; font-size: 9px; margin-top: 2px;">Carousel → full-bleed</div>
-            <div style="color: #64748b; font-size: 9px;">2:34 PM</div>
+        <div style="text-align: center; flex: 0.8; min-width: 130px">
+          <div
+            style="color: #a78bfa; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px"
+          >
+            Auto-checkpoint
+          </div>
+          <div
+            style="
+              background: rgba(139, 92, 246, 0.1);
+              border: 1px solid rgba(139, 92, 246, 0.3);
+              border-radius: 8px;
+              padding: 12px;
+            "
+          >
+            <div style="color: #a78bfa; font-size: 20px; margin-bottom: 4px">📌</div>
+            <div style="color: #e2e8f0; font-size: 11px; font-weight: 600">v3</div>
+            <div style="color: #94a3b8; font-size: 9px; margin-top: 2px">Carousel → full-bleed</div>
+            <div style="color: #64748b; font-size: 9px">2:34 PM</div>
           </div>
         </div>
       </div>
 
       <!-- Dimmed variations -->
-      <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #1e293b;">
-        <div style="color: #64748b; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">Unapproved variations dim but remain</div>
-        <div style="display: flex; gap: 8px; opacity: 0.3;">
-          <div style="background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 8px; flex: 1;">
-            <div style="background: #334155; height: 24px; border-radius: 3px;"></div>
-            <div style="color: #64748b; font-size: 9px; margin-top: 4px;">Stacked overlap</div>
+      <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #1e293b">
+        <div
+          style="color: #64748b; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px"
+        >
+          Unapproved variations dim but remain
+        </div>
+        <div style="display: flex; gap: 8px; opacity: 0.3">
+          <div style="background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 8px; flex: 1">
+            <div style="background: #334155; height: 24px; border-radius: 3px"></div>
+            <div style="color: #64748b; font-size: 9px; margin-top: 4px">Stacked overlap</div>
           </div>
-          <div style="background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 8px; flex: 1;">
-            <div style="background: #334155; height: 24px; border-radius: 3px;"></div>
-            <div style="color: #64748b; font-size: 9px; margin-top: 4px;">Vertical stack</div>
+          <div style="background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 8px; flex: 1">
+            <div style="background: #334155; height: 24px; border-radius: 3px"></div>
+            <div style="color: #64748b; font-size: 9px; margin-top: 4px">Vertical stack</div>
           </div>
-          <div style="background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 8px; flex: 1;">
-            <div style="background: #334155; height: 24px; border-radius: 3px;"></div>
-            <div style="color: #64748b; font-size: 9px; margin-top: 4px;">Grid layout</div>
+          <div style="background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 8px; flex: 1">
+            <div style="background: #334155; height: 24px; border-radius: 3px"></div>
+            <div style="color: #64748b; font-size: 9px; margin-top: 4px">Grid layout</div>
           </div>
         </div>
-        <div style="color: #64748b; font-size: 10px; margin-top: 6px;">Click any dimmed variation to re-explore or restore it</div>
+        <div style="color: #64748b; font-size: 10px; margin-top: 6px">
+          Click any dimmed variation to re-explore or restore it
+        </div>
       </div>
     </div>
   </div>
 </div>
 
-<div class="section" style="margin-top: 2rem;">
+<div class="section" style="margin-top: 2rem">
   <h3>Checkpoint Timeline</h3>
   <div class="mockup">
     <div class="mockup-header">Scrub through exploration history</div>
-    <div class="mockup-body" style="padding: 2rem;">
+    <div class="mockup-body" style="padding: 2rem">
       <!-- Timeline bar -->
-      <div style="display: flex; align-items: center; gap: 0; position: relative; padding: 0 1rem;">
+      <div style="display: flex; align-items: center; gap: 0; position: relative; padding: 0 1rem">
         <!-- Timeline line -->
-        <div style="position: absolute; top: 50%; left: 1rem; right: 1rem; height: 2px; background: #1e293b; transform: translateY(-50%);"></div>
+        <div
+          style="
+            position: absolute;
+            top: 50%;
+            left: 1rem;
+            right: 1rem;
+            height: 2px;
+            background: #1e293b;
+            transform: translateY(-50%);
+          "
+        ></div>
 
         <!-- Checkpoint 1 -->
-        <div style="flex: 1; text-align: center; position: relative; z-index: 1;">
-          <div style="width: 14px; height: 14px; background: #334155; border: 2px solid #64748b; border-radius: 50%; margin: 0 auto;"></div>
-          <div style="color: #64748b; font-size: 9px; margin-top: 6px;">v1 · Import</div>
+        <div style="flex: 1; text-align: center; position: relative; z-index: 1">
+          <div
+            style="
+              width: 14px;
+              height: 14px;
+              background: #334155;
+              border: 2px solid #64748b;
+              border-radius: 50%;
+              margin: 0 auto;
+            "
+          ></div>
+          <div style="color: #64748b; font-size: 9px; margin-top: 6px">v1 · Import</div>
         </div>
 
         <!-- Checkpoint 2 -->
-        <div style="flex: 1; text-align: center; position: relative; z-index: 1;">
-          <div style="width: 14px; height: 14px; background: #334155; border: 2px solid #64748b; border-radius: 50%; margin: 0 auto;"></div>
-          <div style="color: #64748b; font-size: 9px; margin-top: 6px;">v2 · Nav update</div>
+        <div style="flex: 1; text-align: center; position: relative; z-index: 1">
+          <div
+            style="
+              width: 14px;
+              height: 14px;
+              background: #334155;
+              border: 2px solid #64748b;
+              border-radius: 50%;
+              margin: 0 auto;
+            "
+          ></div>
+          <div style="color: #64748b; font-size: 9px; margin-top: 6px">v2 · Nav update</div>
         </div>
 
         <!-- Checkpoint 3 - current -->
-        <div style="flex: 1; text-align: center; position: relative; z-index: 1;">
-          <div style="width: 18px; height: 18px; background: #6366f1; border: 2px solid #818cf8; border-radius: 50%; margin: 0 auto; box-shadow: 0 0 12px rgba(99,102,241,0.4);"></div>
-          <div style="color: #e2e8f0; font-size: 9px; margin-top: 6px; font-weight: 600;">v3 · Carousel</div>
+        <div style="flex: 1; text-align: center; position: relative; z-index: 1">
+          <div
+            style="
+              width: 18px;
+              height: 18px;
+              background: #6366f1;
+              border: 2px solid #818cf8;
+              border-radius: 50%;
+              margin: 0 auto;
+              box-shadow: 0 0 12px rgba(99, 102, 241, 0.4);
+            "
+          ></div>
+          <div style="color: #e2e8f0; font-size: 9px; margin-top: 6px; font-weight: 600">v3 · Carousel</div>
         </div>
 
         <!-- Future -->
-        <div style="flex: 1; text-align: center; position: relative; z-index: 1;">
-          <div style="width: 14px; height: 14px; background: transparent; border: 2px dashed #334155; border-radius: 50%; margin: 0 auto;"></div>
-          <div style="color: #475569; font-size: 9px; margin-top: 6px;">next...</div>
+        <div style="flex: 1; text-align: center; position: relative; z-index: 1">
+          <div
+            style="
+              width: 14px;
+              height: 14px;
+              background: transparent;
+              border: 2px dashed #334155;
+              border-radius: 50%;
+              margin: 0 auto;
+            "
+          ></div>
+          <div style="color: #475569; font-size: 9px; margin-top: 6px">next...</div>
         </div>
       </div>
 
-      <div style="margin-top: 1.5rem; display: flex; gap: 1rem; justify-content: center;">
-        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 6px; padding: 8px 14px; font-size: 11px; color: #94a3b8;">
+      <div style="margin-top: 1.5rem; display: flex; gap: 1rem; justify-content: center">
+        <div
+          style="
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 6px;
+            padding: 8px 14px;
+            font-size: 11px;
+            color: #94a3b8;
+          "
+        >
           ← Restore v2
         </div>
-        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 6px; padding: 8px 14px; font-size: 11px; color: #94a3b8;">
+        <div
+          style="
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 6px;
+            padding: 8px 14px;
+            font-size: 11px;
+            color: #94a3b8;
+          "
+        >
           Compare v1 ↔ v3
         </div>
-        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 6px; padding: 8px 14px; font-size: 11px; color: #94a3b8;">
+        <div
+          style="
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 6px;
+            padding: 8px 14px;
+            font-size: 11px;
+            color: #94a3b8;
+          "
+        >
           Fork from v2 →
         </div>
       </div>
@@ -250,21 +527,35 @@
   </div>
 </div>
 
-<div class="section" style="margin-top: 2rem;">
+<div class="section" style="margin-top: 2rem">
   <h3>Key Behaviors</h3>
-  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 1rem;">
-      <div style="color: #e2e8f0; font-weight: 600; font-size: 13px; margin-bottom: 8px;">Approval</div>
-      <ul style="color: #94a3b8; font-size: 12px; line-height: 1.8; padding-left: 16px; margin: 0;">
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem">
+    <div
+      style="
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 8px;
+        padding: 1rem;
+      "
+    >
+      <div style="color: #e2e8f0; font-weight: 600; font-size: 13px; margin-bottom: 8px">Approval</div>
+      <ul style="color: #94a3b8; font-size: 12px; line-height: 1.8; padding-left: 16px; margin: 0">
         <li>Approve variation → code swaps in live Sandpack prototype</li>
         <li>Auto-checkpoint with descriptive label</li>
         <li>Unapproved variations dim (30% opacity) but persist</li>
         <li>Click dimmed variation to restore or re-explore from it</li>
       </ul>
     </div>
-    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 1rem;">
-      <div style="color: #e2e8f0; font-weight: 600; font-size: 13px; margin-bottom: 8px;">Checkpoints</div>
-      <ul style="color: #94a3b8; font-size: 12px; line-height: 1.8; padding-left: 16px; margin: 0;">
+    <div
+      style="
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 8px;
+        padding: 1rem;
+      "
+    >
+      <div style="color: #e2e8f0; font-weight: 600; font-size: 13px; margin-bottom: 8px">Checkpoints</div>
+      <ul style="color: #94a3b8; font-size: 12px; line-height: 1.8; padding-left: 16px; margin: 0">
         <li>Stored as Sandpack file snapshots (lightweight)</li>
         <li>Timeline UI at bottom of canvas or in sidebar</li>
         <li>Restore: reverts prototype to that checkpoint's code</li>
@@ -272,18 +563,32 @@
         <li>Compare: side-by-side diff between any two checkpoints</li>
       </ul>
     </div>
-    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 1rem;">
-      <div style="color: #e2e8f0; font-weight: 600; font-size: 13px; margin-bottom: 8px;">Multiple Agents</div>
-      <ul style="color: #94a3b8; font-size: 12px; line-height: 1.8; padding-left: 16px; margin: 0;">
+    <div
+      style="
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 8px;
+        padding: 1rem;
+      "
+    >
+      <div style="color: #e2e8f0; font-weight: 600; font-size: 13px; margin-bottom: 8px">Multiple Agents</div>
+      <ul style="color: #94a3b8; font-size: 12px; line-height: 1.8; padding-left: 16px; margin: 0">
         <li>Each agent works on a different section independently</li>
         <li>Approving one agent's work doesn't affect others</li>
         <li>Agents can see the current prototype state (after approvals)</li>
         <li>Color-coded per agent (indigo, amber, etc.)</li>
       </ul>
     </div>
-    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 1rem;">
-      <div style="color: #e2e8f0; font-weight: 600; font-size: 13px; margin-bottom: 8px;">Enrichment</div>
-      <ul style="color: #94a3b8; font-size: 12px; line-height: 1.8; padding-left: 16px; margin: 0;">
+    <div
+      style="
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 8px;
+        padding: 1rem;
+      "
+    >
+      <div style="color: #e2e8f0; font-weight: 600; font-size: 13px; margin-bottom: 8px">Enrichment</div>
+      <ul style="color: #94a3b8; font-size: 12px; line-height: 1.8; padding-left: 16px; margin: 0">
         <li>Add personas, data, scenarios to annotation prompts</li>
         <li>AI-recommended enrichments based on component type</li>
         <li>States: empty, loading, error, success, edge cases</li>
@@ -293,6 +598,17 @@
   </div>
 </div>
 
-<div class="section" style="margin-top: 1.5rem; padding: 1rem; background: rgba(255,255,255,0.03); border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);">
-  <p style="color: #94a3b8; font-size: 13px;">Section 3 of 4 — respond in terminal if this looks right. Next: Data Flow & System Integration.</p>
+<div
+  class="section"
+  style="
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  "
+>
+  <p style="color: #94a3b8; font-size: 13px">
+    Section 3 of 4 — respond in terminal if this looks right. Next: Data Flow & System Integration.
+  </p>
 </div>

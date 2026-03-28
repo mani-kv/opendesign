@@ -5,173 +5,377 @@
   <h3>Bounding Box Behavior</h3>
   <div class="mockup">
     <div class="mockup-header">Selection States — Feels Like Selecting the Design Itself</div>
-    <div class="mockup-body" style="padding: 2rem;">
-
+    <div class="mockup-body" style="padding: 2rem">
       <!-- Simulated design with components -->
-      <div style="display: flex; gap: 2.5rem; justify-content: center; flex-wrap: wrap;">
-
+      <div style="display: flex; gap: 2.5rem; justify-content: center; flex-wrap: wrap">
         <!-- State 1: Default -->
-        <div style="text-align: center; max-width: 220px;">
-          <div style="color: #64748b; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Default — No boxes visible</div>
-          <div style="background: #1e293b; border-radius: 12px; overflow: hidden; border: 1px solid #334155;">
+        <div style="text-align: center; max-width: 220px">
+          <div
+            style="color: #64748b; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px"
+          >
+            Default — No boxes visible
+          </div>
+          <div style="background: #1e293b; border-radius: 12px; overflow: hidden; border: 1px solid #334155">
             <!-- Fake card design -->
-            <div style="background: linear-gradient(135deg, #6366f1, #8b5cf6); height: 80px;"></div>
-            <div style="padding: 14px;">
-              <div style="background: #334155; height: 12px; width: 70%; border-radius: 4px; margin-bottom: 8px;"></div>
-              <div style="background: #334155; height: 8px; width: 90%; border-radius: 3px; margin-bottom: 4px;"></div>
-              <div style="background: #334155; height: 8px; width: 60%; border-radius: 3px; margin-bottom: 12px;"></div>
-              <div style="display: flex; gap: 8px;">
-                <div style="background: #6366f1; height: 24px; flex: 1; border-radius: 6px;"></div>
-                <div style="background: #1e293b; border: 1px solid #475569; height: 24px; flex: 1; border-radius: 6px;"></div>
+            <div style="background: linear-gradient(135deg, #6366f1, #8b5cf6); height: 80px"></div>
+            <div style="padding: 14px">
+              <div style="background: #334155; height: 12px; width: 70%; border-radius: 4px; margin-bottom: 8px"></div>
+              <div style="background: #334155; height: 8px; width: 90%; border-radius: 3px; margin-bottom: 4px"></div>
+              <div style="background: #334155; height: 8px; width: 60%; border-radius: 3px; margin-bottom: 12px"></div>
+              <div style="display: flex; gap: 8px">
+                <div style="background: #6366f1; height: 24px; flex: 1; border-radius: 6px"></div>
+                <div
+                  style="background: #1e293b; border: 1px solid #475569; height: 24px; flex: 1; border-radius: 6px"
+                ></div>
               </div>
             </div>
           </div>
-          <div style="color: #475569; font-size: 11px; margin-top: 8px;">Clean — just the design</div>
+          <div style="color: #475569; font-size: 11px; margin-top: 8px">Clean — just the design</div>
         </div>
 
         <!-- State 2: Hover -->
-        <div style="text-align: center; max-width: 220px;">
-          <div style="color: #64748b; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Hover — Subtle highlight</div>
-          <div style="background: #1e293b; border-radius: 12px; overflow: hidden; border: 1px solid #334155; position: relative;">
-            <div style="background: linear-gradient(135deg, #6366f1, #8b5cf6); height: 80px;"></div>
-            <div style="padding: 14px;">
-              <div style="background: #334155; height: 12px; width: 70%; border-radius: 4px; margin-bottom: 8px;"></div>
-              <div style="background: #334155; height: 8px; width: 90%; border-radius: 3px; margin-bottom: 4px;"></div>
-              <div style="background: #334155; height: 8px; width: 60%; border-radius: 3px; margin-bottom: 12px;"></div>
-              <div style="display: flex; gap: 8px; position: relative;">
-                <div style="background: #6366f1; height: 24px; flex: 1; border-radius: 6px; outline: 1px solid rgba(99,102,241,0.4); outline-offset: 2px; box-shadow: 0 0 0 100px rgba(99,102,241,0.04) inset;"></div>
-                <div style="background: #1e293b; border: 1px solid #475569; height: 24px; flex: 1; border-radius: 6px;"></div>
+        <div style="text-align: center; max-width: 220px">
+          <div
+            style="color: #64748b; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px"
+          >
+            Hover — Subtle highlight
+          </div>
+          <div
+            style="
+              background: #1e293b;
+              border-radius: 12px;
+              overflow: hidden;
+              border: 1px solid #334155;
+              position: relative;
+            "
+          >
+            <div style="background: linear-gradient(135deg, #6366f1, #8b5cf6); height: 80px"></div>
+            <div style="padding: 14px">
+              <div style="background: #334155; height: 12px; width: 70%; border-radius: 4px; margin-bottom: 8px"></div>
+              <div style="background: #334155; height: 8px; width: 90%; border-radius: 3px; margin-bottom: 4px"></div>
+              <div style="background: #334155; height: 8px; width: 60%; border-radius: 3px; margin-bottom: 12px"></div>
+              <div style="display: flex; gap: 8px; position: relative">
+                <div
+                  style="
+                    background: #6366f1;
+                    height: 24px;
+                    flex: 1;
+                    border-radius: 6px;
+                    outline: 1px solid rgba(99, 102, 241, 0.4);
+                    outline-offset: 2px;
+                    box-shadow: 0 0 0 100px rgba(99, 102, 241, 0.04) inset;
+                  "
+                ></div>
+                <div
+                  style="background: #1e293b; border: 1px solid #475569; height: 24px; flex: 1; border-radius: 6px"
+                ></div>
               </div>
             </div>
             <!-- Tooltip -->
-            <div style="position: absolute; bottom: 8px; left: 50px; background: #0f172a; border: 1px solid #334155; border-radius: 4px; padding: 2px 8px; font-size: 10px; color: #94a3b8;">
+            <div
+              style="
+                position: absolute;
+                bottom: 8px;
+                left: 50px;
+                background: #0f172a;
+                border: 1px solid #334155;
+                border-radius: 4px;
+                padding: 2px 8px;
+                font-size: 10px;
+                color: #94a3b8;
+              "
+            >
               Button / Primary
             </div>
           </div>
-          <div style="color: #475569; font-size: 11px; margin-top: 8px;">Faint highlight + component name</div>
+          <div style="color: #475569; font-size: 11px; margin-top: 8px">Faint highlight + component name</div>
         </div>
 
         <!-- State 3: Selected -->
-        <div style="text-align: center; max-width: 220px;">
-          <div style="color: #64748b; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Selected — Annotation anchor</div>
-          <div style="background: #1e293b; border-radius: 12px; overflow: hidden; border: 1px solid #334155; position: relative;">
-            <div style="background: linear-gradient(135deg, #6366f1, #8b5cf6); height: 80px;"></div>
-            <div style="padding: 14px;">
-              <div style="background: #334155; height: 12px; width: 70%; border-radius: 4px; margin-bottom: 8px;"></div>
-              <div style="background: #334155; height: 8px; width: 90%; border-radius: 3px; margin-bottom: 4px;"></div>
-              <div style="background: #334155; height: 8px; width: 60%; border-radius: 3px; margin-bottom: 12px;"></div>
-              <div style="display: flex; gap: 8px;">
-                <div style="background: #6366f1; height: 24px; flex: 1; border-radius: 6px; outline: 2px solid #818cf8; outline-offset: 2px;"></div>
-                <div style="background: #1e293b; border: 1px solid #475569; height: 24px; flex: 1; border-radius: 6px;"></div>
+        <div style="text-align: center; max-width: 220px">
+          <div
+            style="color: #64748b; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px"
+          >
+            Selected — Annotation anchor
+          </div>
+          <div
+            style="
+              background: #1e293b;
+              border-radius: 12px;
+              overflow: hidden;
+              border: 1px solid #334155;
+              position: relative;
+            "
+          >
+            <div style="background: linear-gradient(135deg, #6366f1, #8b5cf6); height: 80px"></div>
+            <div style="padding: 14px">
+              <div style="background: #334155; height: 12px; width: 70%; border-radius: 4px; margin-bottom: 8px"></div>
+              <div style="background: #334155; height: 8px; width: 90%; border-radius: 3px; margin-bottom: 4px"></div>
+              <div style="background: #334155; height: 8px; width: 60%; border-radius: 3px; margin-bottom: 12px"></div>
+              <div style="display: flex; gap: 8px">
+                <div
+                  style="
+                    background: #6366f1;
+                    height: 24px;
+                    flex: 1;
+                    border-radius: 6px;
+                    outline: 2px solid #818cf8;
+                    outline-offset: 2px;
+                  "
+                ></div>
+                <div
+                  style="background: #1e293b; border: 1px solid #475569; height: 24px; flex: 1; border-radius: 6px"
+                ></div>
               </div>
             </div>
             <!-- Annotation anchor -->
-            <div style="position: absolute; bottom: 2px; right: -12px; width: 24px; height: 24px; background: #6366f1; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; color: white; border: 2px solid #0f172a;">+</div>
+            <div
+              style="
+                position: absolute;
+                bottom: 2px;
+                right: -12px;
+                width: 24px;
+                height: 24px;
+                background: #6366f1;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 12px;
+                color: white;
+                border: 2px solid #0f172a;
+              "
+            >
+              +
+            </div>
           </div>
-          <div style="color: #475569; font-size: 11px; margin-top: 8px;">Selection outline + annotation anchor</div>
+          <div style="color: #475569; font-size: 11px; margin-top: 8px">Selection outline + annotation anchor</div>
         </div>
-
       </div>
     </div>
   </div>
 </div>
 
-<div class="section" style="margin-top: 2rem;">
+<div class="section" style="margin-top: 2rem">
   <h3>Annotation & Agent Interaction</h3>
   <div class="mockup">
     <div class="mockup-header">Select → Annotate → Agent explores</div>
-    <div class="mockup-body" style="padding: 2rem;">
-      <div style="display: flex; gap: 1.5rem; align-items: flex-start; flex-wrap: wrap;">
-
+    <div class="mockup-body" style="padding: 2rem">
+      <div style="display: flex; gap: 1.5rem; align-items: flex-start; flex-wrap: wrap">
         <!-- The design with annotation -->
-        <div style="flex: 1; min-width: 240px;">
-          <div style="color: #64748b; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Design with annotation</div>
-          <div style="background: #1e293b; border-radius: 12px; overflow: visible; border: 1px solid #334155; position: relative;">
-            <div style="background: linear-gradient(135deg, #6366f1, #8b5cf6); height: 80px; border-radius: 12px 12px 0 0;"></div>
-            <div style="padding: 14px;">
-              <div style="background: #334155; height: 12px; width: 70%; border-radius: 4px; margin-bottom: 8px;"></div>
-              <div style="background: #334155; height: 8px; width: 90%; border-radius: 3px; margin-bottom: 4px;"></div>
-              <div style="background: #334155; height: 8px; width: 60%; border-radius: 3px; margin-bottom: 12px;"></div>
+        <div style="flex: 1; min-width: 240px">
+          <div
+            style="color: #64748b; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px"
+          >
+            Design with annotation
+          </div>
+          <div
+            style="
+              background: #1e293b;
+              border-radius: 12px;
+              overflow: visible;
+              border: 1px solid #334155;
+              position: relative;
+            "
+          >
+            <div
+              style="background: linear-gradient(135deg, #6366f1, #8b5cf6); height: 80px; border-radius: 12px 12px 0 0"
+            ></div>
+            <div style="padding: 14px">
+              <div style="background: #334155; height: 12px; width: 70%; border-radius: 4px; margin-bottom: 8px"></div>
+              <div style="background: #334155; height: 8px; width: 90%; border-radius: 3px; margin-bottom: 4px"></div>
+              <div style="background: #334155; height: 8px; width: 60%; border-radius: 3px; margin-bottom: 12px"></div>
               <!-- Selected area with outline -->
-              <div style="outline: 2px solid #818cf8; outline-offset: 4px; border-radius: 8px; padding: 0;">
-                <div style="display: flex; gap: 8px;">
-                  <div style="background: #6366f1; height: 24px; flex: 1; border-radius: 6px;"></div>
-                  <div style="background: #1e293b; border: 1px solid #475569; height: 24px; flex: 1; border-radius: 6px;"></div>
+              <div style="outline: 2px solid #818cf8; outline-offset: 4px; border-radius: 8px; padding: 0">
+                <div style="display: flex; gap: 8px">
+                  <div style="background: #6366f1; height: 24px; flex: 1; border-radius: 6px"></div>
+                  <div
+                    style="background: #1e293b; border: 1px solid #475569; height: 24px; flex: 1; border-radius: 6px"
+                  ></div>
                 </div>
               </div>
             </div>
 
             <!-- Annotation popover -->
-            <div style="position: absolute; bottom: -8px; right: -260px; width: 240px; background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.4);">
-              <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px;">
-                <div style="width: 6px; height: 6px; background: #34d399; border-radius: 50%;"></div>
-                <span style="color: #94a3b8; font-size: 11px;">Button Group · 2 components</span>
+            <div
+              style="
+                position: absolute;
+                bottom: -8px;
+                right: -260px;
+                width: 240px;
+                background: #0f172a;
+                border: 1px solid #334155;
+                border-radius: 10px;
+                padding: 12px;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+              "
+            >
+              <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px">
+                <div style="width: 6px; height: 6px; background: #34d399; border-radius: 50%"></div>
+                <span style="color: #94a3b8; font-size: 11px">Button Group · 2 components</span>
               </div>
-              <div style="background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 8px 10px; font-size: 12px; color: #64748b; margin-bottom: 8px;">
+              <div
+                style="
+                  background: #1e293b;
+                  border: 1px solid #334155;
+                  border-radius: 6px;
+                  padding: 8px 10px;
+                  font-size: 12px;
+                  color: #64748b;
+                  margin-bottom: 8px;
+                "
+              >
                 Explore variations for this CTA section...
               </div>
-              <div style="display: flex; gap: 6px; align-items: center;">
-                <div style="background: #1e293b; border: 1px solid #334155; border-radius: 4px; padding: 3px 8px; font-size: 10px; color: #94a3b8; cursor: pointer;">@prototype</div>
-                <div style="display: flex; align-items: center; gap: 4px; margin-left: auto;">
-                  <div style="color: #64748b; font-size: 10px;">Variations:</div>
-                  <div style="background: #1e293b; border: 1px solid #334155; border-radius: 4px; padding: 2px 6px; font-size: 11px; color: #e2e8f0;">4</div>
+              <div style="display: flex; gap: 6px; align-items: center">
+                <div
+                  style="
+                    background: #1e293b;
+                    border: 1px solid #334155;
+                    border-radius: 4px;
+                    padding: 3px 8px;
+                    font-size: 10px;
+                    color: #94a3b8;
+                    cursor: pointer;
+                  "
+                >
+                  @prototype
                 </div>
-                <div style="background: #6366f1; border-radius: 6px; padding: 4px 12px; font-size: 11px; color: white; cursor: pointer;">Go</div>
+                <div style="display: flex; align-items: center; gap: 4px; margin-left: auto">
+                  <div style="color: #64748b; font-size: 10px">Variations:</div>
+                  <div
+                    style="
+                      background: #1e293b;
+                      border: 1px solid #334155;
+                      border-radius: 4px;
+                      padding: 2px 6px;
+                      font-size: 11px;
+                      color: #e2e8f0;
+                    "
+                  >
+                    4
+                  </div>
+                </div>
+                <div
+                  style="
+                    background: #6366f1;
+                    border-radius: 6px;
+                    padding: 4px 12px;
+                    font-size: 11px;
+                    color: white;
+                    cursor: pointer;
+                  "
+                >
+                  Go
+                </div>
               </div>
 
               <!-- Slider -->
-              <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #1e293b;">
-                <div style="display: flex; justify-content: space-between; font-size: 9px; color: #64748b; margin-bottom: 4px;">
+              <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #1e293b">
+                <div
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    font-size: 9px;
+                    color: #64748b;
+                    margin-bottom: 4px;
+                  "
+                >
                   <span>Design System</span>
                   <span>Creative Freedom</span>
                 </div>
-                <div style="background: #1e293b; height: 4px; border-radius: 2px; position: relative;">
-                  <div style="background: linear-gradient(90deg, #6366f1, #ec4899); height: 4px; border-radius: 2px; width: 35%;"></div>
-                  <div style="position: absolute; top: -4px; left: 33%; width: 12px; height: 12px; background: white; border-radius: 50%; border: 2px solid #6366f1;"></div>
+                <div style="background: #1e293b; height: 4px; border-radius: 2px; position: relative">
+                  <div
+                    style="
+                      background: linear-gradient(90deg, #6366f1, #ec4899);
+                      height: 4px;
+                      border-radius: 2px;
+                      width: 35%;
+                    "
+                  ></div>
+                  <div
+                    style="
+                      position: absolute;
+                      top: -4px;
+                      left: 33%;
+                      width: 12px;
+                      height: 12px;
+                      background: white;
+                      border-radius: 50%;
+                      border: 2px solid #6366f1;
+                    "
+                  ></div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-
       </div>
     </div>
   </div>
 </div>
 
-<div class="section" style="margin-top: 2rem;">
+<div class="section" style="margin-top: 2rem">
   <h3>Interaction Rules</h3>
-  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 1rem;">
-      <div style="color: #e2e8f0; font-weight: 600; font-size: 13px; margin-bottom: 8px;">Component Detection</div>
-      <ul style="color: #94a3b8; font-size: 12px; line-height: 1.8; padding-left: 16px; margin: 0;">
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem">
+    <div
+      style="
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 8px;
+        padding: 1rem;
+      "
+    >
+      <div style="color: #e2e8f0; font-weight: 600; font-size: 13px; margin-bottom: 8px">Component Detection</div>
+      <ul style="color: #94a3b8; font-size: 12px; line-height: 1.8; padding-left: 16px; margin: 0">
         <li>Figma MCP returns full node tree with component metadata</li>
         <li>Each component instance → invisible hit region on canvas</li>
         <li>Nested components: deepest match wins on hover</li>
         <li>Scroll up tree: hold Alt to select parent component</li>
       </ul>
     </div>
-    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 1rem;">
-      <div style="color: #e2e8f0; font-weight: 600; font-size: 13px; margin-bottom: 8px;">Selection & Annotation</div>
-      <ul style="color: #94a3b8; font-size: 12px; line-height: 1.8; padding-left: 16px; margin: 0;">
+    <div
+      style="
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 8px;
+        padding: 1rem;
+      "
+    >
+      <div style="color: #e2e8f0; font-weight: 600; font-size: 13px; margin-bottom: 8px">Selection & Annotation</div>
+      <ul style="color: #94a3b8; font-size: 12px; line-height: 1.8; padding-left: 16px; margin: 0">
         <li>Click: select component, show annotation anchor</li>
         <li>Shift+click: multi-select for grouped annotation</li>
         <li>Right-click: context menu (Explore, Annotate, Info)</li>
         <li>Annotation popup: prompt input + agent tag + variation count + DS slider</li>
       </ul>
     </div>
-    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 1rem;">
-      <div style="color: #e2e8f0; font-weight: 600; font-size: 13px; margin-bottom: 8px;">Design System Slider</div>
-      <ul style="color: #94a3b8; font-size: 12px; line-height: 1.8; padding-left: 16px; margin: 0;">
+    <div
+      style="
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 8px;
+        padding: 1rem;
+      "
+    >
+      <div style="color: #e2e8f0; font-weight: 600; font-size: 13px; margin-bottom: 8px">Design System Slider</div>
+      <ul style="color: #94a3b8; font-size: 12px; line-height: 1.8; padding-left: 16px; margin: 0">
         <li>Left: strict DS — agent uses only existing components & tokens</li>
         <li>Right: creative — agent can propose new patterns, layouts, styles</li>
         <li>Middle: agent prefers DS but can deviate with justification</li>
         <li>Persists per annotation (different sections can have different settings)</li>
       </ul>
     </div>
-    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 1rem;">
-      <div style="color: #e2e8f0; font-weight: 600; font-size: 13px; margin-bottom: 8px;">Agent Sidebar</div>
-      <ul style="color: #94a3b8; font-size: 12px; line-height: 1.8; padding-left: 16px; margin: 0;">
+    <div
+      style="
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 8px;
+        padding: 1rem;
+      "
+    >
+      <div style="color: #e2e8f0; font-weight: 600; font-size: 13px; margin-bottom: 8px">Agent Sidebar</div>
+      <ul style="color: #94a3b8; font-size: 12px; line-height: 1.8; padding-left: 16px; margin: 0">
         <li>Each annotation spawns an agent with its own chat thread</li>
         <li>Sidebar shows all active agents, click to open chat</li>
         <li>Agent chat is secondary — canvas annotation is primary interaction</li>
@@ -181,6 +385,17 @@
   </div>
 </div>
 
-<div class="section" style="margin-top: 1.5rem; padding: 1rem; background: rgba(255,255,255,0.03); border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);">
-  <p style="color: #94a3b8; font-size: 13px;">Section 2 of 4 — respond in terminal if this looks right. Next: Variation Tree & Exploration.</p>
+<div
+  class="section"
+  style="
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  "
+>
+  <p style="color: #94a3b8; font-size: 13px">
+    Section 2 of 4 — respond in terminal if this looks right. Next: Variation Tree & Exploration.
+  </p>
 </div>

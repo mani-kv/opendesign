@@ -71,13 +71,14 @@ export namespace Product {
       worktree: row.worktree,
       vcs: undefined,
       name: row.name ?? undefined,
-      icon: undefined,
+      icon: (row.icon as Info["icon"]) ?? undefined,
+      commands: (row.commands as Info["commands"]) ?? undefined,
       time: {
         created: row.time_created,
         updated: row.time_updated,
         initialized: undefined,
       },
-      sandboxes: [],
+      sandboxes: (row.sandboxes as string[]) ?? [],
     }
   }
 
@@ -246,11 +247,13 @@ export namespace Product {
       worktree: result.worktree,
       name: result.name ?? "",
       directory: result.worktree,
+      sandboxes: result.sandboxes,
     }
     const updateSet = {
       worktree: result.worktree,
       name: result.name ?? "",
       directory: result.worktree,
+      sandboxes: result.sandboxes,
     }
     Database.use((db) =>
       db.insert(ProductTable).values(insert).onConflictDoUpdate({ target: ProductTable.id, set: updateSet }).run(),
@@ -344,13 +347,14 @@ export namespace Product {
       commands: Info.shape.commands.optional(),
     }),
     async (input) => {
+      const sets: Record<string, unknown> = { time_updated: Date.now() }
+      if (input.name !== undefined) sets.name = input.name
+      if (input.icon !== undefined) sets.icon = input.icon
+      if (input.commands !== undefined) sets.commands = input.commands
       const result = Database.use((db) =>
         db
           .update(ProductTable)
-          .set({
-            name: input.name ?? "",
-            time_updated: Date.now(),
-          })
+          .set(sets)
           .where(eq(ProductTable.id, input.projectID))
           .returning()
           .get(),

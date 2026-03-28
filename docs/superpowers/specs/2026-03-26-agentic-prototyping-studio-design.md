@@ -38,6 +38,7 @@ There is no master chat or orchestrator session. The user is the orchestrator �
 Design systems are independent entities, not tied to a single Product. They can be shared across Products or used exclusively by one.
 
 A design system contains:
+
 - **Tokens** — Colors, spacing, typography, radii, shadows, opacity (from Figma variables).
 - **Components** — Component catalog with variants and properties (from Figma library components).
 - **Styles** — Named styles for fills, text, effects, grids.
@@ -87,6 +88,7 @@ This config lives on the Product's main branch, so all Feature branches and agen
 As a fork of OpenCode, the system supports multiple MCP servers. Figma MCP is the default but the system is resilient to unavailability:
 
 **Fallback Chain:**
+
 1. **Figma Official MCP** (default) — Remote server, OAuth-authenticated, full capabilities.
 2. **Figma Console MCP** (fallback) — Local MCP via Figma desktop app WebSocket. Used if the official MCP is unavailable (e.g., auth issues, rate limits, offline).
 3. **User-configured MCPs** — Users can add any additional MCP servers via the standard OpenCode MCP configuration (project-level `opencode.json` or global config).
@@ -216,6 +218,7 @@ product-repo/
 ```
 
 This means:
+
 - All Feature branches inherit the design system automatically.
 - Agents reference `design-system.json` directly — no MCP calls needed during exploration.
 - Token CSS is injected into all Sandpack instances from the shared file.
@@ -236,9 +239,11 @@ The slider persists per annotation — different sections of the design can have
 ### URL Parsing
 
 Parse the Figma URL to extract `fileKey` and `nodeId`:
+
 ```
 https://www.figma.com/design/{fileKey}?node-id={nodeId}
 ```
+
 Existing `parseFigmaUrl()` function handles this.
 
 ### Raster-First Pipeline
@@ -246,12 +251,14 @@ Existing `parseFigmaUrl()` function handles this.
 The import is a two-phase process optimized for immediate visual feedback:
 
 **Phase 1 — Immediate (< 2 seconds):**
+
 1. Parse the pasted URL.
 2. Call `figma_get_image(fileKey, nodeId)` → Raster PNG.
 3. Display the raster image on the canvas at the paste location.
 4. User immediately sees their design.
 
 **Phase 2 — Background (5-15 seconds):**
+
 1. `figma_get_file_data(fileKey, nodeId, depth)` → Full node tree.
 2. `get_library_components(fileKey)` → Component catalog.
 3. `figma_get_variables(fileKey)` → Design tokens.
@@ -284,52 +291,52 @@ After Phase 2 completes, an AI agent generates the initial Sandpack prototype:
 
 ### Kept and Extended
 
-| Module | Location | Usage |
-|--------|----------|-------|
-| Design system registry | `packages/opendesign/src/design-system/` | Store imported components + tokens |
-| Token CSS generation | `packages/opendesign/src/design-system/tokens.ts` | `tokensToStylesheet()` for Sandpack injection |
-| Sandpack scaffolding | `packages/opendesign/src/sandpack/instance.ts` | `scaffoldReactFiles()`, `updateSandpackFiles()` |
-| Agent orchestrator | `packages/opendesign/src/agent/orchestrator.ts` | Dispatch and manage exploration agents |
-| Agent lifecycle | `packages/opendesign/src/agent/lifecycle.ts` | State machine for agent status |
-| Figma types | `packages/opendesign/src/types/figma.ts` | `FigmaFrame`, `FigmaSelection`, `FigmaTokenRef` |
-| Figma URL parsing | `packages/app/src/pages/session/figma-tab-content.tsx` | `parseFigmaUrl()` |
-| Figma OAuth | `packages/desktop-electron/src/main/figma-oauth.ts` | OAuth flow for MCP authentication |
-| OpenCode server | `packages/opencode/src/server/` | API server, SSE, MCP management |
-| Agent sidebar/chat | `packages/app/src/pages/session/` | Chat thread UI per agent |
-| Files tab | `packages/app/src/` | Project context for agents |
-| MCP configuration | `packages/opencode/src/mcp/` | Multi-MCP support, fallback chain |
+| Module                 | Location                                               | Usage                                           |
+| ---------------------- | ------------------------------------------------------ | ----------------------------------------------- |
+| Design system registry | `packages/opendesign/src/design-system/`               | Store imported components + tokens              |
+| Token CSS generation   | `packages/opendesign/src/design-system/tokens.ts`      | `tokensToStylesheet()` for Sandpack injection   |
+| Sandpack scaffolding   | `packages/opendesign/src/sandpack/instance.ts`         | `scaffoldReactFiles()`, `updateSandpackFiles()` |
+| Agent orchestrator     | `packages/opendesign/src/agent/orchestrator.ts`        | Dispatch and manage exploration agents          |
+| Agent lifecycle        | `packages/opendesign/src/agent/lifecycle.ts`           | State machine for agent status                  |
+| Figma types            | `packages/opendesign/src/types/figma.ts`               | `FigmaFrame`, `FigmaSelection`, `FigmaTokenRef` |
+| Figma URL parsing      | `packages/app/src/pages/session/figma-tab-content.tsx` | `parseFigmaUrl()`                               |
+| Figma OAuth            | `packages/desktop-electron/src/main/figma-oauth.ts`    | OAuth flow for MCP authentication               |
+| OpenCode server        | `packages/opencode/src/server/`                        | API server, SSE, MCP management                 |
+| Agent sidebar/chat     | `packages/app/src/pages/session/`                      | Chat thread UI per agent                        |
+| Files tab              | `packages/app/src/`                                    | Project context for agents                      |
+| MCP configuration      | `packages/opencode/src/mcp/`                           | Multi-MCP support, fallback chain               |
 
 ### Removed
 
-| Module | Location | Reason |
-|--------|----------|--------|
-| opendesign-figma-mcp | `packages/opendesign-figma-mcp/` | Replaced by Figma's official MCP (kept as fallback option) |
-| figma-write.txt | `packages/opencode/src/agent/prompt/figma-write.txt` | No write-back to Figma for MVP |
-| figma-ws.ts | `packages/desktop-electron/src/main/figma-ws.ts` | No local plugin bridge needed for primary flow |
-| canvas-bridge.ts | `packages/app/src/utils/canvas-bridge.ts` | Replaced by HTML canvas |
-| SVG agent-sandbox canvas | `packages/app/src/pages/session/agent-sandbox/` | Replaced by HTML canvas with Sandpack |
-| design.txt agent prompt | `packages/opencode/src/agent/prompt/design.txt` | Replaced by variation generation prompt |
-| Rust/WASM as primary canvas | `packages/canvas-core/`, `packages/canvas-wasm/` | Moves to P2 visual diff overlay only |
+| Module                      | Location                                             | Reason                                                     |
+| --------------------------- | ---------------------------------------------------- | ---------------------------------------------------------- |
+| opendesign-figma-mcp        | `packages/opendesign-figma-mcp/`                     | Replaced by Figma's official MCP (kept as fallback option) |
+| figma-write.txt             | `packages/opencode/src/agent/prompt/figma-write.txt` | No write-back to Figma for MVP                             |
+| figma-ws.ts                 | `packages/desktop-electron/src/main/figma-ws.ts`     | No local plugin bridge needed for primary flow             |
+| canvas-bridge.ts            | `packages/app/src/utils/canvas-bridge.ts`            | Replaced by HTML canvas                                    |
+| SVG agent-sandbox canvas    | `packages/app/src/pages/session/agent-sandbox/`      | Replaced by HTML canvas with Sandpack                      |
+| design.txt agent prompt     | `packages/opencode/src/agent/prompt/design.txt`      | Replaced by variation generation prompt                    |
+| Rust/WASM as primary canvas | `packages/canvas-core/`, `packages/canvas-wasm/`     | Moves to P2 visual diff overlay only                       |
 
 ### New Code Required
 
-| Component | Description |
-|-----------|-------------|
-| Product/Feature data model | Product as mono repo, Feature as branch, agent as sub-branch |
-| HTML infinite canvas | Pan/zoom container with grid, SolidJS |
-| DevTools-style inspect overlay | Shared across raster images and Sandpack prototypes |
-| Figma MCP client with fallback | Integration with official MCP + console MCP fallback |
-| Component hit-map builder | Node tree → bounding box regions |
-| Annotation system | Popovers, prompt input, agent tagging |
-| Design-to-code agent prompt | Figma data → base Sandpack prototype |
-| Variation agent prompt | Component context → N variation bundles |
-| Checkpoint store | Sandpack snapshot storage + metadata |
-| Checkpoint timeline UI | Restore, fork, compare operations |
-| DS slider component | Slider UI + agent prompt modulation |
-| Variation preview grid | Sandpack iframe grid + approve/dim behavior |
-| Design System Panel | DS management UI: sync status, diff, re-sync, multi-Product |
-| Design system backend sync | Auto-sync on load, shared config generation, diff detection |
-| Sandpack inspect bridge | Lightweight script in Sandpack iframes for component inspection |
+| Component                      | Description                                                     |
+| ------------------------------ | --------------------------------------------------------------- |
+| Product/Feature data model     | Product as mono repo, Feature as branch, agent as sub-branch    |
+| HTML infinite canvas           | Pan/zoom container with grid, SolidJS                           |
+| DevTools-style inspect overlay | Shared across raster images and Sandpack prototypes             |
+| Figma MCP client with fallback | Integration with official MCP + console MCP fallback            |
+| Component hit-map builder      | Node tree → bounding box regions                                |
+| Annotation system              | Popovers, prompt input, agent tagging                           |
+| Design-to-code agent prompt    | Figma data → base Sandpack prototype                            |
+| Variation agent prompt         | Component context → N variation bundles                         |
+| Checkpoint store               | Sandpack snapshot storage + metadata                            |
+| Checkpoint timeline UI         | Restore, fork, compare operations                               |
+| DS slider component            | Slider UI + agent prompt modulation                             |
+| Variation preview grid         | Sandpack iframe grid + approve/dim behavior                     |
+| Design System Panel            | DS management UI: sync status, diff, re-sync, multi-Product     |
+| Design system backend sync     | Auto-sync on load, shared config generation, diff detection     |
+| Sandpack inspect bridge        | Lightweight script in Sandpack iframes for component inspection |
 
 ## Post-MVP
 
@@ -355,6 +362,7 @@ The existing Files tab evolves into a structured context system with scoped leve
 - **Feature context** — Feature-specific requirements, user stories, edge cases, stakeholder feedback.
 
 **Context delivery to agents:**
+
 - **Rules and guidelines** (small, critical) → Injected directly into agent context window as system instructions.
 - **Reference documents** (large, supplementary) → Indexed and stored in RAG. Agents query on-demand when they need specific information (e.g., "what does the user research say about checkout abandonment?").
 

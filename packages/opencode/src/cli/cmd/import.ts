@@ -110,7 +110,11 @@ export const ImportCommand = cmd({
         const parsed = new URL(args.file)
         const baseUrl = parsed.origin
         // TODO: dropped - share removed
-        const req = { baseUrl: "", headers: {} as Record<string, string>, api: { data: (s: string) => `/api/share/${s}/data` } }
+        const req = {
+          baseUrl: "",
+          headers: {} as Record<string, string>,
+          api: { data: (s: string) => `/api/share/${s}/data` },
+        }
         const headers = shouldAttachShareAuthHeaders(args.file, req.baseUrl) ? req.headers : {}
 
         const dataPath = req.api.data(slug)

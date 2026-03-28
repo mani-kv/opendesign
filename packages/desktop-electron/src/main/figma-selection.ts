@@ -96,5 +96,7 @@ export function updateSelection(partial: Partial<FigmaSelection>): void {
  */
 export function onSelectionChange(callback: SelectionListener): () => void {
   _listeners.add(callback)
-  return () => { _listeners.delete(callback) }
+  return () => {
+    _listeners.delete(callback)
+  }
 }

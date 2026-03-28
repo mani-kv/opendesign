@@ -14,24 +14,25 @@
 
 ## File Structure
 
-| File | Action | Responsibility |
-|------|--------|----------------|
-| `packages/app/src/context/layout.tsx` | Modify | Add `chatMode` signal to layout context |
-| `packages/app/src/context/chat-mode.tsx` | Create | Chat mode context: mode state, transitions, auto-behaviors |
-| `packages/app/src/pages/session/composer/session-composer-region.tsx` | Modify | Wrap prompt in mode-aware container |
-| `packages/app/src/pages/session/composer/chat-float.tsx` | Create | Float maximized chat panel (messages + input) |
-| `packages/app/src/pages/session/composer/chat-dock.tsx` | Create | Docked sidebar chat panel |
-| `packages/app/src/pages/session/composer/chat-mode-buttons.tsx` | Create | Mode toggle buttons for drag handle |
-| `packages/app/src/pages/session/session-side-panel.tsx` | Modify | Insert docked chat panel in layout |
-| `packages/app/src/components/plan-card.tsx` | Create | Pre-flight plan card component |
-| `packages/app/src/components/plan-card.css` | Create | Plan card styles |
-| `packages/app/src/pages/session/message-timeline.tsx` | Modify | Render PlanCard alongside SessionTurn for messages containing plans |
+| File                                                                  | Action | Responsibility                                                      |
+| --------------------------------------------------------------------- | ------ | ------------------------------------------------------------------- |
+| `packages/app/src/context/layout.tsx`                                 | Modify | Add `chatMode` signal to layout context                             |
+| `packages/app/src/context/chat-mode.tsx`                              | Create | Chat mode context: mode state, transitions, auto-behaviors          |
+| `packages/app/src/pages/session/composer/session-composer-region.tsx` | Modify | Wrap prompt in mode-aware container                                 |
+| `packages/app/src/pages/session/composer/chat-float.tsx`              | Create | Float maximized chat panel (messages + input)                       |
+| `packages/app/src/pages/session/composer/chat-dock.tsx`               | Create | Docked sidebar chat panel                                           |
+| `packages/app/src/pages/session/composer/chat-mode-buttons.tsx`       | Create | Mode toggle buttons for drag handle                                 |
+| `packages/app/src/pages/session/session-side-panel.tsx`               | Modify | Insert docked chat panel in layout                                  |
+| `packages/app/src/components/plan-card.tsx`                           | Create | Pre-flight plan card component                                      |
+| `packages/app/src/components/plan-card.css`                           | Create | Plan card styles                                                    |
+| `packages/app/src/pages/session/message-timeline.tsx`                 | Modify | Render PlanCard alongside SessionTurn for messages containing plans |
 
 ---
 
 ## Task 1: Chat Mode Context
 
 **Files:**
+
 - Create: `packages/app/src/context/chat-mode.tsx`
 - Modify: `packages/app/src/context/layout.tsx`
 
@@ -44,33 +45,30 @@ import { createSimpleContext } from "@opencode-ai/ui/context"
 
 export type ChatMode = "minimized" | "float" | "docked"
 
-export const { use: useChatMode, provider: ChatModeProvider } = createSimpleContext(
-  "ChatMode",
-  () => {
-    const [mode, setMode] = createSignal<ChatMode>("minimized")
+export const { use: useChatMode, provider: ChatModeProvider } = createSimpleContext("ChatMode", () => {
+  const [mode, setMode] = createSignal<ChatMode>("minimized")
 
-    const maximize = () => setMode("float")
-    const minimize = () => setMode("minimized")
-    const dock = () => setMode("docked")
-    const float = () => setMode("float")
+  const maximize = () => setMode("float")
+  const minimize = () => setMode("minimized")
+  const dock = () => setMode("docked")
+  const float = () => setMode("float")
 
-    const isMinimized = createMemo(() => mode() === "minimized")
-    const isFloat = createMemo(() => mode() === "float")
-    const isDocked = createMemo(() => mode() === "docked")
+  const isMinimized = createMemo(() => mode() === "minimized")
+  const isFloat = createMemo(() => mode() === "float")
+  const isDocked = createMemo(() => mode() === "docked")
 
-    return {
-      mode,
-      setMode,
-      maximize,
-      minimize,
-      dock,
-      float,
-      isMinimized,
-      isFloat,
-      isDocked,
-    }
-  },
-)
+  return {
+    mode,
+    setMode,
+    maximize,
+    minimize,
+    dock,
+    float,
+    isMinimized,
+    isFloat,
+    isDocked,
+  }
+})
 ```
 
 - [ ] **Step 2: Wire ChatModeProvider into the app provider hierarchy**
@@ -94,6 +92,7 @@ git commit -m "feat(app): add chat mode context with minimized/float/docked stat
 ## Task 2: Chat Mode Toggle Buttons
 
 **Files:**
+
 - Create: `packages/app/src/pages/session/composer/chat-mode-buttons.tsx`
 
 - [ ] **Step 1: Create mode toggle button component**
@@ -177,12 +176,14 @@ git commit -m "feat(app): add chat mode toggle buttons to prompt drag handle"
 ## Task 3: Float Maximized Chat Panel
 
 **Files:**
+
 - Create: `packages/app/src/pages/session/composer/chat-float.tsx`
 - Modify: `packages/app/src/pages/session/composer/session-composer-region.tsx`
 
 - [ ] **Step 1: Create the float chat panel component**
 
 The float panel is a larger floating container overlaying the sandbox area. It shows:
+
 - Message history (reuse the existing message timeline)
 - Plan cards (added in Task 5)
 - Prompt input at the bottom
@@ -230,6 +231,7 @@ export function ChatFloat(props: {
 - [ ] **Step 2: Integrate float panel into the session composer region**
 
 In `packages/app/src/pages/session/composer/session-composer-region.tsx`, wrap the existing `PromptInput` render in a `Switch`/`Match` or `Show` that checks `chatMode`:
+
 - If minimized: render current layout (existing behavior)
 - If float: render `<ChatFloat>` with `PromptInput` as child
 
@@ -250,6 +252,7 @@ git commit -m "feat(app): add float maximized chat panel with message display"
 ## Task 4: Docked Sidebar Chat Panel
 
 **Files:**
+
 - Create: `packages/app/src/pages/session/composer/chat-dock.tsx`
 - Modify: `packages/app/src/pages/session/session-side-panel.tsx`
 
@@ -316,6 +319,7 @@ git commit -m "feat(app): add docked sidebar chat panel with layout integration"
 ## Task 5: Plan Card Component
 
 **Files:**
+
 - Create: `packages/app/src/components/plan-card.tsx`
 - Create: `packages/app/src/components/plan-card.css`
 
@@ -474,6 +478,7 @@ git commit -m "feat(app): add pre-flight plan card component with scenario selec
 ## Task 6: Plan Detection in Message Timeline
 
 **Files:**
+
 - Modify: `packages/app/src/pages/session/message-timeline.tsx`
 
 The plan card renders alongside (after) the `SessionTurn` for messages containing valid plan JSON. This avoids modifying the UI package's internal `PART_MAPPING` or `TextPartDisplay`.
@@ -505,13 +510,15 @@ const detectPlan = (message: MessageType | undefined) => {
 In the `For` loop that renders messages (around line 806), after the `<SessionTurn>` component, add a `<Show>` block that renders `PlanCard` when a plan is detected in that message:
 
 ```tsx
-<SessionTurn
+;<SessionTurn
   sessionID={sessionID() ?? ""}
   messageID={messageID}
   // ...existing props
 />
-{/* Plan card rendered after the turn if message contains a plan */}
-<Show when={detectPlan(sync.data.message?.find(m => m.id === messageID))}>
+{
+  /* Plan card rendered after the turn if message contains a plan */
+}
+;<Show when={detectPlan(sync.data.message?.find((m) => m.id === messageID))}>
   {(plan) => (
     <div class="w-full px-4 md:px-5 mt-2">
       <PlanCard plan={plan()} />
@@ -537,6 +544,7 @@ git commit -m "feat(app): render pre-flight plan cards in message timeline"
 ## Task 7: Plan Dispatch and State Management
 
 **Files:**
+
 - Modify: `packages/app/src/components/plan-card.tsx`
 - Modify: `packages/app/src/pages/session/message-timeline.tsx`
 
@@ -567,7 +575,7 @@ Add plan state tracking to `message-timeline.tsx`. Use a `createSignal<Record<st
 const [planStates, setPlanStates] = createSignal<Record<string, "active" | "dispatched">>({})
 
 // When dispatching:
-setPlanStates(prev => ({ ...prev, [messageId]: "dispatched" }))
+setPlanStates((prev) => ({ ...prev, [messageId]: "dispatched" }))
 
 // Determine if plan is stale: any plan whose message is NOT the last plan message
 const lastPlanMessageId = createMemo(() => {
@@ -605,6 +613,7 @@ git commit -m "feat(app): wire plan card dispatch to send selected scenarios as 
 ## Task 8: Auto-maximize on Plan Arrival
 
 **Files:**
+
 - Modify: `packages/app/src/pages/session/message-timeline.tsx`
 - Modify: `packages/app/src/context/chat-mode.tsx`
 
@@ -631,7 +640,7 @@ In the `handleDispatch` callback in `message-timeline.tsx`, after the SDK call s
 ```typescript
 const handleDispatch = async (messageId: string, scenarios: ScenarioPlan[]) => {
   // ...send message...
-  setPlanStates(prev => ({ ...prev, [messageId]: "dispatched" }))
+  setPlanStates((prev) => ({ ...prev, [messageId]: "dispatched" }))
   if (chat.isFloat()) {
     chat.minimize()
   }
@@ -667,6 +676,7 @@ Expected: All tests pass, no type errors.
 - [ ] **Step 2: Visual QA checklist**
 
 Test each chat mode transition:
+
 - Minimized → Float (maximize button)
 - Float → Docked (dock button)
 - Docked → Float (float button)
@@ -674,6 +684,7 @@ Test each chat mode transition:
 - Minimized → Docked (dock button)
 
 Test plan card:
+
 - Plan renders inline in float/docked chat
 - Checkboxes toggle
 - "Add scenario" works (Enter key)

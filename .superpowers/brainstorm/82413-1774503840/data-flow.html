@@ -5,105 +5,499 @@
   <h3>System Architecture</h3>
   <div class="mockup">
     <div class="mockup-header">End-to-End Data Flow</div>
-    <div class="mockup-body" style="padding: 2rem;">
-      <div style="display: flex; flex-direction: column; gap: 0; max-width: 700px; margin: 0 auto;">
-
+    <div class="mockup-body" style="padding: 2rem">
+      <div style="display: flex; flex-direction: column; gap: 0; max-width: 700px; margin: 0 auto">
         <!-- External layer -->
-        <div style="background: rgba(99,102,241,0.08); border: 1px solid rgba(99,102,241,0.2); border-radius: 12px 12px 0 0; padding: 1.2rem;">
-          <div style="color: #818cf8; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">External — Figma</div>
-          <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-            <div style="background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.2); border-radius: 6px; padding: 8px 12px; font-size: 11px; color: #c7d2fe;">
+        <div
+          style="
+            background: rgba(99, 102, 241, 0.08);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 12px 12px 0 0;
+            padding: 1.2rem;
+          "
+        >
+          <div
+            style="color: #818cf8; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px"
+          >
+            External — Figma
+          </div>
+          <div style="display: flex; gap: 1rem; flex-wrap: wrap">
+            <div
+              style="
+                background: rgba(99, 102, 241, 0.1);
+                border: 1px solid rgba(99, 102, 241, 0.2);
+                border-radius: 6px;
+                padding: 8px 12px;
+                font-size: 11px;
+                color: #c7d2fe;
+              "
+            >
               Figma Official MCP Server
             </div>
-            <div style="color: #475569; padding-top: 8px;">→</div>
-            <div style="display: flex; flex-direction: column; gap: 4px;">
-              <div style="background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.15); border-radius: 4px; padding: 4px 10px; font-size: 10px; color: #a5b4fc;">figma_get_image → raster PNG</div>
-              <div style="background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.15); border-radius: 4px; padding: 4px 10px; font-size: 10px; color: #a5b4fc;">figma_get_file_data → node tree JSON</div>
-              <div style="background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.15); border-radius: 4px; padding: 4px 10px; font-size: 10px; color: #a5b4fc;">get_library_components → component catalog</div>
-              <div style="background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.15); border-radius: 4px; padding: 4px 10px; font-size: 10px; color: #a5b4fc;">figma_get_variables → design tokens</div>
+            <div style="color: #475569; padding-top: 8px">→</div>
+            <div style="display: flex; flex-direction: column; gap: 4px">
+              <div
+                style="
+                  background: rgba(99, 102, 241, 0.1);
+                  border: 1px solid rgba(99, 102, 241, 0.15);
+                  border-radius: 4px;
+                  padding: 4px 10px;
+                  font-size: 10px;
+                  color: #a5b4fc;
+                "
+              >
+                figma_get_image → raster PNG
+              </div>
+              <div
+                style="
+                  background: rgba(99, 102, 241, 0.1);
+                  border: 1px solid rgba(99, 102, 241, 0.15);
+                  border-radius: 4px;
+                  padding: 4px 10px;
+                  font-size: 10px;
+                  color: #a5b4fc;
+                "
+              >
+                figma_get_file_data → node tree JSON
+              </div>
+              <div
+                style="
+                  background: rgba(99, 102, 241, 0.1);
+                  border: 1px solid rgba(99, 102, 241, 0.15);
+                  border-radius: 4px;
+                  padding: 4px 10px;
+                  font-size: 10px;
+                  color: #a5b4fc;
+                "
+              >
+                get_library_components → component catalog
+              </div>
+              <div
+                style="
+                  background: rgba(99, 102, 241, 0.1);
+                  border: 1px solid rgba(99, 102, 241, 0.15);
+                  border-radius: 4px;
+                  padding: 4px 10px;
+                  font-size: 10px;
+                  color: #a5b4fc;
+                "
+              >
+                figma_get_variables → design tokens
+              </div>
             </div>
           </div>
         </div>
 
         <!-- Processing layer -->
-        <div style="background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.2); padding: 1.2rem;">
-          <div style="color: #34d399; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Server — OpenCode Backend</div>
-          <div style="display: flex; gap: 1.5rem; flex-wrap: wrap;">
-            <div style="flex: 1; min-width: 180px;">
-              <div style="color: #6ee7b7; font-size: 11px; font-weight: 600; margin-bottom: 6px;">Import Pipeline</div>
-              <div style="display: flex; flex-direction: column; gap: 4px;">
-                <div style="background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.15); border-radius: 4px; padding: 4px 10px; font-size: 10px; color: #a7f3d0;">Parse Figma URL → fileKey + nodeId</div>
-                <div style="background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.15); border-radius: 4px; padding: 4px 10px; font-size: 10px; color: #a7f3d0;">Fetch via MCP → raster + tree + tokens</div>
-                <div style="background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.15); border-radius: 4px; padding: 4px 10px; font-size: 10px; color: #a7f3d0;">Build component hit-map (bounding boxes)</div>
-                <div style="background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.15); border-radius: 4px; padding: 4px 10px; font-size: 10px; color: #a7f3d0;">Generate base Sandpack prototype (AI)</div>
+        <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.2); padding: 1.2rem">
+          <div
+            style="color: #34d399; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px"
+          >
+            Server — OpenCode Backend
+          </div>
+          <div style="display: flex; gap: 1.5rem; flex-wrap: wrap">
+            <div style="flex: 1; min-width: 180px">
+              <div style="color: #6ee7b7; font-size: 11px; font-weight: 600; margin-bottom: 6px">Import Pipeline</div>
+              <div style="display: flex; flex-direction: column; gap: 4px">
+                <div
+                  style="
+                    background: rgba(16, 185, 129, 0.1);
+                    border: 1px solid rgba(16, 185, 129, 0.15);
+                    border-radius: 4px;
+                    padding: 4px 10px;
+                    font-size: 10px;
+                    color: #a7f3d0;
+                  "
+                >
+                  Parse Figma URL → fileKey + nodeId
+                </div>
+                <div
+                  style="
+                    background: rgba(16, 185, 129, 0.1);
+                    border: 1px solid rgba(16, 185, 129, 0.15);
+                    border-radius: 4px;
+                    padding: 4px 10px;
+                    font-size: 10px;
+                    color: #a7f3d0;
+                  "
+                >
+                  Fetch via MCP → raster + tree + tokens
+                </div>
+                <div
+                  style="
+                    background: rgba(16, 185, 129, 0.1);
+                    border: 1px solid rgba(16, 185, 129, 0.15);
+                    border-radius: 4px;
+                    padding: 4px 10px;
+                    font-size: 10px;
+                    color: #a7f3d0;
+                  "
+                >
+                  Build component hit-map (bounding boxes)
+                </div>
+                <div
+                  style="
+                    background: rgba(16, 185, 129, 0.1);
+                    border: 1px solid rgba(16, 185, 129, 0.15);
+                    border-radius: 4px;
+                    padding: 4px 10px;
+                    font-size: 10px;
+                    color: #a7f3d0;
+                  "
+                >
+                  Generate base Sandpack prototype (AI)
+                </div>
               </div>
             </div>
-            <div style="flex: 1; min-width: 180px;">
-              <div style="color: #6ee7b7; font-size: 11px; font-weight: 600; margin-bottom: 6px;">Design System Store</div>
-              <div style="display: flex; flex-direction: column; gap: 4px;">
-                <div style="background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.15); border-radius: 4px; padding: 4px 10px; font-size: 10px; color: #a7f3d0;">Component registry (name → variants)</div>
-                <div style="background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.15); border-radius: 4px; padding: 4px 10px; font-size: 10px; color: #a7f3d0;">Token map (colors, spacing, typography)</div>
-                <div style="background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.15); border-radius: 4px; padding: 4px 10px; font-size: 10px; color: #a7f3d0;">CSS stylesheet generation (--od-* vars)</div>
-                <div style="background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.15); border-radius: 4px; padding: 4px 10px; font-size: 10px; color: #a7f3d0;">DS slider context → agent system prompt</div>
+            <div style="flex: 1; min-width: 180px">
+              <div style="color: #6ee7b7; font-size: 11px; font-weight: 600; margin-bottom: 6px">
+                Design System Store
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 4px">
+                <div
+                  style="
+                    background: rgba(16, 185, 129, 0.1);
+                    border: 1px solid rgba(16, 185, 129, 0.15);
+                    border-radius: 4px;
+                    padding: 4px 10px;
+                    font-size: 10px;
+                    color: #a7f3d0;
+                  "
+                >
+                  Component registry (name → variants)
+                </div>
+                <div
+                  style="
+                    background: rgba(16, 185, 129, 0.1);
+                    border: 1px solid rgba(16, 185, 129, 0.15);
+                    border-radius: 4px;
+                    padding: 4px 10px;
+                    font-size: 10px;
+                    color: #a7f3d0;
+                  "
+                >
+                  Token map (colors, spacing, typography)
+                </div>
+                <div
+                  style="
+                    background: rgba(16, 185, 129, 0.1);
+                    border: 1px solid rgba(16, 185, 129, 0.15);
+                    border-radius: 4px;
+                    padding: 4px 10px;
+                    font-size: 10px;
+                    color: #a7f3d0;
+                  "
+                >
+                  CSS stylesheet generation (--od-* vars)
+                </div>
+                <div
+                  style="
+                    background: rgba(16, 185, 129, 0.1);
+                    border: 1px solid rgba(16, 185, 129, 0.15);
+                    border-radius: 4px;
+                    padding: 4px 10px;
+                    font-size: 10px;
+                    color: #a7f3d0;
+                  "
+                >
+                  DS slider context → agent system prompt
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         <!-- Agent layer -->
-        <div style="background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.2); padding: 1.2rem;">
-          <div style="color: #fbbf24; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Agents — AI Workers</div>
-          <div style="display: flex; gap: 1.5rem; flex-wrap: wrap;">
-            <div style="flex: 1; min-width: 200px;">
-              <div style="color: #fde68a; font-size: 11px; font-weight: 600; margin-bottom: 6px;">Agent Context (per annotation)</div>
-              <div style="display: flex; flex-direction: column; gap: 4px;">
-                <div style="background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.15); border-radius: 4px; padding: 4px 10px; font-size: 10px; color: #fde68a;">Selected component metadata (from Figma tree)</div>
-                <div style="background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.15); border-radius: 4px; padding: 4px 10px; font-size: 10px; color: #fde68a;">Current prototype code (Sandpack files)</div>
-                <div style="background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.15); border-radius: 4px; padding: 4px 10px; font-size: 10px; color: #fde68a;">Design system (components + tokens at DS slider level)</div>
-                <div style="background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.15); border-radius: 4px; padding: 4px 10px; font-size: 10px; color: #fde68a;">User prompt + enrichments (personas, states, data)</div>
-                <div style="background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.15); border-radius: 4px; padding: 4px 10px; font-size: 10px; color: #fde68a;">Files tab context (PRDs, research docs, specs)</div>
+        <div style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.2); padding: 1.2rem">
+          <div
+            style="color: #fbbf24; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px"
+          >
+            Agents — AI Workers
+          </div>
+          <div style="display: flex; gap: 1.5rem; flex-wrap: wrap">
+            <div style="flex: 1; min-width: 200px">
+              <div style="color: #fde68a; font-size: 11px; font-weight: 600; margin-bottom: 6px">
+                Agent Context (per annotation)
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 4px">
+                <div
+                  style="
+                    background: rgba(245, 158, 11, 0.1);
+                    border: 1px solid rgba(245, 158, 11, 0.15);
+                    border-radius: 4px;
+                    padding: 4px 10px;
+                    font-size: 10px;
+                    color: #fde68a;
+                  "
+                >
+                  Selected component metadata (from Figma tree)
+                </div>
+                <div
+                  style="
+                    background: rgba(245, 158, 11, 0.1);
+                    border: 1px solid rgba(245, 158, 11, 0.15);
+                    border-radius: 4px;
+                    padding: 4px 10px;
+                    font-size: 10px;
+                    color: #fde68a;
+                  "
+                >
+                  Current prototype code (Sandpack files)
+                </div>
+                <div
+                  style="
+                    background: rgba(245, 158, 11, 0.1);
+                    border: 1px solid rgba(245, 158, 11, 0.15);
+                    border-radius: 4px;
+                    padding: 4px 10px;
+                    font-size: 10px;
+                    color: #fde68a;
+                  "
+                >
+                  Design system (components + tokens at DS slider level)
+                </div>
+                <div
+                  style="
+                    background: rgba(245, 158, 11, 0.1);
+                    border: 1px solid rgba(245, 158, 11, 0.15);
+                    border-radius: 4px;
+                    padding: 4px 10px;
+                    font-size: 10px;
+                    color: #fde68a;
+                  "
+                >
+                  User prompt + enrichments (personas, states, data)
+                </div>
+                <div
+                  style="
+                    background: rgba(245, 158, 11, 0.1);
+                    border: 1px solid rgba(245, 158, 11, 0.15);
+                    border-radius: 4px;
+                    padding: 4px 10px;
+                    font-size: 10px;
+                    color: #fde68a;
+                  "
+                >
+                  Files tab context (PRDs, research docs, specs)
+                </div>
               </div>
             </div>
-            <div style="flex: 1; min-width: 200px;">
-              <div style="color: #fde68a; font-size: 11px; font-weight: 600; margin-bottom: 6px;">Agent Output</div>
-              <div style="display: flex; flex-direction: column; gap: 4px;">
-                <div style="background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.15); border-radius: 4px; padding: 4px 10px; font-size: 10px; color: #fde68a;">N variations as Sandpack file bundles</div>
-                <div style="background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.15); border-radius: 4px; padding: 4px 10px; font-size: 10px; color: #fde68a;">Each variation: modified section code only</div>
-                <div style="background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.15); border-radius: 4px; padding: 4px 10px; font-size: 10px; color: #fde68a;">Brief rationale per variation</div>
+            <div style="flex: 1; min-width: 200px">
+              <div style="color: #fde68a; font-size: 11px; font-weight: 600; margin-bottom: 6px">Agent Output</div>
+              <div style="display: flex; flex-direction: column; gap: 4px">
+                <div
+                  style="
+                    background: rgba(245, 158, 11, 0.1);
+                    border: 1px solid rgba(245, 158, 11, 0.15);
+                    border-radius: 4px;
+                    padding: 4px 10px;
+                    font-size: 10px;
+                    color: #fde68a;
+                  "
+                >
+                  N variations as Sandpack file bundles
+                </div>
+                <div
+                  style="
+                    background: rgba(245, 158, 11, 0.1);
+                    border: 1px solid rgba(245, 158, 11, 0.15);
+                    border-radius: 4px;
+                    padding: 4px 10px;
+                    font-size: 10px;
+                    color: #fde68a;
+                  "
+                >
+                  Each variation: modified section code only
+                </div>
+                <div
+                  style="
+                    background: rgba(245, 158, 11, 0.1);
+                    border: 1px solid rgba(245, 158, 11, 0.15);
+                    border-radius: 4px;
+                    padding: 4px 10px;
+                    font-size: 10px;
+                    color: #fde68a;
+                  "
+                >
+                  Brief rationale per variation
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         <!-- Client layer -->
-        <div style="background: rgba(236,72,153,0.08); border: 1px solid rgba(236,72,153,0.2); border-radius: 0 0 12px 12px; padding: 1.2rem;">
-          <div style="color: #f472b6; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Client — Canvas (HTML/CSS/SolidJS)</div>
-          <div style="display: flex; gap: 1.5rem; flex-wrap: wrap;">
-            <div style="flex: 1; min-width: 140px;">
-              <div style="color: #fbcfe8; font-size: 11px; font-weight: 600; margin-bottom: 6px;">Canvas Surface</div>
-              <div style="display: flex; flex-direction: column; gap: 4px;">
-                <div style="background: rgba(236,72,153,0.1); border: 1px solid rgba(236,72,153,0.15); border-radius: 4px; padding: 4px 10px; font-size: 10px; color: #fbcfe8;">Infinite pan/zoom container</div>
-                <div style="background: rgba(236,72,153,0.1); border: 1px solid rgba(236,72,153,0.15); border-radius: 4px; padding: 4px 10px; font-size: 10px; color: #fbcfe8;">Raster reference layer (toggle)</div>
-                <div style="background: rgba(236,72,153,0.1); border: 1px solid rgba(236,72,153,0.15); border-radius: 4px; padding: 4px 10px; font-size: 10px; color: #fbcfe8;">Sandpack iframes (prototype + variations)</div>
-                <div style="background: rgba(236,72,153,0.1); border: 1px solid rgba(236,72,153,0.15); border-radius: 4px; padding: 4px 10px; font-size: 10px; color: #fbcfe8;">Bounding box hit regions</div>
+        <div
+          style="
+            background: rgba(236, 72, 153, 0.08);
+            border: 1px solid rgba(236, 72, 153, 0.2);
+            border-radius: 0 0 12px 12px;
+            padding: 1.2rem;
+          "
+        >
+          <div
+            style="color: #f472b6; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px"
+          >
+            Client — Canvas (HTML/CSS/SolidJS)
+          </div>
+          <div style="display: flex; gap: 1.5rem; flex-wrap: wrap">
+            <div style="flex: 1; min-width: 140px">
+              <div style="color: #fbcfe8; font-size: 11px; font-weight: 600; margin-bottom: 6px">Canvas Surface</div>
+              <div style="display: flex; flex-direction: column; gap: 4px">
+                <div
+                  style="
+                    background: rgba(236, 72, 153, 0.1);
+                    border: 1px solid rgba(236, 72, 153, 0.15);
+                    border-radius: 4px;
+                    padding: 4px 10px;
+                    font-size: 10px;
+                    color: #fbcfe8;
+                  "
+                >
+                  Infinite pan/zoom container
+                </div>
+                <div
+                  style="
+                    background: rgba(236, 72, 153, 0.1);
+                    border: 1px solid rgba(236, 72, 153, 0.15);
+                    border-radius: 4px;
+                    padding: 4px 10px;
+                    font-size: 10px;
+                    color: #fbcfe8;
+                  "
+                >
+                  Raster reference layer (toggle)
+                </div>
+                <div
+                  style="
+                    background: rgba(236, 72, 153, 0.1);
+                    border: 1px solid rgba(236, 72, 153, 0.15);
+                    border-radius: 4px;
+                    padding: 4px 10px;
+                    font-size: 10px;
+                    color: #fbcfe8;
+                  "
+                >
+                  Sandpack iframes (prototype + variations)
+                </div>
+                <div
+                  style="
+                    background: rgba(236, 72, 153, 0.1);
+                    border: 1px solid rgba(236, 72, 153, 0.15);
+                    border-radius: 4px;
+                    padding: 4px 10px;
+                    font-size: 10px;
+                    color: #fbcfe8;
+                  "
+                >
+                  Bounding box hit regions
+                </div>
               </div>
             </div>
-            <div style="flex: 1; min-width: 140px;">
-              <div style="color: #fbcfe8; font-size: 11px; font-weight: 600; margin-bottom: 6px;">UI Chrome</div>
-              <div style="display: flex; flex-direction: column; gap: 4px;">
-                <div style="background: rgba(236,72,153,0.1); border: 1px solid rgba(236,72,153,0.15); border-radius: 4px; padding: 4px 10px; font-size: 10px; color: #fbcfe8;">Annotation popovers</div>
-                <div style="background: rgba(236,72,153,0.1); border: 1px solid rgba(236,72,153,0.15); border-radius: 4px; padding: 4px 10px; font-size: 10px; color: #fbcfe8;">Checkpoint timeline</div>
-                <div style="background: rgba(236,72,153,0.1); border: 1px solid rgba(236,72,153,0.15); border-radius: 4px; padding: 4px 10px; font-size: 10px; color: #fbcfe8;">Agent sidebar (chat threads)</div>
-                <div style="background: rgba(236,72,153,0.1); border: 1px solid rgba(236,72,153,0.15); border-radius: 4px; padding: 4px 10px; font-size: 10px; color: #fbcfe8;">Files tab (project context)</div>
+            <div style="flex: 1; min-width: 140px">
+              <div style="color: #fbcfe8; font-size: 11px; font-weight: 600; margin-bottom: 6px">UI Chrome</div>
+              <div style="display: flex; flex-direction: column; gap: 4px">
+                <div
+                  style="
+                    background: rgba(236, 72, 153, 0.1);
+                    border: 1px solid rgba(236, 72, 153, 0.15);
+                    border-radius: 4px;
+                    padding: 4px 10px;
+                    font-size: 10px;
+                    color: #fbcfe8;
+                  "
+                >
+                  Annotation popovers
+                </div>
+                <div
+                  style="
+                    background: rgba(236, 72, 153, 0.1);
+                    border: 1px solid rgba(236, 72, 153, 0.15);
+                    border-radius: 4px;
+                    padding: 4px 10px;
+                    font-size: 10px;
+                    color: #fbcfe8;
+                  "
+                >
+                  Checkpoint timeline
+                </div>
+                <div
+                  style="
+                    background: rgba(236, 72, 153, 0.1);
+                    border: 1px solid rgba(236, 72, 153, 0.15);
+                    border-radius: 4px;
+                    padding: 4px 10px;
+                    font-size: 10px;
+                    color: #fbcfe8;
+                  "
+                >
+                  Agent sidebar (chat threads)
+                </div>
+                <div
+                  style="
+                    background: rgba(236, 72, 153, 0.1);
+                    border: 1px solid rgba(236, 72, 153, 0.15);
+                    border-radius: 4px;
+                    padding: 4px 10px;
+                    font-size: 10px;
+                    color: #fbcfe8;
+                  "
+                >
+                  Files tab (project context)
+                </div>
               </div>
             </div>
-            <div style="flex: 1; min-width: 140px;">
-              <div style="color: #fbcfe8; font-size: 11px; font-weight: 600; margin-bottom: 6px;">State</div>
-              <div style="display: flex; flex-direction: column; gap: 4px;">
-                <div style="background: rgba(236,72,153,0.1); border: 1px solid rgba(236,72,153,0.15); border-radius: 4px; padding: 4px 10px; font-size: 10px; color: #fbcfe8;">Checkpoint store (Sandpack snapshots)</div>
-                <div style="background: rgba(236,72,153,0.1); border: 1px solid rgba(236,72,153,0.15); border-radius: 4px; padding: 4px 10px; font-size: 10px; color: #fbcfe8;">Component hit-map (from Figma tree)</div>
-                <div style="background: rgba(236,72,153,0.1); border: 1px solid rgba(236,72,153,0.15); border-radius: 4px; padding: 4px 10px; font-size: 10px; color: #fbcfe8;">Agent state (per annotation)</div>
-                <div style="background: rgba(236,72,153,0.1); border: 1px solid rgba(236,72,153,0.15); border-radius: 4px; padding: 4px 10px; font-size: 10px; color: #fbcfe8;">Design system cache</div>
+            <div style="flex: 1; min-width: 140px">
+              <div style="color: #fbcfe8; font-size: 11px; font-weight: 600; margin-bottom: 6px">State</div>
+              <div style="display: flex; flex-direction: column; gap: 4px">
+                <div
+                  style="
+                    background: rgba(236, 72, 153, 0.1);
+                    border: 1px solid rgba(236, 72, 153, 0.15);
+                    border-radius: 4px;
+                    padding: 4px 10px;
+                    font-size: 10px;
+                    color: #fbcfe8;
+                  "
+                >
+                  Checkpoint store (Sandpack snapshots)
+                </div>
+                <div
+                  style="
+                    background: rgba(236, 72, 153, 0.1);
+                    border: 1px solid rgba(236, 72, 153, 0.15);
+                    border-radius: 4px;
+                    padding: 4px 10px;
+                    font-size: 10px;
+                    color: #fbcfe8;
+                  "
+                >
+                  Component hit-map (from Figma tree)
+                </div>
+                <div
+                  style="
+                    background: rgba(236, 72, 153, 0.1);
+                    border: 1px solid rgba(236, 72, 153, 0.15);
+                    border-radius: 4px;
+                    padding: 4px 10px;
+                    font-size: 10px;
+                    color: #fbcfe8;
+                  "
+                >
+                  Agent state (per annotation)
+                </div>
+                <div
+                  style="
+                    background: rgba(236, 72, 153, 0.1);
+                    border: 1px solid rgba(236, 72, 153, 0.15);
+                    border-radius: 4px;
+                    padding: 4px 10px;
+                    font-size: 10px;
+                    color: #fbcfe8;
+                  "
+                >
+                  Design system cache
+                </div>
               </div>
             </div>
           </div>
@@ -113,80 +507,114 @@
   </div>
 </div>
 
-<div class="section" style="margin-top: 2rem;">
+<div class="section" style="margin-top: 2rem">
   <h3>Key Data Flows</h3>
-  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-
-    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 1rem;">
-      <div style="color: #e2e8f0; font-weight: 600; font-size: 13px; margin-bottom: 8px;">1. Import Flow</div>
-      <div style="font-family: monospace; font-size: 11px; color: #94a3b8; line-height: 1.8;">
-        User pastes Figma URL<br/>
-        → Parse fileKey + nodeId<br/>
-        → Figma MCP: get_image, get_file_data,<br/>
-        &nbsp;&nbsp;get_library_components, get_variables<br/>
-        → Build component hit-map from node tree<br/>
-        → AI agent generates base Sandpack code<br/>
-        → Canvas renders: Sandpack prototype +<br/>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem">
+    <div
+      style="
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 8px;
+        padding: 1rem;
+      "
+    >
+      <div style="color: #e2e8f0; font-weight: 600; font-size: 13px; margin-bottom: 8px">1. Import Flow</div>
+      <div style="font-family: monospace; font-size: 11px; color: #94a3b8; line-height: 1.8">
+        User pastes Figma URL<br />
+        → Parse fileKey + nodeId<br />
+        → Figma MCP: get_image, get_file_data,<br />
+        &nbsp;&nbsp;get_library_components, get_variables<br />
+        → Build component hit-map from node tree<br />
+        → AI agent generates base Sandpack code<br />
+        → Canvas renders: Sandpack prototype +<br />
         &nbsp;&nbsp;raster reference + invisible hit regions
       </div>
     </div>
 
-    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 1rem;">
-      <div style="color: #e2e8f0; font-weight: 600; font-size: 13px; margin-bottom: 8px;">2. Exploration Flow</div>
-      <div style="font-family: monospace; font-size: 11px; color: #94a3b8; line-height: 1.8;">
-        User selects component + writes prompt<br/>
-        → Agent receives: component metadata,<br/>
-        &nbsp;&nbsp;current code, DS at slider level,<br/>
-        &nbsp;&nbsp;enrichments, files context<br/>
-        → Agent generates N variation bundles<br/>
-        → Each renders as Sandpack iframe on canvas<br/>
-        → User approves one<br/>
-        → Code swaps in main prototype<br/>
+    <div
+      style="
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 8px;
+        padding: 1rem;
+      "
+    >
+      <div style="color: #e2e8f0; font-weight: 600; font-size: 13px; margin-bottom: 8px">2. Exploration Flow</div>
+      <div style="font-family: monospace; font-size: 11px; color: #94a3b8; line-height: 1.8">
+        User selects component + writes prompt<br />
+        → Agent receives: component metadata,<br />
+        &nbsp;&nbsp;current code, DS at slider level,<br />
+        &nbsp;&nbsp;enrichments, files context<br />
+        → Agent generates N variation bundles<br />
+        → Each renders as Sandpack iframe on canvas<br />
+        → User approves one<br />
+        → Code swaps in main prototype<br />
         → Auto-checkpoint (Sandpack snapshot)
       </div>
     </div>
 
-    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 1rem;">
-      <div style="color: #e2e8f0; font-weight: 600; font-size: 13px; margin-bottom: 8px;">3. Checkpoint Flow</div>
-      <div style="font-family: monospace; font-size: 11px; color: #94a3b8; line-height: 1.8;">
-        Each checkpoint stores:<br/>
-        &nbsp;&nbsp;- Sandpack file bundle (full prototype)<br/>
-        &nbsp;&nbsp;- Metadata (label, timestamp, agent, component)<br/>
-        &nbsp;&nbsp;- Parent checkpoint ID (for fork history)<br/>
-        <br/>
-        Restore: load checkpoint's Sandpack files<br/>
-        Fork: create new branch from checkpoint<br/>
+    <div
+      style="
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 8px;
+        padding: 1rem;
+      "
+    >
+      <div style="color: #e2e8f0; font-weight: 600; font-size: 13px; margin-bottom: 8px">3. Checkpoint Flow</div>
+      <div style="font-family: monospace; font-size: 11px; color: #94a3b8; line-height: 1.8">
+        Each checkpoint stores:<br />
+        &nbsp;&nbsp;- Sandpack file bundle (full prototype)<br />
+        &nbsp;&nbsp;- Metadata (label, timestamp, agent, component)<br />
+        &nbsp;&nbsp;- Parent checkpoint ID (for fork history)<br />
+        <br />
+        Restore: load checkpoint's Sandpack files<br />
+        Fork: create new branch from checkpoint<br />
         Compare: side-by-side Sandpack renders
       </div>
     </div>
 
-    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 1rem;">
-      <div style="color: #e2e8f0; font-weight: 600; font-size: 13px; margin-bottom: 8px;">4. Design System Flow</div>
-      <div style="font-family: monospace; font-size: 11px; color: #94a3b8; line-height: 1.8;">
-        Figma MCP: get_library_components<br/>
-        → Component catalog with variants<br/>
-        → Stored in design system registry<br/>
-        <br/>
-        Figma MCP: get_variables<br/>
-        → Token map (colors, spacing, type)<br/>
-        → tokensToStylesheet() → CSS vars<br/>
-        → Injected into all Sandpack instances<br/>
-        <br/>
-        DS slider position → agent system prompt:<br/>
-        &nbsp;&nbsp;0%: "Use ONLY these components/tokens"<br/>
-        &nbsp;&nbsp;50%: "Prefer DS, deviate with rationale"<br/>
+    <div
+      style="
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 8px;
+        padding: 1rem;
+      "
+    >
+      <div style="color: #e2e8f0; font-weight: 600; font-size: 13px; margin-bottom: 8px">4. Design System Flow</div>
+      <div style="font-family: monospace; font-size: 11px; color: #94a3b8; line-height: 1.8">
+        Figma MCP: get_library_components<br />
+        → Component catalog with variants<br />
+        → Stored in design system registry<br />
+        <br />
+        Figma MCP: get_variables<br />
+        → Token map (colors, spacing, type)<br />
+        → tokensToStylesheet() → CSS vars<br />
+        → Injected into all Sandpack instances<br />
+        <br />
+        DS slider position → agent system prompt:<br />
+        &nbsp;&nbsp;0%: "Use ONLY these components/tokens"<br />
+        &nbsp;&nbsp;50%: "Prefer DS, deviate with rationale"<br />
         &nbsp;&nbsp;100%: "Explore freely, any pattern"
       </div>
     </div>
   </div>
 </div>
 
-<div class="section" style="margin-top: 2rem;">
+<div class="section" style="margin-top: 2rem">
   <h3>What Existing Code is Reused vs. New</h3>
-  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-    <div style="background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.2); border-radius: 8px; padding: 1rem;">
-      <div style="color: #22c55e; font-weight: 600; font-size: 13px; margin-bottom: 8px;">✓ Reuse</div>
-      <ul style="color: #94a3b8; font-size: 12px; line-height: 1.8; padding-left: 16px; margin: 0;">
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem">
+    <div
+      style="
+        background: rgba(34, 197, 94, 0.08);
+        border: 1px solid rgba(34, 197, 94, 0.2);
+        border-radius: 8px;
+        padding: 1rem;
+      "
+    >
+      <div style="color: #22c55e; font-weight: 600; font-size: 13px; margin-bottom: 8px">✓ Reuse</div>
+      <ul style="color: #94a3b8; font-size: 12px; line-height: 1.8; padding-left: 16px; margin: 0">
         <li>Design system registry + token CSS generation</li>
         <li>Sandpack scaffolding (scaffoldReactFiles, updateSandpackFiles)</li>
         <li>Agent orchestrator + lifecycle state machine</li>
@@ -197,9 +625,16 @@
         <li>Files tab for project context</li>
       </ul>
     </div>
-    <div style="background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); border-radius: 8px; padding: 1rem;">
-      <div style="color: #ef4444; font-weight: 600; font-size: 13px; margin-bottom: 8px;">✗ New</div>
-      <ul style="color: #94a3b8; font-size: 12px; line-height: 1.8; padding-left: 16px; margin: 0;">
+    <div
+      style="
+        background: rgba(239, 68, 68, 0.08);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        border-radius: 8px;
+        padding: 1rem;
+      "
+    >
+      <div style="color: #ef4444; font-weight: 600; font-size: 13px; margin-bottom: 8px">✗ New</div>
+      <ul style="color: #94a3b8; font-size: 12px; line-height: 1.8; padding-left: 16px; margin: 0">
         <li>HTML infinite canvas (pan/zoom/grid)</li>
         <li>Figma MCP client integration</li>
         <li>Component hit-map builder (node tree → bounding boxes)</li>
@@ -214,21 +649,42 @@
   </div>
 </div>
 
-<div class="section" style="margin-top: 2rem;">
+<div class="section" style="margin-top: 2rem">
   <h3>What Gets Killed</h3>
-  <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 1rem;">
-    <ul style="color: #94a3b8; font-size: 12px; line-height: 2; padding-left: 16px; margin: 0;">
-      <li><span style="color: #ef4444;">opendesign-figma-mcp</span> — replaced by Figma's official MCP server</li>
-      <li><span style="color: #ef4444;">figma-write.txt agent prompt</span> — no write-back to Figma for MVP</li>
-      <li><span style="color: #ef4444;">figma-ws.ts WebSocket server</span> — no local plugin bridge needed</li>
-      <li><span style="color: #ef4444;">Rust/WASM canvas as primary surface</span> — moves to visual diff overlay (P2)</li>
-      <li><span style="color: #ef4444;">canvas-bridge.ts</span> — replaced by HTML canvas</li>
-      <li><span style="color: #ef4444;">SVG agent-sandbox canvas</span> — replaced by HTML canvas with Sandpack</li>
-      <li><span style="color: #ef4444;">design.txt agent prompt</span> — replaced by variation generation prompt</li>
+  <div
+    style="
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      padding: 1rem;
+    "
+  >
+    <ul style="color: #94a3b8; font-size: 12px; line-height: 2; padding-left: 16px; margin: 0">
+      <li><span style="color: #ef4444">opendesign-figma-mcp</span> — replaced by Figma's official MCP server</li>
+      <li><span style="color: #ef4444">figma-write.txt agent prompt</span> — no write-back to Figma for MVP</li>
+      <li><span style="color: #ef4444">figma-ws.ts WebSocket server</span> — no local plugin bridge needed</li>
+      <li>
+        <span style="color: #ef4444">Rust/WASM canvas as primary surface</span> — moves to visual diff overlay (P2)
+      </li>
+      <li><span style="color: #ef4444">canvas-bridge.ts</span> — replaced by HTML canvas</li>
+      <li><span style="color: #ef4444">SVG agent-sandbox canvas</span> — replaced by HTML canvas with Sandpack</li>
+      <li><span style="color: #ef4444">design.txt agent prompt</span> — replaced by variation generation prompt</li>
     </ul>
   </div>
 </div>
 
-<div class="section" style="margin-top: 1.5rem; padding: 1rem; background: rgba(99,102,241,0.08); border-radius: 12px; border: 1px solid rgba(99,102,241,0.2);">
-  <p style="color: #c7d2fe; font-size: 13px;">Section 4 of 4 — all sections complete. Respond in terminal to approve the full design, then I'll write the spec document.</p>
+<div
+  class="section"
+  style="
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background: rgba(99, 102, 241, 0.08);
+    border-radius: 12px;
+    border: 1px solid rgba(99, 102, 241, 0.2);
+  "
+>
+  <p style="color: #c7d2fe; font-size: 13px">
+    Section 4 of 4 — all sections complete. Respond in terminal to approve the full design, then I'll write the spec
+    document.
+  </p>
 </div>

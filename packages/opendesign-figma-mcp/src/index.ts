@@ -39,8 +39,14 @@ class WSClient implements CommandSender {
         reject(new Error(`Timeout: ${method}`))
       }, timeoutMs)
       this.pending.set(id, {
-        resolve: (v: unknown) => { clearTimeout(timeout); resolve(v) },
-        reject: (e: unknown) => { clearTimeout(timeout); reject(e) },
+        resolve: (v: unknown) => {
+          clearTimeout(timeout)
+          resolve(v)
+        },
+        reject: (e: unknown) => {
+          clearTimeout(timeout)
+          reject(e)
+        },
       })
       this.ws!.send(JSON.stringify({ id, method, params }))
     })
@@ -57,7 +63,7 @@ async function main() {
       break
     } catch {
       if (i === 9) throw new Error(`Cannot connect to WebSocket on port ${port}`)
-      await new Promise(r => setTimeout(r, 1000))
+      await new Promise((r) => setTimeout(r, 1000))
     }
   }
 

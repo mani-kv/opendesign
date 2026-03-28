@@ -1317,7 +1317,11 @@ export namespace AgentPrompt {
     }
   }
 
-  async function insertReminders(input: { messages: MessageV2.WithParts[]; agent: AgentDef.Info; session: Agent.Info }) {
+  async function insertReminders(input: {
+    messages: MessageV2.WithParts[]
+    agent: AgentDef.Info
+    session: Agent.Info
+  }) {
     return input.messages
   }
 

@@ -14,6 +14,8 @@ import { AgentTable } from "./agent.sql"
 import { MessageTable } from "./message.sql"
 import { PartTable } from "./part.sql"
 import { ProductTable } from "../product/product.sql"
+import { Feature } from "../feature"
+import { FeatureTable } from "../feature/feature.sql"
 import { Storage } from "@/storage/storage"
 import { Log } from "../util/log"
 import { MessageV2 } from "./message-v2"
@@ -39,9 +41,7 @@ export namespace Agent {
   }
 
   export function isDefaultTitle(title: string) {
-    return new RegExp(
-      `^${titlePrefix}\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$`,
-    ).test(title)
+    return new RegExp(`^${titlePrefix}\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$`).test(title)
   }
 
   type AgentRow = typeof AgentTable.$inferSelect
@@ -167,6 +167,19 @@ export namespace Agent {
     ),
   }
 
+  async function resolveFeatureID(featureID?: string): Promise<string> {
+    if (featureID) return featureID
+    const productID = Instance.project.id
+    const existing = Feature.listByProduct(productID)
+    if (existing.length > 0) return existing[0].id
+    const feature = await Feature.create({
+      productID,
+      name: "default",
+      branch: "main",
+    })
+    return feature.id
+  }
+
   export const create = fn(
     z
       .object({
@@ -179,8 +192,9 @@ export namespace Agent {
       })
       .optional(),
     async (input) => {
+      const featureID = await resolveFeatureID(input?.featureID)
       return createNext({
-        featureID: input?.featureID ?? Instance.project.id,
+        featureID,
         annotationID: input?.annotationID,
         directory: Instance.directory,
         title: input?.title,
@@ -237,12 +251,7 @@ export namespace Agent {
   export const touch = fn(Identifier.schema("agent"), async (agentID) => {
     const now = Date.now()
     Database.use((db) => {
-      const row = db
-        .update(AgentTable)
-        .set({ time_updated: now })
-        .where(eq(AgentTable.id, agentID))
-        .returning()
-        .get()
+      const row = db.update(AgentTable).set({ time_updated: now }).where(eq(AgentTable.id, agentID)).returning().get()
       if (!row) throw new NotFoundError({ message: `Agent not found: ${agentID}` })
       const info = fromRow(row)
       Database.effect(() => Bus.publish(Event.Updated, { info }))
@@ -457,20 +466,26 @@ export namespace Agent {
       return query.orderBy(desc(AgentTable.time_updated), desc(AgentTable.id)).limit(limit).all()
     })
 
-    const ids = [...new Set(rows.map((row) => row.feature_id))]
-    const products = new Map<string, ProductInfo>()
+    const featureIDs = [...new Set(rows.map((row) => row.feature_id))]
+    const featureToProduct = new Map<string, ProductInfo>()
 
-    if (ids.length > 0) {
+    if (featureIDs.length > 0) {
       const items = Database.use((db) =>
         db
-          .select({ id: ProductTable.id, name: ProductTable.name, directory: ProductTable.worktree })
-          .from(ProductTable)
-          .where(inArray(ProductTable.id, ids))
+          .select({
+            featureID: FeatureTable.id,
+            productID: ProductTable.id,
+            name: ProductTable.name,
+            directory: ProductTable.worktree,
+          })
+          .from(FeatureTable)
+          .innerJoin(ProductTable, eq(FeatureTable.product_id, ProductTable.id))
+          .where(inArray(FeatureTable.id, featureIDs))
           .all(),
       )
       for (const item of items) {
-        products.set(item.id, {
-          id: item.id,
+        featureToProduct.set(item.featureID, {
+          id: item.productID,
           name: item.name ?? undefined,
           directory: item.directory,
         })
@@ -478,13 +493,16 @@ export namespace Agent {
     }
 
     for (const row of rows) {
-      const product = products.get(row.feature_id) ?? null
+      const product = featureToProduct.get(row.feature_id) ?? null
       yield { ...fromRow(row), product }
     }
   }
 
   // TODO: summary columns not yet on AgentTable - no-op for now
-  export async function setSummary(_input: { agentID: string; summary: { additions: number; deletions: number; files: number } }) {}
+  export async function setSummary(_input: {
+    agentID: string
+    summary: { additions: number; deletions: number; files: number }
+  }) {}
 
   // TODO: share not yet implemented for agents
   export async function share(_agentID: string) {

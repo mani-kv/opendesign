@@ -787,7 +787,13 @@ export namespace MessageV2 {
       db.select().from(PartTable).where(eq(PartTable.message_id, message_id)).orderBy(PartTable.id).all(),
     )
     return rows.map(
-      (row) => ({ ...(row.data as Record<string, any>), id: row.id, agentID: row.agent_id, messageID: row.message_id }) as MessageV2.Part,
+      (row) =>
+        ({
+          ...(row.data as Record<string, any>),
+          id: row.id,
+          agentID: row.agent_id,
+          messageID: row.message_id,
+        }) as MessageV2.Part,
     )
   })
 

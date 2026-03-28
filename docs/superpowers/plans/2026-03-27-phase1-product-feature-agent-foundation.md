@@ -15,6 +15,7 @@
 ## File Map
 
 ### Backend — New Files
+
 - `packages/opencode/src/product/index.ts` — Product namespace (CRUD, bus events)
 - `packages/opencode/src/feature/index.ts` — Feature namespace (CRUD, bus events)
 - `packages/opencode/src/agent/agent-def.ts` — Renamed from `agent.ts` (agent type definitions)
@@ -24,6 +25,7 @@
 - `packages/opencode/migration/<timestamp>_phase1_foundation/snapshot.json` — Drizzle snapshot
 
 ### Backend — Modified Files
+
 - `packages/opencode/src/product/product.sql.ts` — Add `worktree` column (from ProjectTable)
 - `packages/opencode/src/agent/agent.sql.ts` — FK → FeatureTable
 - `packages/opencode/src/storage/schema.ts` — Remove ProjectTable export
@@ -36,12 +38,14 @@
 - ~20 more files for AgentSession → Agent and Agent → AgentDef renames
 
 ### Frontend — New Files
+
 - `packages/app/src/pages/feature.tsx` — Canvas-primary feature page
 - `packages/app/src/context/agent-chat.tsx` — Per-agent chat context provider
 - `packages/app/src/context/product-scope.tsx` — Product/Feature URL scope context
 - `packages/app/src/pages/product-layout.tsx` — Product layout wrapper
 
 ### Frontend — Modified Files
+
 - `packages/app/src/app.tsx` — Add product/feature routes
 - `packages/app/src/context/agents.tsx` — Update to use SDK Agent types
 - `packages/app/src/pages/layout/sidebar-items.tsx` — Rewire to product/feature links
@@ -51,6 +55,7 @@
 ## Task 1: Migration — Fix FK Chain & Consolidate Tables
 
 **Files:**
+
 - Modify: `packages/opencode/src/product/product.sql.ts`
 - Delete: `packages/opencode/src/project/project.sql.ts`
 - Modify: `packages/opencode/src/agent/agent.sql.ts`
@@ -62,6 +67,7 @@
 - [ ] **Step 1: Update ProductTable to include worktree column**
 
 In `packages/opencode/src/product/product.sql.ts`:
+
 ```typescript
 import { sqliteTable, text } from "drizzle-orm/sqlite-core"
 import { Timestamps } from "../storage/schema.sql"
@@ -81,27 +87,31 @@ The `worktree` column is added because the old `ProjectTable` had it and `Instan
 - [ ] **Step 2: Update AgentTable FK to reference FeatureTable**
 
 In `packages/opencode/src/agent/agent.sql.ts`:
+
 ```typescript
 import { sqliteTable, text, index } from "drizzle-orm/sqlite-core"
 import { FeatureTable } from "../feature/feature.sql"
 import { Timestamps } from "../storage/schema.sql"
 
-export const AgentTable = sqliteTable("agent", {
-  id: text().primaryKey(),
-  feature_id: text().notNull().references(() => FeatureTable.id, { onDelete: "cascade" }),
-  annotation_id: text(),
-  branch: text(),
-  status: text().notNull().default("working"),
-  color: text(),
-  title: text().notNull(),
-  directory: text().notNull(),
-  version: text().notNull(),
-  permission: text({ mode: "json" }),
-  ...Timestamps,
-}, (table) => [
-  index("agent_feature_idx").on(table.feature_id),
-  index("agent_annotation_idx").on(table.annotation_id),
-])
+export const AgentTable = sqliteTable(
+  "agent",
+  {
+    id: text().primaryKey(),
+    feature_id: text()
+      .notNull()
+      .references(() => FeatureTable.id, { onDelete: "cascade" }),
+    annotation_id: text(),
+    branch: text(),
+    status: text().notNull().default("working"),
+    color: text(),
+    title: text().notNull(),
+    directory: text().notNull(),
+    version: text().notNull(),
+    permission: text({ mode: "json" }),
+    ...Timestamps,
+  },
+  (table) => [index("agent_feature_idx").on(table.feature_id), index("agent_annotation_idx").on(table.annotation_id)],
+)
 ```
 
 - [ ] **Step 3: Update FeatureTable to ensure correct ProductTable reference**
@@ -111,6 +121,7 @@ Verify `packages/opencode/src/feature/feature.sql.ts` imports from `../product/p
 - [ ] **Step 4: Remove ProjectTable from schema barrel export**
 
 In `packages/opencode/src/storage/schema.ts`, remove the ProjectTable line:
+
 ```typescript
 // REMOVE this line:
 // export { ProjectTable } from "../project/project.sql"
@@ -134,6 +145,7 @@ export { AccountTable, AccountStateTable, ControlAccountTable } from "../account
 - [ ] **Step 5: Write the migration SQL**
 
 Create `packages/opencode/migration/20260327000000_phase1_foundation/migration.sql`:
+
 ```sql
 -- Phase 1: Fix FK chain and consolidate ProjectTable into ProductTable
 -- Accepts data loss
@@ -314,6 +326,7 @@ CREATE TABLE IF NOT EXISTS `permission` (
 - [ ] **Step 6: Create snapshot.json**
 
 Create `packages/opencode/migration/20260327000000_phase1_foundation/snapshot.json`:
+
 ```json
 {
   "id": "phase1-foundation",
@@ -350,6 +363,7 @@ git commit -m "fix(schema): consolidate ProjectTable into ProductTable, fix agen
 ## Task 2: Product Namespace — Replace Project
 
 **Files:**
+
 - Create: `packages/opencode/src/product/index.ts`
 - Delete: `packages/opencode/src/project/project.ts`
 - Modify: `packages/opencode/src/project/instance.ts`
@@ -373,6 +387,7 @@ Create `packages/opencode/src/product/index.ts`. This absorbs the logic from `pr
 5. `migrateFromGlobal` stays as a no-op (already gutted)
 
 The implementer should:
+
 - Read the full `packages/opencode/src/project/project.ts` (it's ~430 lines)
 - Copy it to `packages/opencode/src/product/index.ts`
 - Replace `Project` → `Product`, `ProjectTable` → `ProductTable`, `"@/project/project.sql"` → `"./product.sql"`
@@ -383,6 +398,7 @@ The implementer should:
 - [ ] **Step 2: Update Instance to import Product**
 
 In `packages/opencode/src/project/instance.ts`, change:
+
 ```typescript
 // Before
 import { Project } from "../project/project"
@@ -391,6 +407,7 @@ import { Product } from "../product"
 ```
 
 Then replace all `Project.` calls with `Product.` throughout the file. Key spots:
+
 - `Instance.project` property (keep the property name for now, it returns `Product.Info`)
 - `Project.forDirectory()` → `Product.forDirectory()`
 - `Project.Info` type references → `Product.Info`
@@ -398,6 +415,7 @@ Then replace all `Project.` calls with `Product.` throughout the file. Key spots
 - [ ] **Step 3: Update bootstrap.ts**
 
 In `packages/opencode/src/project/bootstrap.ts`:
+
 ```typescript
 // Before
 import { Project } from "../project/project"
@@ -410,6 +428,7 @@ Replace `Project.` → `Product.` in the bootstrap init function.
 - [ ] **Step 4: Update worktree/index.ts**
 
 In `packages/opencode/src/worktree/index.ts`:
+
 ```typescript
 // Before
 import { Project } from "../project/project"
@@ -424,6 +443,7 @@ Replace all `Project.` → `Product.` and `ProjectTable` → `ProductTable` thro
 - [ ] **Step 5: Update server routes/project.ts**
 
 In `packages/opencode/src/server/routes/project.ts`:
+
 ```typescript
 // Before
 import { Project } from "../../project/project"
@@ -432,6 +452,7 @@ import { Product } from "../../product"
 ```
 
 Replace `Project.` → `Product.` in route handlers. Update operation IDs:
+
 - `project.list` → `product.list`
 - `project.current` → `product.current`
 - `project.initGit` → `product.initGit`
@@ -443,6 +464,7 @@ Rename the export from `ProjectRoutes` to `ProductRoutes`.
 - [ ] **Step 6: Update server/server.ts import**
 
 In `packages/opencode/src/server/server.ts`:
+
 ```typescript
 // Before
 import { ProjectRoutes } from "./routes/project"
@@ -451,6 +473,7 @@ import { ProductRoutes } from "./routes/product"
 ```
 
 Update route mount:
+
 ```typescript
 // Before
 .route("/project", ProjectRoutes())
@@ -459,6 +482,7 @@ Update route mount:
 ```
 
 Also update:
+
 ```typescript
 // Before
 import { Instance } from "../project/instance"
@@ -475,17 +499,20 @@ Update these files to import `Product` from `"../../product"` (or relative equiv
 - `packages/opencode/src/cli/cmd/stats.ts`
 
 For `json-migration.ts`:
+
 ```typescript
 // Before
 import { ProjectTable } from "../project/project.sql"
 // After
 import { ProductTable } from "../product/product.sql"
 ```
+
 Replace `ProjectTable` → `ProductTable` in the file.
 
 - [ ] **Step 8: Update agent/index.ts ProjectTable import**
 
 In `packages/opencode/src/agent/index.ts`, the `listGlobal` function queries `ProjectTable` to get product info:
+
 ```typescript
 // Before
 import { ProjectTable } from "../project/project.sql"
@@ -518,6 +545,7 @@ git commit -m "refactor: replace Project namespace with Product, consolidate dir
 ## Task 3: Namespace Rename — Agent → AgentDef, AgentSession → Agent
 
 **Files:**
+
 - Rename: `packages/opencode/src/agent/agent.ts` → `packages/opencode/src/agent/agent-def.ts`
 - Modify: `packages/opencode/src/agent/index.ts` (namespace rename)
 - Modify: ~20 source files for import updates
@@ -528,6 +556,7 @@ git commit -m "refactor: replace Project namespace with Product, consolidate dir
 Copy `packages/opencode/src/agent/agent.ts` to `packages/opencode/src/agent/agent-def.ts`.
 
 Inside `agent-def.ts`, rename the namespace:
+
 ```typescript
 // Before
 export namespace Agent {
@@ -540,6 +569,7 @@ Delete the old `packages/opencode/src/agent/agent.ts`.
 - [ ] **Step 2: Rename AgentSession → Agent in agent/index.ts**
 
 In `packages/opencode/src/agent/index.ts`:
+
 ```typescript
 // Before
 export namespace AgentSession {
@@ -548,6 +578,7 @@ export namespace Agent {
 ```
 
 Also update the internal import:
+
 ```typescript
 // Before (if it imports from "./agent")
 import { Agent } from "./agent"
@@ -561,21 +592,21 @@ And any internal references like `Agent.Info` (the definition type) become `Agen
 
 These files import `Agent` from `agent/agent.ts` and need updating to `AgentDef` from `agent/agent-def.ts`:
 
-| File | Old Import | New Import |
-|------|-----------|------------|
-| `agent/compaction.ts` | `import { Agent } from "@/agent/agent"` | `import { AgentDef } from "@/agent/agent-def"` |
-| `agent/processor.ts` | `import { Agent } from "@/agent/agent"` | `import { AgentDef } from "@/agent/agent-def"` |
-| `agent/llm.ts` | `import type { Agent } from "@/agent/agent"` | `import type { AgentDef } from "@/agent/agent-def"` |
-| `tool/task.ts` | `import { Agent } from "../agent/agent"` | `import { AgentDef } from "../agent/agent-def"` |
-| `tool/registry.ts` | `import type { Agent } from "../agent/agent"` | `import type { AgentDef } from "../agent/agent-def"` |
-| `tool/truncation.ts` | `import type { Agent } from "../agent/agent"` | `import type { AgentDef } from "../agent/agent-def"` |
-| `tool/tool.ts` | `import type { Agent } from "../agent/agent"` | `import type { AgentDef } from "../agent/agent-def"` |
-| `cli/cmd/agent.ts` | `import { Agent } from "../../agent/agent"` | `import { AgentDef } from "../../agent/agent-def"` |
-| `cli/cmd/run.ts` | `import { Agent } from "../../agent/agent"` | `import { AgentDef } from "../../agent/agent-def"` |
-| `cli/cmd/debug/agent.ts` | `import { Agent } from "../../../agent/agent"` | `import { AgentDef } from "../../../agent/agent-def"` |
-| `acp/agent.ts` | `import { Agent as AgentModule } from "../agent/agent"` | `import { AgentDef } from "../agent/agent-def"` |
-| `server/routes/agent-session.ts` | `import { Agent } from "../../agent/agent"` | `import { AgentDef } from "../../agent/agent-def"` |
-| `server/server.ts` | `import { Agent } from "../agent/agent"` | `import { AgentDef } from "../agent/agent-def"` |
+| File                             | Old Import                                              | New Import                                            |
+| -------------------------------- | ------------------------------------------------------- | ----------------------------------------------------- |
+| `agent/compaction.ts`            | `import { Agent } from "@/agent/agent"`                 | `import { AgentDef } from "@/agent/agent-def"`        |
+| `agent/processor.ts`             | `import { Agent } from "@/agent/agent"`                 | `import { AgentDef } from "@/agent/agent-def"`        |
+| `agent/llm.ts`                   | `import type { Agent } from "@/agent/agent"`            | `import type { AgentDef } from "@/agent/agent-def"`   |
+| `tool/task.ts`                   | `import { Agent } from "../agent/agent"`                | `import { AgentDef } from "../agent/agent-def"`       |
+| `tool/registry.ts`               | `import type { Agent } from "../agent/agent"`           | `import type { AgentDef } from "../agent/agent-def"`  |
+| `tool/truncation.ts`             | `import type { Agent } from "../agent/agent"`           | `import type { AgentDef } from "../agent/agent-def"`  |
+| `tool/tool.ts`                   | `import type { Agent } from "../agent/agent"`           | `import type { AgentDef } from "../agent/agent-def"`  |
+| `cli/cmd/agent.ts`               | `import { Agent } from "../../agent/agent"`             | `import { AgentDef } from "../../agent/agent-def"`    |
+| `cli/cmd/run.ts`                 | `import { Agent } from "../../agent/agent"`             | `import { AgentDef } from "../../agent/agent-def"`    |
+| `cli/cmd/debug/agent.ts`         | `import { Agent } from "../../../agent/agent"`          | `import { AgentDef } from "../../../agent/agent-def"` |
+| `acp/agent.ts`                   | `import { Agent as AgentModule } from "../agent/agent"` | `import { AgentDef } from "../agent/agent-def"`       |
+| `server/routes/agent-session.ts` | `import { Agent } from "../../agent/agent"`             | `import { AgentDef } from "../../agent/agent-def"`    |
+| `server/server.ts`               | `import { Agent } from "../agent/agent"`                | `import { AgentDef } from "../agent/agent-def"`       |
 
 In each file, replace all usages of `Agent.` (referring to agent definitions) with `AgentDef.` — e.g., `Agent.Info` → `AgentDef.Info`, `Agent.list()` → `AgentDef.list()`.
 
@@ -585,26 +616,26 @@ In each file, replace all usages of `Agent.` (referring to agent definitions) wi
 
 These files import `AgentSession` from `agent/index.ts` (or `agent/`) and need renaming to `Agent`:
 
-| File | Old Import | New Import |
-|------|-----------|------------|
+| File                             | Old Import                                   | New Import                            |
+| -------------------------------- | -------------------------------------------- | ------------------------------------- |
 | `server/routes/agent-session.ts` | `import { AgentSession } from "../../agent"` | `import { Agent } from "../../agent"` |
-| `agent/prompt.ts` | `import { AgentSession } from "."` | `import { Agent } from "."` |
-| `agent/summary.ts` | `import { AgentSession } from "."` | `import { Agent } from "."` |
-| `agent/compaction.ts` | `import { AgentSession } from "."` | `import { Agent } from "."` |
-| `agent/processor.ts` | `import { AgentSession } from "."` | `import { Agent } from "."` |
-| `agent/revert.ts` | `import { AgentSession } from "."` | `import { Agent } from "."` |
-| `tool/batch.ts` | `import { AgentSession } from "../agent"` | `import { Agent } from "../agent"` |
-| `tool/task.ts` | `import { AgentSession } from "../agent"` | `import { Agent } from "../agent"` |
-| `server/routes/experimental.ts` | `import { AgentSession } from "../../agent"` | `import { Agent } from "../../agent"` |
-| `config/config.ts` | `import { AgentSession } from "../agent"` | `import { Agent } from "../agent"` |
-| `skill/skill.ts` | `import { AgentSession } from "../agent"` | `import { Agent } from "../agent"` |
-| `plugin/index.ts` | `import { AgentSession } from "../agent"` | `import { Agent } from "../agent"` |
-| `cli/cmd/import.ts` | `import { AgentSession } from "../../agent"` | `import { Agent } from "../../agent"` |
-| `cli/cmd/export.ts` | `import { AgentSession } from "../../agent"` | `import { Agent } from "../../agent"` |
-| `cli/cmd/github.ts` | `import { AgentSession } from "../../agent"` | `import { Agent } from "../../agent"` |
-| `cli/cmd/stats.ts` | `import { AgentSession } from "../../agent"` | `import { Agent } from "../../agent"` |
-| `cli/cmd/session.ts` | `import { AgentSession } from "../../agent"` | `import { Agent } from "../../agent"` |
-| `server/server.ts` | (if it imports AgentSession) | `import { Agent } from "../agent"` |
+| `agent/prompt.ts`                | `import { AgentSession } from "."`           | `import { Agent } from "."`           |
+| `agent/summary.ts`               | `import { AgentSession } from "."`           | `import { Agent } from "."`           |
+| `agent/compaction.ts`            | `import { AgentSession } from "."`           | `import { Agent } from "."`           |
+| `agent/processor.ts`             | `import { AgentSession } from "."`           | `import { Agent } from "."`           |
+| `agent/revert.ts`                | `import { AgentSession } from "."`           | `import { Agent } from "."`           |
+| `tool/batch.ts`                  | `import { AgentSession } from "../agent"`    | `import { Agent } from "../agent"`    |
+| `tool/task.ts`                   | `import { AgentSession } from "../agent"`    | `import { Agent } from "../agent"`    |
+| `server/routes/experimental.ts`  | `import { AgentSession } from "../../agent"` | `import { Agent } from "../../agent"` |
+| `config/config.ts`               | `import { AgentSession } from "../agent"`    | `import { Agent } from "../agent"`    |
+| `skill/skill.ts`                 | `import { AgentSession } from "../agent"`    | `import { Agent } from "../agent"`    |
+| `plugin/index.ts`                | `import { AgentSession } from "../agent"`    | `import { Agent } from "../agent"`    |
+| `cli/cmd/import.ts`              | `import { AgentSession } from "../../agent"` | `import { Agent } from "../../agent"` |
+| `cli/cmd/export.ts`              | `import { AgentSession } from "../../agent"` | `import { Agent } from "../../agent"` |
+| `cli/cmd/github.ts`              | `import { AgentSession } from "../../agent"` | `import { Agent } from "../../agent"` |
+| `cli/cmd/stats.ts`               | `import { AgentSession } from "../../agent"` | `import { Agent } from "../../agent"` |
+| `cli/cmd/session.ts`             | `import { AgentSession } from "../../agent"` | `import { Agent } from "../../agent"` |
+| `server/server.ts`               | (if it imports AgentSession)                 | `import { Agent } from "../agent"`    |
 
 In each file, replace `AgentSession.` → `Agent.` for all method/type calls.
 
@@ -613,6 +644,7 @@ In each file, replace `AgentSession.` → `Agent.` for all method/type calls.
 - [ ] **Step 5: Update server.ts inline agent definition endpoint**
 
 In `packages/opencode/src/server/server.ts`, the inline `GET /agent` endpoint lists agent definitions:
+
 ```typescript
 // Before
 import { Agent } from "../agent/agent"
@@ -621,6 +653,7 @@ import { AgentDef } from "../agent/agent-def"
 ```
 
 Update the handler and operation ID:
+
 ```typescript
 // Before
 .get("/agent", describeRoute({ operationId: "app.agents", ... schema: resolver(Agent.Info.array()) }),
@@ -634,25 +667,26 @@ Update the handler and operation ID:
 
 Update test imports:
 
-| Test File | Changes |
-|-----------|---------|
-| `test/session/session.test.ts` | `AgentSession` → `Agent` |
-| `test/session/compaction.test.ts` | `AgentSession` → `Agent` |
-| `test/session/prompt.test.ts` | `AgentSession` → `Agent` |
-| `test/session/revert-compact.test.ts` | `AgentSession` → `Agent` |
+| Test File                                            | Changes                  |
+| ---------------------------------------------------- | ------------------------ |
+| `test/session/session.test.ts`                       | `AgentSession` → `Agent` |
+| `test/session/compaction.test.ts`                    | `AgentSession` → `Agent` |
+| `test/session/prompt.test.ts`                        | `AgentSession` → `Agent` |
+| `test/session/revert-compact.test.ts`                | `AgentSession` → `Agent` |
 | `test/session/structured-output-integration.test.ts` | `AgentSession` → `Agent` |
-| `test/server/session-list.test.ts` | `AgentSession` → `Agent` |
-| `test/server/global-session-list.test.ts` | `AgentSession` → `Agent` |
-| `test/agent/agent.test.ts` | `Agent` → `AgentDef` |
-| `test/config/agent-color.test.ts` | `Agent` → `AgentDef` |
-| `test/session/llm.test.ts` | `Agent` → `AgentDef` |
-| `test/tool/read.test.ts` | `Agent` → `AgentDef` |
+| `test/server/session-list.test.ts`                   | `AgentSession` → `Agent` |
+| `test/server/global-session-list.test.ts`            | `AgentSession` → `Agent` |
+| `test/agent/agent.test.ts`                           | `Agent` → `AgentDef`     |
+| `test/config/agent-color.test.ts`                    | `Agent` → `AgentDef`     |
+| `test/session/llm.test.ts`                           | `Agent` → `AgentDef`     |
+| `test/tool/read.test.ts`                             | `Agent` → `AgentDef`     |
 
 - [ ] **Step 7: Typecheck**
 
 Run: `cd packages/opencode && bun typecheck`
 
 Fix any remaining references. Use grep to find stragglers:
+
 ```bash
 grep -r "from.*agent/agent\"" packages/opencode/src/ --include="*.ts"
 grep -r "AgentSession" packages/opencode/src/ --include="*.ts"
@@ -676,6 +710,7 @@ git commit -m "refactor: rename Agent→AgentDef (definitions), AgentSession→A
 ## Task 4: Feature Namespace
 
 **Files:**
+
 - Create: `packages/opencode/src/feature/index.ts`
 
 - [ ] **Step 1: Create Feature namespace**
@@ -778,7 +813,10 @@ export namespace Feature {
     }
     const rows = Database.use((db) => {
       const query = conditions.length
-        ? db.select().from(FeatureTable).where(and(...conditions))
+        ? db
+            .select()
+            .from(FeatureTable)
+            .where(and(...conditions))
         : db.select().from(FeatureTable)
       return query.orderBy(desc(FeatureTable.time_updated)).all()
     })
@@ -841,6 +879,7 @@ git commit -m "feat: add Feature namespace with CRUD operations"
 ## Task 5: API Routes — Product, Feature, Route Renames
 
 **Files:**
+
 - Modify: `packages/opencode/src/server/routes/project.ts` (already renamed to ProductRoutes in Task 2)
 - Create: `packages/opencode/src/server/routes/feature.ts`
 - Modify: `packages/opencode/src/server/server.ts` — route mounts and renames
@@ -1037,26 +1076,26 @@ import { FeatureRoutes } from "./routes/feature"
 
 In `packages/opencode/src/server/routes/agent-session.ts`, update all operation IDs:
 
-| Old | New |
-|-----|-----|
-| `agent.session.list` | `agent.list` |
-| `agent.session.status` | `agent.status` |
-| `agent.session.get` | `agent.get` |
-| `agent.session.todo` | `agent.todo` |
-| `agent.session.create` | `agent.create` |
-| `agent.session.prompt` | `agent.prompt` |
-| `agent.session.messages` | `agent.messages` |
-| `agent.session.init` | `agent.init` |
-| `agent.session.fork` | `agent.fork` |
-| `agent.session.abort` | `agent.abort` |
-| `agent.session.diff` | `agent.diff` |
-| `agent.session.summarize` | `agent.summarize` |
+| Old                                | New                        |
+| ---------------------------------- | -------------------------- |
+| `agent.session.list`               | `agent.list`               |
+| `agent.session.status`             | `agent.status`             |
+| `agent.session.get`                | `agent.get`                |
+| `agent.session.todo`               | `agent.todo`               |
+| `agent.session.create`             | `agent.create`             |
+| `agent.session.prompt`             | `agent.prompt`             |
+| `agent.session.messages`           | `agent.messages`           |
+| `agent.session.init`               | `agent.init`               |
+| `agent.session.fork`               | `agent.fork`               |
+| `agent.session.abort`              | `agent.abort`              |
+| `agent.session.diff`               | `agent.diff`               |
+| `agent.session.summarize`          | `agent.summarize`          |
 | `agent.session.permission.respond` | `agent.permission.respond` |
-| `agent.session.message.remove` | `agent.message.remove` |
-| `agent.session.part.remove` | `agent.part.remove` |
-| `agent.session.part.update` | `agent.part.update` |
-| `agent.session.setStatus` | `agent.setStatus` |
-| `agent.session.rename` | `agent.rename` |
+| `agent.session.message.remove`     | `agent.message.remove`     |
+| `agent.session.part.remove`        | `agent.part.remove`        |
+| `agent.session.part.update`        | `agent.part.update`        |
+| `agent.session.setStatus`          | `agent.setStatus`          |
+| `agent.session.rename`             | `agent.rename`             |
 
 Also update the internal imports from `AgentSession` → `Agent` if not already done in Task 3.
 
@@ -1069,6 +1108,7 @@ Similarly rename `packages/opencode/src/server/routes/agent-files.ts` if it exis
 - [ ] **Step 5: Typecheck and test**
 
 Run:
+
 ```bash
 cd packages/opencode && bun typecheck
 cd packages/opencode && bun test
@@ -1086,11 +1126,13 @@ git commit -m "feat: add Feature routes, rename /session→/agent-session, /agen
 ## Task 6: Regenerate SDK
 
 **Files:**
+
 - Modify: `packages/sdk/js/` (auto-generated)
 
 - [ ] **Step 1: Regenerate SDK**
 
 Run from repo root:
+
 ```bash
 ./script/generate.ts
 ```
@@ -1100,6 +1142,7 @@ This starts the server, extracts OpenAPI spec, generates the SDK.
 - [ ] **Step 2: Verify generated types**
 
 Check that `packages/sdk/js/src/client.ts` contains:
+
 - `product.list()`, `product.get()`, `product.create()`, etc.
 - `feature.list()`, `feature.get()`, `feature.create()`, etc.
 - `agent.list()` (formerly `session.list()`), `agent.get()`, `agent.create()`, etc.
@@ -1119,6 +1162,7 @@ git commit -m "chore: regenerate SDK with Product/Feature/Agent types"
 ## Task 7: Frontend — Product Scope Context & Routing
 
 **Files:**
+
 - Create: `packages/app/src/context/product-scope.tsx`
 - Create: `packages/app/src/pages/product-layout.tsx`
 - Modify: `packages/app/src/app.tsx`
@@ -1196,11 +1240,7 @@ import { ProductScopeProvider } from "@/context/product-scope"
 
 export default function ProductLayout(props: ParentProps) {
   const params = useParams()
-  return (
-    <ProductScopeProvider productId={params.productId}>
-      {props.children}
-    </ProductScopeProvider>
-  )
+  return <ProductScopeProvider productId={params.productId}>{props.children}</ProductScopeProvider>
 }
 ```
 
@@ -1227,6 +1267,7 @@ const ProductHomeRoute = () => {
 ```
 
 Add inside the `Router` in `AppInterface`:
+
 ```tsx
 <Route path="/product/:productId" component={ProductLayout}>
   <Route path="/" component={ProductHomeRoute} />
@@ -1247,6 +1288,7 @@ git commit -m "feat(app): add product/feature routing and ProductScope context"
 ## Task 8: Frontend — AgentChatProvider
 
 **Files:**
+
 - Create: `packages/app/src/context/agent-chat.tsx`
 
 - [ ] **Step 1: Create AgentChatProvider**
@@ -1349,6 +1391,7 @@ git commit -m "feat(app): add AgentChatProvider for per-agent chat context"
 ## Task 9: Frontend — Feature Page (Canvas-Primary Layout)
 
 **Files:**
+
 - Create: `packages/app/src/pages/feature.tsx`
 
 - [ ] **Step 1: Create feature.tsx**
@@ -1390,10 +1433,7 @@ export default function FeaturePage() {
   return (
     <div class="flex size-full">
       {/* Canvas area — placeholder for Phase 2 */}
-      <div
-        class="flex-1 flex items-center justify-center bg-[var(--background)]"
-        style={{ "min-width": "0" }}
-      >
+      <div class="flex-1 flex items-center justify-center bg-[var(--background)]" style={{ "min-width": "0" }}>
         <div class="text-center text-[var(--color-text-dimmed)]">
           <p class="text-lg font-medium">Canvas</p>
           <p class="text-sm mt-1">Phase 2: HTML infinite canvas will render here</p>
@@ -1488,6 +1528,7 @@ function AgentChatContent() {
 ```
 
 **Note:** This is a scaffold. It has:
+
 - Canvas placeholder (left, flex-1) — Phase 2 fills this
 - Agent sidebar (right, resizable) — shows chat for selected agent
 - Minimal message display and prompt input
@@ -1511,6 +1552,7 @@ git commit -m "feat(app): add canvas-primary feature page with agent chat sideba
 ## Task 10: Frontend — Sidebar Rewiring
 
 **Files:**
+
 - Modify: `packages/app/src/pages/layout/sidebar-items.tsx` (or equivalent sidebar component)
 - Modify: `packages/app/src/context/global-sync.tsx` — update SDK type references
 - Modify: `packages/app/src/context/agents.tsx` — update to use new SDK types
@@ -1554,6 +1596,7 @@ The existing `packages/app/src/context/agents.tsx` uses a local `Agent` interfac
 Run: `cd packages/app && bun typecheck`
 
 Fix any type errors from SDK changes. Common issues:
+
 - `client.session.*` calls → `client.agent.*`
 - `Project` type → `Product` type
 - Missing new SDK method signatures

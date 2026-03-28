@@ -46,7 +46,8 @@ export const PromptContextItems: Component<ContextItemsProps> = (props) => {
                         classList={{
                           "group shrink-0 flex flex-col rounded-[6px] pl-2 pr-1 py-1 max-w-[200px] h-12 cursor-default transition-all transition-transform shadow-xs-border hover:shadow-xs-border-hover": true,
                           "hover:bg-surface-interactive-weak": !!fileItem.commentID && !selected,
-                          "bg-surface-interactive-hover hover:bg-surface-interactive-hover shadow-xs-border-hover": selected,
+                          "bg-surface-interactive-hover hover:bg-surface-interactive-hover shadow-xs-border-hover":
+                            selected,
                           "bg-background-stronger": !selected,
                         }}
                         onClick={() => props.openComment(fileItem)}
@@ -78,7 +79,9 @@ export const PromptContextItems: Component<ContextItemsProps> = (props) => {
                           />
                         </div>
                         <Show when={fileItem.comment}>
-                          {(comment) => <div class="text-12-regular text-text-strong ml-5 pr-1 truncate">{comment()}</div>}
+                          {(comment) => (
+                            <div class="text-12-regular text-text-strong ml-5 pr-1 truncate">{comment()}</div>
+                          )}
                         </Show>
                       </div>
                     </Tooltip>
@@ -87,11 +90,12 @@ export const PromptContextItems: Component<ContextItemsProps> = (props) => {
               </Match>
               <Match when={item.type === "figma" && item} keyed>
                 {(figmaItem) => {
-                  const label = () => figmaItem.nodeName
-                    ? figmaItem.nodeName.length > 14
-                      ? figmaItem.nodeName.slice(0, 14) + "…"
-                      : figmaItem.nodeName
-                    : figmaItem.nodeId ?? "Figma"
+                  const label = () =>
+                    figmaItem.nodeName
+                      ? figmaItem.nodeName.length > 14
+                        ? figmaItem.nodeName.slice(0, 14) + "…"
+                        : figmaItem.nodeName
+                      : (figmaItem.nodeId ?? "Figma")
                   const subtitle = () => figmaItem.nodeType?.toLowerCase() ?? ""
 
                   return (

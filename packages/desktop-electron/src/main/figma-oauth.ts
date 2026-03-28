@@ -40,9 +40,7 @@ function loadToken(): TokenData | null {
 function saveToken(data: TokenData) {
   const store = getStore(STORE_NAME)
   const json = JSON.stringify(data)
-  const encoded = safeStorage.isEncryptionAvailable()
-    ? safeStorage.encryptString(json).toString("base64")
-    : json
+  const encoded = safeStorage.isEncryptionAvailable() ? safeStorage.encryptString(json).toString("base64") : json
   store.set(TOKEN_KEY, encoded)
 }
 

@@ -19,12 +19,7 @@ export function AgentNodeCard(props: { node: AgentNode; onDragStart: (e: Pointer
         <div class="text-13-medium text-text-base line-clamp-1">{props.node.data.scenario}</div>
       </div>
       <div class="flex-1 min-h-0 border-t border-[var(--border-weaker-base)]">
-        <iframe
-          srcdoc={SANDPACK_SRCDOC}
-          class="size-full border-0"
-          sandbox="allow-scripts"
-          title="Sandpack preview"
-        />
+        <iframe srcdoc={SANDPACK_SRCDOC} class="size-full border-0" sandbox="allow-scripts" title="Sandpack preview" />
       </div>
     </div>
   )

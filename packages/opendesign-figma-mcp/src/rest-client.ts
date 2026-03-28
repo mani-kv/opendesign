@@ -171,7 +171,8 @@ async function fetchWithRetry(
       continue
     }
 
-    if (!res.ok) throw new FigmaApiError("figma_api_error", res.status, `Figma API error: ${res.status} ${res.statusText}`)
+    if (!res.ok)
+      throw new FigmaApiError("figma_api_error", res.status, `Figma API error: ${res.status} ${res.statusText}`)
 
     return res
   }
@@ -283,7 +284,11 @@ export class FigmaRestClient {
     return this.request<FigmaCommentsResponse>(`/v1/files/${fileKey}/comments`)
   }
 
-  async postComment(fileKey: string, message: string, coords?: { x: number; y: number; node_id?: string }): Promise<unknown> {
+  async postComment(
+    fileKey: string,
+    message: string,
+    coords?: { x: number; y: number; node_id?: string },
+  ): Promise<unknown> {
     const body: Record<string, unknown> = { message }
     if (coords) body.client_meta = coords
     return this.postRequest(`/v1/files/${fileKey}/comments`, body)

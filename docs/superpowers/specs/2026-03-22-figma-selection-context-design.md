@@ -20,11 +20,11 @@ type FigmaContextItem = {
   type: "figma"
   fileKey: string
   nodeId: string
-  nodeName: string | null   // "Header Frame", "Button/Primary", etc.
-  nodeType: string | null   // "FRAME", "COMPONENT", "INSTANCE", etc.
+  nodeName: string | null // "Header Frame", "Button/Primary", etc.
+  nodeType: string | null // "FRAME", "COMPONENT", "INSTANCE", etc.
   fileName: string | null
   url: string
-  thumbnail?: string        // base64 data URL, best-effort
+  thumbnail?: string // base64 data URL, best-effort
 }
 ```
 
@@ -76,11 +76,13 @@ type ContextItem = FileContextItem | FigmaContextItem
 ```
 
 Add a `contextItemKey()` case for figma items:
+
 ```
 figma:${fileKey}:${nodeId}
 ```
 
 When `nodeId` is null (file-level selection with no specific node), use:
+
 ```
 figma:${fileKey}
 ```
@@ -110,6 +112,7 @@ The existing `<For>` loop unconditionally accesses `item.path`, `getDirectory(it
 **File: `packages/app/src/pages/session/` (likely session-composer-region.tsx or prompt-input.tsx)**
 
 On mount (desktop platform only):
+
 1. Subscribe to `api.onFigmaSelection()`
 2. On each selection event: remove any existing figma context item, add the new one via `prompt.context.add()`
 3. Subscribe to `api.onFigmaThumbnail()`
@@ -146,30 +149,30 @@ The agent can then use `figma_get_frame`, `figma_get_selection`, or other MCP to
 
 ## Constraints
 
-| Constraint | Decision |
-|---|---|
-| Thumbnail is best-effort | Never block on thumbnail. If REST API is slow, skip it. |
-| One figma selection at a time | New selection replaces previous. No stacking. |
-| Debounce 500ms | Prevents API spam during rapid clicking. |
-| Thumbnail timeout 3s | If image render takes longer, skip. Agent can fetch via MCP. |
-| Dismiss is per-node | Dismissing "Frame A" doesn't suppress "Frame B" auto-attach. In-memory signal only, not persisted. |
-| Thumbnail must match current node | Renderer verifies `nodeId` on thumbnail event to discard stale thumbnails. |
-| Chip = last navigated node | Not real-time Figma selection. Figma doesn't signal canvas deselection via URL. User can dismiss. |
-| Desktop only | Figma selection only available in Electron app, not web. |
-| No file content pre-fetch | We send reference info only. Agent uses MCP for deep data. |
+| Constraint                        | Decision                                                                                           |
+| --------------------------------- | -------------------------------------------------------------------------------------------------- |
+| Thumbnail is best-effort          | Never block on thumbnail. If REST API is slow, skip it.                                            |
+| One figma selection at a time     | New selection replaces previous. No stacking.                                                      |
+| Debounce 500ms                    | Prevents API spam during rapid clicking.                                                           |
+| Thumbnail timeout 3s              | If image render takes longer, skip. Agent can fetch via MCP.                                       |
+| Dismiss is per-node               | Dismissing "Frame A" doesn't suppress "Frame B" auto-attach. In-memory signal only, not persisted. |
+| Thumbnail must match current node | Renderer verifies `nodeId` on thumbnail event to discard stale thumbnails.                         |
+| Chip = last navigated node        | Not real-time Figma selection. Figma doesn't signal canvas deselection via URL. User can dismiss.  |
+| Desktop only                      | Figma selection only available in Electron app, not web.                                           |
+| No file content pre-fetch         | We send reference info only. Agent uses MCP for deep data.                                         |
 
 ## Files to Create/Modify
 
-| File | Change |
-|---|---|
-| `packages/desktop-electron/src/main/figma-selection.ts` | Add debounced IPC emit with REST API node name fetch |
-| `packages/desktop-electron/src/main/figma-rest-client.ts` | Ensure `getNode()` method exists for name/type lookup |
-| `packages/desktop-electron/src/preload/index.ts` | Add `onFigmaSelection` and `onFigmaThumbnail` listeners |
-| `packages/desktop-electron/src/preload/types.ts` | Add types to `ElectronAPI` |
-| `packages/app/src/context/prompt.tsx` | Add `FigmaContextItem` to union, key generation |
-| `packages/app/src/components/prompt-input/context-items.tsx` | Render figma chip with icon, name, dismiss |
-| `packages/app/src/components/prompt-input.tsx` or session composer | Wire IPC listener → prompt context |
-| `packages/app/src/utils/build-request-parts.ts` (or equivalent) | Add type guard and figma serialization in `buildRequestParts` |
+| File                                                               | Change                                                        |
+| ------------------------------------------------------------------ | ------------------------------------------------------------- |
+| `packages/desktop-electron/src/main/figma-selection.ts`            | Add debounced IPC emit with REST API node name fetch          |
+| `packages/desktop-electron/src/main/figma-rest-client.ts`          | Ensure `getNode()` method exists for name/type lookup         |
+| `packages/desktop-electron/src/preload/index.ts`                   | Add `onFigmaSelection` and `onFigmaThumbnail` listeners       |
+| `packages/desktop-electron/src/preload/types.ts`                   | Add types to `ElectronAPI`                                    |
+| `packages/app/src/context/prompt.tsx`                              | Add `FigmaContextItem` to union, key generation               |
+| `packages/app/src/components/prompt-input/context-items.tsx`       | Render figma chip with icon, name, dismiss                    |
+| `packages/app/src/components/prompt-input.tsx` or session composer | Wire IPC listener → prompt context                            |
+| `packages/app/src/utils/build-request-parts.ts` (or equivalent)    | Add type guard and figma serialization in `buildRequestParts` |
 
 ## Out of Scope
 

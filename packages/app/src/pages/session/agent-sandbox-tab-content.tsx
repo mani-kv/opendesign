@@ -26,7 +26,9 @@ export function AgentSandboxTabContent() {
         {entries().map(([path, content]) => (
           <div>
             <div class="text-11-medium font-mono text-text-weak mb-1">{path}</div>
-            <pre class="text-12-regular font-mono bg-background-stronger rounded p-3 overflow-auto whitespace-pre-wrap break-words">{content}</pre>
+            <pre class="text-12-regular font-mono bg-background-stronger rounded p-3 overflow-auto whitespace-pre-wrap break-words">
+              {content}
+            </pre>
           </div>
         ))}
       </div>
@@ -40,10 +42,7 @@ export function AgentSandboxTabContent() {
           <>
             {/* Header bar */}
             <div class="h-10 px-3 flex items-center gap-2 border-b border-[var(--border-weaker-base)] shrink-0">
-              <div
-                class="size-2 rounded-full shrink-0"
-                style={{ "background-color": stateColor(a().state) }}
-              />
+              <div class="size-2 rounded-full shrink-0" style={{ "background-color": stateColor(a().state) }} />
               <div class="text-12-medium text-text-base truncate">{a().scenario}</div>
               <div class="ml-auto flex items-center gap-2">
                 <span class="text-11-regular text-text-weak font-mono truncate">{a().branch}</span>
@@ -58,15 +57,8 @@ export function AgentSandboxTabContent() {
 
             {/* Content area */}
             <div class="flex-1 min-h-0">
-              <Show
-                when={viewMode() === "preview"}
-                fallback={<CodeView />}
-              >
-                <SandpackPreview
-                  files={agentFiles.files()}
-                  loading={agentFiles.loading()}
-                  error={agentFiles.error()}
-                />
+              <Show when={viewMode() === "preview"} fallback={<CodeView />}>
+                <SandpackPreview files={agentFiles.files()} loading={agentFiles.loading()} error={agentFiles.error()} />
               </Show>
             </div>
           </>

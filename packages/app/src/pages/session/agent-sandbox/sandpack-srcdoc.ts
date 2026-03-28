@@ -15,10 +15,7 @@
  *  - Listens for sandpack:update-files postMessage to hot-reload
  */
 
-export function createSandpackSrcdoc(
-  files: Record<string, string>,
-  entry = "/src/App.js",
-): string {
+export function createSandpackSrcdoc(files: Record<string, string>, entry = "/src/App.js"): string {
   // Serialize files as JSON to embed in the HTML
   const filesJson = JSON.stringify(files)
   const entryJson = JSON.stringify(entry)

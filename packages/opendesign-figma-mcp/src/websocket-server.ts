@@ -173,7 +173,12 @@ export class FigmaWSServer extends EventEmitter implements CommandSender {
     this.server = null
   }
 
-  async sendCommand(method: string, params: Record<string, unknown> = {}, timeoutMs = 15000, targetFileKey?: string): Promise<unknown> {
+  async sendCommand(
+    method: string,
+    params: Record<string, unknown> = {},
+    timeoutMs = 15000,
+    targetFileKey?: string,
+  ): Promise<unknown> {
     const fileKey = targetFileKey ?? this.activeFileKey
     if (!fileKey) throw new Error("No connected Figma client")
     const client = this.clients.get(fileKey)

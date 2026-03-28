@@ -92,13 +92,28 @@ export namespace Feature {
     }
     const rows = Database.use((db) => {
       const query = conditions.length
-        ? db.select().from(FeatureTable).where(and(...conditions))
+        ? db
+            .select()
+            .from(FeatureTable)
+            .where(and(...conditions))
         : db.select().from(FeatureTable)
       return query.orderBy(desc(FeatureTable.time_updated)).all()
     })
     for (const row of rows) {
       yield fromRow(row)
     }
+  }
+
+  export function listByProduct(productID: string): Info[] {
+    return Database.use((db) =>
+      db
+        .select()
+        .from(FeatureTable)
+        .where(eq(FeatureTable.product_id, productID))
+        .orderBy(desc(FeatureTable.time_updated))
+        .all()
+        .map(fromRow),
+    )
   }
 
   export const remove = fn(z.string(), async (id) => {

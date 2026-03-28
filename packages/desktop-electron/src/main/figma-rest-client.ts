@@ -146,7 +146,8 @@ async function fetchWithRetry(
       continue
     }
 
-    if (!res.ok) throw new FigmaApiError("figma_api_error", res.status, `Figma API error: ${res.status} ${res.statusText}`)
+    if (!res.ok)
+      throw new FigmaApiError("figma_api_error", res.status, `Figma API error: ${res.status} ${res.statusText}`)
 
     return res
   }

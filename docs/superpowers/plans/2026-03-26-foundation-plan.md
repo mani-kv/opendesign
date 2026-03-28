@@ -19,6 +19,7 @@ These rules MUST be followed for every task in every phase:
 ### Rule 1: Evaluate Before Changing
 
 Before modifying any existing file, read it fully and understand:
+
 - What it currently does and why.
 - What depends on it (imports, routes, tests).
 - Whether the change can be additive (extend) rather than destructive (replace).
@@ -28,6 +29,7 @@ Before modifying any existing file, read it fully and understand:
 ### Rule 2: Reason About Impact
 
 For each task, document:
+
 - **What changes:** Exact files and line ranges.
 - **What it impacts:** Other modules that import from or depend on changed code.
 - **Risk level:** Low (additive/new file), Medium (modifying existing behavior), High (changing data model/schema/routing).
@@ -36,6 +38,7 @@ For each task, document:
 ### Rule 3: Confirm Before Major Changes
 
 **STOP and confirm with the user before:**
+
 - Changing database schemas (migrations are irreversible in production).
 - Modifying routing structure (breaks bookmarks, deep links).
 - Removing or renaming exports used by other packages.
@@ -47,6 +50,7 @@ Present: what you plan to change, why, what it impacts, and alternatives conside
 ### Rule 4: Incremental Over Wholesale
 
 Prefer extending existing code over replacing it. If replacement is necessary:
+
 1. Build the new thing alongside the old.
 2. Wire up the new thing.
 3. Verify it works.
@@ -63,35 +67,35 @@ Before modifying a module, run its existing tests. If they pass, your changes mu
 
 ### What Exists and How It Maps
 
-| Existing Code | Status | Plan 1 Action |
-|---|---|---|
-| `packages/opencode/src/project/instance.ts` (152 lines) | Keep | Extend — Product concept maps to Instance (one per directory). Add Feature scoping. |
-| `packages/opencode/src/session/` | Keep | Extend — Sessions become agent chat threads within Features. Add Feature reference to SessionTable. |
-| `packages/opencode/src/session/canvas.ts` | Keep | Extend — Canvas state storage (get/put JSON blob) reused for HTML canvas state. |
-| `packages/app/src/utils/canvas-bridge.ts` (123 lines) | Replace | New HTML canvas manager replaces WASM bridge. Delete after new canvas works. |
-| `packages/app/src/pages/session/canvas-tab-content.tsx` (163 lines) | Replace | New HTML canvas tab replaces WASM canvas tab. Delete after new canvas works. |
-| `packages/app/src/pages/session/agent-sandbox/` (12 files) | Replace | SVG agent graph replaced by HTML canvas. Delete after new canvas works. |
-| `packages/app/src/pages/session/figma-tab-content.tsx` (156 lines) | Extend | Keep URL parsing, extend with paste-to-canvas import flow. |
-| `packages/desktop-electron/src/main/figma-oauth.ts` (165 lines) | Keep | OAuth flow reused for MCP authentication. No changes needed. |
-| `packages/desktop-electron/src/main/figma-rest-client.ts` | Evaluate | May be useful for fallback. Keep until MCP integration is verified. |
-| `packages/opendesign/src/types/figma.ts` | Extend | Add richer Figma node tree types beyond current FigmaFrame. |
-| `packages/opendesign/src/types/node.ts` | Extend | Add new canvas node types for the HTML canvas. |
-| `packages/opendesign/src/canvas/node-factory.ts` | Extend | Add factory functions for new node types. |
-| `packages/opendesign/src/design-system/` | Keep | Reused in later phases. No changes in Plan 1. |
-| `packages/opendesign/src/sandpack/` | Keep | Reused in Plan 2. No changes in Plan 1. |
-| `packages/opendesign/src/git/` | Keep | Branch model reused. May extend for Feature branching in Plan 1. |
-| `packages/canvas-core/` (Rust) | Freeze | No changes. Preserved for P2 visual diff overlay. |
-| `packages/canvas-wasm/` | Freeze | No changes. Preserved for P2 visual diff overlay. |
+| Existing Code                                                       | Status   | Plan 1 Action                                                                                       |
+| ------------------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------- |
+| `packages/opencode/src/project/instance.ts` (152 lines)             | Keep     | Extend — Product concept maps to Instance (one per directory). Add Feature scoping.                 |
+| `packages/opencode/src/session/`                                    | Keep     | Extend — Sessions become agent chat threads within Features. Add Feature reference to SessionTable. |
+| `packages/opencode/src/session/canvas.ts`                           | Keep     | Extend — Canvas state storage (get/put JSON blob) reused for HTML canvas state.                     |
+| `packages/app/src/utils/canvas-bridge.ts` (123 lines)               | Replace  | New HTML canvas manager replaces WASM bridge. Delete after new canvas works.                        |
+| `packages/app/src/pages/session/canvas-tab-content.tsx` (163 lines) | Replace  | New HTML canvas tab replaces WASM canvas tab. Delete after new canvas works.                        |
+| `packages/app/src/pages/session/agent-sandbox/` (12 files)          | Replace  | SVG agent graph replaced by HTML canvas. Delete after new canvas works.                             |
+| `packages/app/src/pages/session/figma-tab-content.tsx` (156 lines)  | Extend   | Keep URL parsing, extend with paste-to-canvas import flow.                                          |
+| `packages/desktop-electron/src/main/figma-oauth.ts` (165 lines)     | Keep     | OAuth flow reused for MCP authentication. No changes needed.                                        |
+| `packages/desktop-electron/src/main/figma-rest-client.ts`           | Evaluate | May be useful for fallback. Keep until MCP integration is verified.                                 |
+| `packages/opendesign/src/types/figma.ts`                            | Extend   | Add richer Figma node tree types beyond current FigmaFrame.                                         |
+| `packages/opendesign/src/types/node.ts`                             | Extend   | Add new canvas node types for the HTML canvas.                                                      |
+| `packages/opendesign/src/canvas/node-factory.ts`                    | Extend   | Add factory functions for new node types.                                                           |
+| `packages/opendesign/src/design-system/`                            | Keep     | Reused in later phases. No changes in Plan 1.                                                       |
+| `packages/opendesign/src/sandpack/`                                 | Keep     | Reused in Plan 2. No changes in Plan 1.                                                             |
+| `packages/opendesign/src/git/`                                      | Keep     | Branch model reused. May extend for Feature branching in Plan 1.                                    |
+| `packages/canvas-core/` (Rust)                                      | Freeze   | No changes. Preserved for P2 visual diff overlay.                                                   |
+| `packages/canvas-wasm/`                                             | Freeze   | No changes. Preserved for P2 visual diff overlay.                                                   |
 
 ### Risk Assessment
 
-| Change | Risk | Mitigation |
-|---|---|---|
-| Adding Feature concept to data model | **High** | Schema migration needed. Confirm with user before changing SessionTable. Build alongside existing model first. |
-| Replacing canvas tab content | **Medium** | Build new HTML canvas as a separate component. Wire it into the tab system alongside old canvas. Remove old only after new works. |
-| Figma MCP integration | **Medium** | Figma's MCP is external and may change. Build with abstraction layer so fallback to REST client is possible. |
-| Routing changes for Product/Feature | **High** | Changing URL structure breaks deep links. Confirm new route structure with user. |
-| Removing agent-sandbox SVG canvas | **Low** | Only used in canvas tab. No external dependencies. Safe to remove after replacement works. |
+| Change                               | Risk       | Mitigation                                                                                                                        |
+| ------------------------------------ | ---------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Adding Feature concept to data model | **High**   | Schema migration needed. Confirm with user before changing SessionTable. Build alongside existing model first.                    |
+| Replacing canvas tab content         | **Medium** | Build new HTML canvas as a separate component. Wire it into the tab system alongside old canvas. Remove old only after new works. |
+| Figma MCP integration                | **Medium** | Figma's MCP is external and may change. Build with abstraction layer so fallback to REST client is possible.                      |
+| Routing changes for Product/Feature  | **High**   | Changing URL structure breaks deep links. Confirm new route structure with user.                                                  |
+| Removing agent-sandbox SVG canvas    | **Low**    | Only used in canvas tab. No external dependencies. Safe to remove after replacement works.                                        |
 
 ---
 
@@ -102,9 +106,11 @@ Before modifying a module, run its existing tests. If they pass, your changes mu
 **Risk:** HIGH — Schema change. Confirm approach before migrating.
 
 **Evaluate first:**
+
 - [ ] **Step 1: Read existing data model**
 
 Read these files to understand the current schema:
+
 ```
 packages/opencode/src/session/session.sql.ts    # SessionTable schema
 packages/opencode/src/session/canvas.ts          # SessionCanvas get/put
@@ -118,6 +124,7 @@ Document: What fields exist on SessionTable? How is project_id used? How does In
 - [ ] **Step 2: Confirm approach with user**
 
 Present two options:
+
 - **Option A:** Add a `feature` table (id, product_id, name, branch, status, created_at). Sessions get a `feature_id` column. Minimal schema change.
 - **Option B:** Rename project → product at the DB level. Larger migration but cleaner long-term.
 
@@ -175,7 +182,7 @@ describe("Feature type", () => {
         status: "invalid",
         createdAt: Date.now(),
         updatedAt: Date.now(),
-      })
+      }),
     ).toThrow()
   })
 })
@@ -202,9 +209,11 @@ git commit -m "feat(opendesign): add Feature type definition"
 **Risk:** HIGH — Schema migration. Confirm with user.
 
 **Evaluate first:**
+
 - [ ] **Step 1: Read existing storage patterns**
 
 Read these files to understand how OpenCode does data storage:
+
 ```
 packages/opencode/src/session/session.sql.ts     # Schema pattern
 packages/opencode/src/session/index.ts            # CRUD namespace pattern
@@ -216,6 +225,7 @@ Document: What patterns does the codebase use? (Drizzle schema, namespace with s
 - [ ] **Step 2: Confirm schema change with user**
 
 Present the migration:
+
 ```sql
 CREATE TABLE feature (
   id TEXT PRIMARY KEY,
@@ -243,6 +253,7 @@ Follow the exact pattern used in `session.sql.ts` — Drizzle schema with snake_
 Create: `packages/opencode/src/feature/index.ts`
 
 Follow the namespace pattern from `packages/opencode/src/session/index.ts`:
+
 - `Feature.create(input)` — Creates feature + git branch
 - `Feature.get(id)` — Retrieve by ID
 - `Feature.list(productId)` — List features for a product
@@ -277,9 +288,11 @@ git commit -m "feat(opencode): add Feature storage layer with CRUD"
 **Risk:** MEDIUM — New component, no existing code modified yet.
 
 **Evaluate first:**
+
 - [ ] **Step 1: Read existing canvas implementations**
 
 Read these to understand current patterns and what the new canvas must support:
+
 ```
 packages/app/src/utils/canvas-bridge.ts           # Current WASM bridge API
 packages/app/src/pages/session/canvas-tab-content.tsx  # Current tab integration
@@ -293,6 +306,7 @@ Document: What API does canvas-bridge expose? What pan/zoom implementation does 
 Create: `packages/app/src/components/infinite-canvas/canvas.tsx`
 
 SolidJS component with:
+
 - CSS transform-based pan (translate) and zoom (scale)
 - Wheel zoom (with Ctrl for pinch-to-zoom)
 - Pointer drag for panning
@@ -399,7 +413,7 @@ Create: `packages/app/src/components/infinite-canvas/types.ts`
 ```typescript
 export interface CanvasNodePosition {
   id: string
-  x: number  // world coordinates
+  x: number // world coordinates
   y: number
   width: number
   height: number
@@ -447,6 +461,7 @@ git commit -m "feat(app): add canvas node renderer for raster images"
 **Risk:** MEDIUM — Integrates with existing Figma code.
 
 **Evaluate first:**
+
 - [ ] **Step 1: Read existing Figma URL parsing**
 
 Read: `packages/app/src/pages/session/figma-tab-content.tsx`
@@ -507,9 +522,11 @@ git commit -m "feat(app): add Figma URL paste detection on canvas"
 **Risk:** MEDIUM — External MCP dependency. Build with abstraction for fallback.
 
 **Evaluate first:**
+
 - [ ] **Step 1: Read existing MCP integration**
 
 Read these to understand how OpenCode connects to MCP servers:
+
 ```
 packages/opencode/src/mcp/                        # MCP client code
 packages/opencode/src/server/server.ts             # How MCP tools are exposed
@@ -526,6 +543,7 @@ Document: Does this have an image export function? What auth does it use?
 - [ ] **Step 3: Confirm MCP approach with user**
 
 Present:
+
 - Figma's official MCP exposes `figma_get_image` for raster export.
 - The server can proxy MCP tool calls to the frontend via API endpoints.
 - Fallback: if MCP is unavailable, use the existing REST client with OAuth token.
@@ -540,6 +558,7 @@ Wait for confirmation on the API shape.
 Create: `packages/opencode/src/server/routes/figma-import.ts`
 
 Server route that:
+
 1. Receives fileKey + nodeId.
 2. Calls Figma MCP `figma_get_image` → returns image URL or base64.
 3. Returns the raster image data to the client.
@@ -553,6 +572,7 @@ Test with mocked MCP response. Verify it returns image data for valid input and 
 - [ ] **Step 6: Wire up to canvas**
 
 In the paste handler's `onPaste` callback:
+
 1. Call the import endpoint with fileKey + nodeId.
 2. Create a `RasterImageNode` at the paste position.
 3. Add it to the canvas state.
@@ -574,9 +594,11 @@ git commit -m "feat(opencode): add Figma import endpoint with MCP raster fetch"
 **Risk:** HIGH — Modifying the session page layout. Confirm approach.
 
 **Evaluate first:**
+
 - [ ] **Step 1: Read current tab system**
 
 Read:
+
 ```
 packages/app/src/pages/session.tsx                 # Tab layout
 packages/app/src/context/layout.tsx                # Tab state management
@@ -588,6 +610,7 @@ Document: How are tabs registered? How does tab switching work? What state is pe
 - [ ] **Step 2: Confirm integration approach with user**
 
 Present:
+
 - **Option A:** Add "Canvas v2" as a new tab alongside existing canvas. Test in parallel. Remove old tabs when verified.
 - **Option B:** Replace the canvas tab directly. Faster but riskier.
 
@@ -598,6 +621,7 @@ Recommend Option A for safety. Wait for confirmation.
 Create: `packages/app/src/pages/session/canvas-v2-tab-content.tsx`
 
 Composes:
+
 - `InfiniteCanvas` component
 - `useFigmaPaste` hook
 - Canvas state persistence (using existing `session.canvas.get/put` SDK calls)
@@ -611,6 +635,7 @@ Add the new tab. Keep old tabs until verified.
 - [ ] **Step 5: Test end-to-end**
 
 Manual test:
+
 1. Open the app.
 2. Switch to the new canvas tab.
 3. Paste a Figma URL.
@@ -646,7 +671,7 @@ Document: What's the current state shape? How is it stored (JSON blob)?
 interface CanvasState {
   viewport: Viewport
   nodes: CanvasNode[]
-  version: number  // schema version for future migrations
+  version: number // schema version for future migrations
 }
 ```
 
@@ -696,6 +721,7 @@ Document all files that need updating.
 - [ ] **Step 3: Remove old canvas files**
 
 Delete:
+
 - `packages/app/src/utils/canvas-bridge.ts`
 - `packages/app/src/pages/session/canvas-tab-content.tsx`
 - `packages/app/src/pages/session/agent-sandbox/` (entire directory)
@@ -736,6 +762,7 @@ When Plan 1 is done, you should be able to:
 **Type system note:** `Feature` Zod type (in `opendesign`) is the domain type used by the UI and business logic. Drizzle schema (in `opencode`) mirrors it for database storage. Zod type is the source of truth; Drizzle schema is the persistence mapping.
 
 **What comes next (Plan 2 — Interaction):**
+
 - DevTools-style inspect overlay on raster images.
 - Component hit-map builder from Figma node tree.
 - Annotation system with agent spawning.

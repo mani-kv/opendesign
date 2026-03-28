@@ -157,7 +157,7 @@ describe("session.prompt agent variant", () => {
         git: true,
         config: {
           agent: {
-            "prototype": {
+            prototype: {
               model: "openai/gpt-5.2",
               variant: "xhigh",
             },

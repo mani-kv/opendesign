@@ -17,61 +17,69 @@ afterEach(async () => {
 })
 
 describe("project.initGit endpoint", () => {
-  test("initializes git and reloads immediately", async () => {
-    await using tmp = await tmpdir()
-    const app = Server.Default()
-    const seen: { directory?: string; payload: { type: string } }[] = []
-    const fn = (evt: { directory?: string; payload: { type: string } }) => {
-      seen.push(evt)
-    }
-    const reload = Instance.reload
-    const reloadSpy = spyOn(Instance, "reload").mockImplementation((input) => reload(input))
-    GlobalBus.on("event", fn)
+  test(
+    "initializes git and reloads immediately",
+    async () => {
+      await using tmp = await tmpdir()
+      const app = Server.Default()
+      const seen: { directory?: string; payload: { type: string } }[] = []
+      const fn = (evt: { directory?: string; payload: { type: string } }) => {
+        seen.push(evt)
+      }
+      const reload = Instance.reload
+      const reloadSpy = spyOn(Instance, "reload").mockImplementation((input) => reload(input))
+      GlobalBus.on("event", fn)
 
-    try {
-      const init = await app.request("/project/git/init", {
-        method: "POST",
-        headers: {
-          "x-opencode-directory": tmp.path,
-        },
-      })
-      const body = await init.json()
-      expect(init.status).toBe(200)
-      expect(body).toMatchObject({
-        id: "global",
-        vcs: "git",
-        worktree: tmp.path,
-      })
-      expect(reloadSpy).toHaveBeenCalledTimes(1)
-      expect(reloadSpy.mock.calls[0]?.[0]?.init).toBe(InstanceBootstrap)
-      expect(seen.some((evt) => evt.directory === tmp.path && evt.payload.type === "server.instance.disposed")).toBe(
-        true,
-      )
-      expect(await Filesystem.exists(path.join(tmp.path, ".git", "opencode"))).toBe(false)
+      try {
+        const init = await app.request("/product/git/init", {
+          method: "POST",
+          headers: {
+            "x-opencode-directory": tmp.path,
+          },
+        })
+        const body = await init.json()
+        expect(init.status).toBe(200)
+        expect(body).toMatchObject({
+          id: "global",
+          vcs: "git",
+          worktree: tmp.path,
+        })
+        expect(reloadSpy).toHaveBeenCalledTimes(1)
+        expect(reloadSpy.mock.calls[0]?.[0]?.init).toBe(InstanceBootstrap)
+        expect(seen.some((evt) => evt.directory === tmp.path && evt.payload.type === "server.instance.disposed")).toBe(
+          true,
+        )
+        expect(await Filesystem.exists(path.join(tmp.path, ".git", "opencode"))).toBe(false)
 
-      const current = await app.request("/project/current", {
-        headers: {
-          "x-opencode-directory": tmp.path,
-        },
-      })
-      expect(current.status).toBe(200)
-      expect(await current.json()).toMatchObject({
-        id: "global",
-        vcs: "git",
-        worktree: tmp.path,
-      })
+        const current = await app.request("/product/current", {
+          headers: {
+            "x-opencode-directory": tmp.path,
+          },
+        })
+        expect(current.status).toBe(200)
+        expect(await current.json()).toMatchObject({
+          id: "global",
+          vcs: "git",
+          worktree: tmp.path,
+        })
 
-      await Instance.provide({
-        directory: tmp.path,
-        fn: async () => {
-          expect(await Snapshot.track()).toBeTruthy()
-        },
-      })
-    } finally {
-      reloadSpy.mockRestore()
-      GlobalBus.off("event", fn)
-    }
-  })
+        await Instance.provide({
+          directory: tmp.path,
+          fn: async () => {
+            expect(await Snapshot.track()).toBeTruthy()
+          },
+        })
+      } finally {
+        await Instance.provide({
+          directory: tmp.path,
+          fn: () => Instance.dispose(),
+        })
+        reloadSpy.mockRestore()
+        GlobalBus.off("event", fn)
+      }
+    },
+    15000,
+  )
 
   test("does not reload when the project is already git", async () => {
     await using tmp = await tmpdir({ git: true })
@@ -85,7 +93,7 @@ describe("project.initGit endpoint", () => {
     GlobalBus.on("event", fn)
 
     try {
-      const init = await app.request("/project/git/init", {
+      const init = await app.request("/product/git/init", {
         method: "POST",
         headers: {
           "x-opencode-directory": tmp.path,
@@ -101,7 +109,7 @@ describe("project.initGit endpoint", () => {
       ).toBe(0)
       expect(reloadSpy).toHaveBeenCalledTimes(0)
 
-      const current = await app.request("/project/current", {
+      const current = await app.request("/product/current", {
         headers: {
           "x-opencode-directory": tmp.path,
         },
