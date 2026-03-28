@@ -246,7 +246,9 @@ export default function Layout(props: ParentProps) {
     const proj = (within24h && projects.find((p) => p.id === last.projectId)) ?? projects[0]
     if (!proj) return
     setStore("activeProjectId", proj.id)
-    const path = proj.sessionId ? `/project/${proj.id}/session/${proj.sessionId}` : `/project/${proj.id}/session`
+    const path = proj.productId
+      ? featureHref(proj.productId, proj.id)
+      : proj.sessionId ? `/project/${proj.id}/session/${proj.sessionId}` : `/project/${proj.id}/session`
     navigateWithSidebarReset(path)
   })
 
