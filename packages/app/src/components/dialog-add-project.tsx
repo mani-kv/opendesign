@@ -9,7 +9,10 @@ import { useGlobalSDK } from "@/context/global-sdk"
 import { useGlobalSync } from "@/context/global-sync"
 import { showToast } from "@opencode-ai/ui/toast"
 
-export function DialogAddProject(props: { workspaceId: string; onAdded?: (id: string) => void }) {
+export function DialogAddProject(props: {
+  workspaceId: string
+  onAdded?: (id: string, productId: string) => void
+}) {
   const language = useLanguage()
   const workspace = useWorkspace()
   const dialog = useDialog()
@@ -30,9 +33,9 @@ export function DialogAddProject(props: { workspaceId: string; onAdded?: (id: st
       const res = await client.feature.create({ productID, name, branch })
       const feature = res.data
       if (!feature?.id) throw new Error("No feature created")
-      workspace.projects.add(props.workspaceId, name, feature.id, feature.id)
+      workspace.projects.add(props.workspaceId, name, feature.id, feature.id, productID)
       dialog.close()
-      props.onAdded?.(feature.id)
+      props.onAdded?.(feature.id, productID)
     } catch (err) {
       showToast({
         variant: "error",

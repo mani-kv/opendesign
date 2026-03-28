@@ -163,6 +163,8 @@ export default function Layout(props: ParentProps) {
     const enc = base64Encode(dir)
     return sessionId ? `/${enc}/session/${sessionId}` : `/${enc}/session`
   }
+  const featureHref = (productId: string, featureId: string) =>
+    `/product/${productId}/feature/${featureId}`
   const currentProjectId = createMemo(() => params.projectId ?? "")
   const currentDir = createMemo(() => {
     const pid = currentProjectId()
@@ -2009,11 +2011,10 @@ export default function Layout(props: ParentProps) {
     dialog.show(() => (
       <DialogAddProject
         workspaceId={wid}
-        onAdded={(id) => {
-          setStore("activeProjectId", id)
-          setStore("lastProjectByWorkspace", wid, { projectId: id, at: Date.now() })
-          const proj = workspace.projects.get(id)
-          if (proj) navigateWithSidebarReset(sessionHref(projectDir(proj), proj.sessionId))
+        onAdded={(featureId, productId) => {
+          setStore("activeProjectId", featureId)
+          setStore("lastProjectByWorkspace", wid, { projectId: featureId, at: Date.now() })
+          navigateWithSidebarReset(featureHref(productId, featureId))
         }}
       />
     ))
@@ -2192,7 +2193,9 @@ export default function Layout(props: ParentProps) {
                     onClick={() => {
                       setStore("activeProjectId", proj.id)
                       setStore("lastProjectByWorkspace", ws.id, { projectId: proj.id, at: Date.now() })
-                      const path = sessionHref(projectDir(proj), proj.sessionId)
+                      const path = proj.productId
+                        ? featureHref(proj.productId, proj.id)
+                        : sessionHref(projectDir(proj), proj.sessionId)
                       navigateWithSidebarReset(path)
                     }}
                   >

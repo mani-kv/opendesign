@@ -4,7 +4,7 @@ import { createMemo } from "solid-js"
 import { Persist, persisted } from "@/utils/persist"
 
 export type Workspace = { id: string; name: string; order: number }
-export type Project = { id: string; workspaceId: string; name: string; order: number; sessionId: string }
+export type Project = { id: string; workspaceId: string; name: string; order: number; sessionId: string; productId?: string }
 
 function uuid() {
   return (
@@ -98,11 +98,11 @@ export const { use: useWorkspace, provider: WorkspaceProvider } = createSimpleCo
       )
     }
 
-    const addProject = (workspaceId: string, name: string, sessionId: string, projectId?: string) => {
+    const addProject = (workspaceId: string, name: string, sessionId: string, projectId?: string, productId?: string) => {
       const list = store.projects.filter((p) => p.workspaceId === workspaceId)
       const max = list.reduce((m, p) => Math.max(m, p.order), -1)
       const id = projectId ?? uuid()
-      setStore("projects", (prev) => [...prev, { id, workspaceId, name, order: max + 1, sessionId }])
+      setStore("projects", (prev) => [...prev, { id, workspaceId, name, order: max + 1, sessionId, productId }])
       return id
     }
 
