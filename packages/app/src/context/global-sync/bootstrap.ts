@@ -162,8 +162,9 @@ export async function bootstrapDirectory(input: {
       if (next?.branch) input.vcsCache.setStore("value", next)
     }),
     input.sdk.permission.list().then((x) => {
+      const perms = Array.isArray(x.data) ? x.data : []
       const grouped = groupByAgent(
-        (x.data ?? []).filter((perm): perm is PermissionRequest => !!perm?.id && !!perm.agentID),
+        perms.filter((perm): perm is PermissionRequest => !!perm?.id && !!perm.agentID),
       )
       batch(() => {
         for (const agentID of Object.keys(input.store.permission)) {
@@ -183,8 +184,9 @@ export async function bootstrapDirectory(input: {
       })
     }),
     input.sdk.question.list().then((x) => {
+      const questions = Array.isArray(x.data) ? x.data : []
       const grouped = groupByAgent(
-        (x.data ?? []).filter(
+        questions.filter(
           (q): q is QuestionRequest & { agentID: string } => !!q?.id && !!q.sessionID,
         ).map((q) => ({ ...q, agentID: q.sessionID })),
       )

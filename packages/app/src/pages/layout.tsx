@@ -831,7 +831,8 @@ export default function Layout(props: ParentProps) {
         if (prefetchToken.value !== token) return
         if (!lruFor(directory).has(sessionID)) return
 
-        const items = ((messages.data ?? []) as Array<{ info: Message; parts: any[] }>).filter((x: any) => !!x?.info?.id)
+        const raw = Array.isArray(messages.data) ? messages.data : []
+        const items = (raw as Array<{ info: Message; parts: any[] }>).filter((x: any) => !!x?.info?.id)
         const next = items.map((x: any) => x.info).filter((m: any): m is Message => !!m?.id)
         const sorted = mergeByID([], next)
 

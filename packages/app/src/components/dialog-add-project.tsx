@@ -9,18 +9,6 @@ import { useGlobalSDK } from "@/context/global-sdk"
 import { useGlobalSync } from "@/context/global-sync"
 import { showToast } from "@opencode-ai/ui/toast"
 
-function projectDir(home: string, projectId: string) {
-  const base = home.replace(/[/\\]+$/, "")
-  return `${base}/.opendesign/projects/${projectId}`
-}
-
-function uuid() {
-  return (
-    crypto.randomUUID?.() ??
-    "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/x/g, () => ((Math.random() * 16) | 0).toString(16))
-  )
-}
-
 export function DialogAddProject(props: { workspaceId: string; onAdded?: (id: string) => void }) {
   const language = useLanguage()
   const workspace = useWorkspace()
@@ -31,28 +19,25 @@ export function DialogAddProject(props: { workspaceId: string; onAdded?: (id: st
 
   const submit = async (e: Event) => {
     e.preventDefault()
-    const name = store.name.trim() || "New Project"
-    const home = globalSync.data.path.home ?? ""
-    if (!home) {
-      showToast({ variant: "error", title: language.t("error.title"), description: "Server not ready" })
-      return
-    }
+    const name = store.name.trim() || "New Feature"
     setStore("busy", true)
     try {
-      const projectId = uuid()
-      const dir = projectDir(home, projectId)
-      const client = globalSDK.createClient({ directory: dir })
-      const res = await client.agent.create({ title: name })
-      const session = res.data
-      if (!session?.id) throw new Error("No session created")
-      workspace.projects.add(props.workspaceId, name, session.id, projectId)
+      const products = globalSync.data.project
+      if (!products.length) throw new Error("No product available")
+      const productID = products[0].id
+      const branch = `feature/${name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`
+      const client = globalSDK.createClient({})
+      const res = await client.feature.create({ productID, name, branch })
+      const feature = res.data
+      if (!feature?.id) throw new Error("No feature created")
+      workspace.projects.add(props.workspaceId, name, feature.id, feature.id)
       dialog.close()
-      props.onAdded?.(projectId)
+      props.onAdded?.(feature.id)
     } catch (err) {
       showToast({
         variant: "error",
         title: language.t("error.title"),
-        description: err instanceof Error ? err.message : "Failed to create project",
+        description: err instanceof Error ? err.message : "Failed to create feature",
       })
     } finally {
       setStore("busy", false)
