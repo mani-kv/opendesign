@@ -22,7 +22,7 @@ import { Flag } from "../flag/flag"
 import { Command } from "../command"
 import { Global } from "../global"
 // TODO: dropped - workspace removed
-import { ProjectRoutes } from "./routes/project"
+import { ProductRoutes } from "./routes/product"
 import { AgentSessionRoutes } from "./routes/agent-session"
 import { PtyRoutes } from "./routes/pty"
 import { McpRoutes } from "./routes/mcp"
@@ -238,7 +238,7 @@ export namespace Server {
           }),
         ),
       )
-      .route("/project", ProjectRoutes())
+      .route("/product", ProductRoutes())
       .route("/pty", PtyRoutes())
       .route("/config", ConfigRoutes())
       .route("/experimental", ExperimentalRoutes())

@@ -5,9 +5,9 @@ import { NamedError } from "@opencode-ai/util/error"
 import { Global } from "../global"
 import { Instance } from "../project/instance"
 import { InstanceBootstrap } from "../project/bootstrap"
-import { Project } from "../project/project"
+import { Product } from "../product"
 import { Database, eq } from "../storage/db"
-import { ProjectTable } from "../project/project.sql"
+import { ProductTable } from "../product/product.sql"
 import { fn } from "../util/fn"
 import { Log } from "../util/log"
 import { Process } from "../util/process"
@@ -311,8 +311,8 @@ export namespace Worktree {
   }
 
   async function runStartScripts(directory: string, input: { projectID: string; extra?: string }) {
-    const row = Database.use((db) => db.select().from(ProjectTable).where(eq(ProjectTable.id, input.projectID)).get())
-    const project = row ? Project.fromRow(row) : undefined
+    const row = Database.use((db) => db.select().from(ProductTable).where(eq(ProductTable.id, input.projectID)).get())
+    const project = row ? Product.fromRow(row) : undefined
     const startup = project?.commands?.start?.trim() ?? ""
     const ok = await runStartScript(directory, startup, "project")
     if (!ok) return false
@@ -354,7 +354,7 @@ export namespace Worktree {
       throw new CreateFailedError({ message: errorText(created) || "Failed to create git worktree" })
     }
 
-    await Project.addSandbox(Instance.project.id, info.directory).catch(() => undefined)
+    await Product.addSandbox(Instance.project.id, info.directory).catch(() => undefined)
 
     const projectID = Instance.project.id
     const extra = startCommand?.trim()

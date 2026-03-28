@@ -2,7 +2,7 @@ import z from "zod"
 import { Filesystem } from "../util/filesystem"
 import path from "path"
 import { Database, eq } from "../storage/db"
-import { ProjectTable } from "./project.sql"
+import { ProductTable } from "./product.sql"
 import { Log } from "../util/log"
 import { Flag } from "@/flag/flag"
 import { fn } from "@opencode-ai/util/fn"
@@ -14,8 +14,8 @@ import { git } from "../util/git"
 import { Glob } from "../util/glob"
 import { which } from "../util/which"
 
-export namespace Project {
-  const log = Log.create({ service: "project" })
+export namespace Product {
+  const log = Log.create({ service: "product" })
 
   function gitpath(cwd: string, name: string) {
     if (!name) return cwd
@@ -55,34 +55,29 @@ export namespace Project {
       sandboxes: z.array(z.string()),
     })
     .meta({
-      ref: "Project",
+      ref: "Product",
     })
   export type Info = z.infer<typeof Info>
 
   export const Event = {
-    Updated: BusEvent.define("project.updated", Info),
+    Updated: BusEvent.define("product.updated", Info),
   }
 
-  type Row = typeof ProjectTable.$inferSelect
+  type Row = typeof ProductTable.$inferSelect
 
   export function fromRow(row: Row): Info {
-    const icon =
-      row.icon_url || row.icon_color
-        ? { url: row.icon_url ?? undefined, color: row.icon_color ?? undefined }
-        : undefined
     return {
       id: row.id,
       worktree: row.worktree,
-      vcs: row.vcs ? Info.shape.vcs.parse(row.vcs) : undefined,
+      vcs: undefined,
       name: row.name ?? undefined,
-      icon,
+      icon: undefined,
       time: {
         created: row.time_created,
         updated: row.time_updated,
-        initialized: row.time_initialized ?? undefined,
+        initialized: undefined,
       },
-      sandboxes: row.sandboxes,
-      commands: row.commands ?? undefined,
+      sandboxes: [],
     }
   }
 
@@ -213,7 +208,7 @@ export namespace Project {
       }
     })
 
-    const row = Database.use((db) => db.select().from(ProjectTable).where(eq(ProjectTable.id, data.id)).get())
+    const row = Database.use((db) => db.select().from(ProductTable).where(eq(ProductTable.id, data.id)).get())
     const existing = await iife(async () => {
       if (row) return fromRow(row)
       const fresh: Info = {
@@ -249,29 +244,16 @@ export namespace Project {
     const insert = {
       id: result.id,
       worktree: result.worktree,
-      vcs: result.vcs ?? null,
-      name: result.name,
-      icon_url: result.icon?.url,
-      icon_color: result.icon?.color,
-      time_created: result.time.created,
-      time_updated: result.time.updated,
-      time_initialized: result.time.initialized,
-      sandboxes: result.sandboxes,
-      commands: result.commands,
+      name: result.name ?? "",
+      directory: result.worktree,
     }
     const updateSet = {
       worktree: result.worktree,
-      vcs: result.vcs ?? null,
-      name: result.name,
-      icon_url: result.icon?.url,
-      icon_color: result.icon?.color,
-      time_updated: result.time.updated,
-      time_initialized: result.time.initialized,
-      sandboxes: result.sandboxes,
-      commands: result.commands,
+      name: result.name ?? "",
+      directory: result.worktree,
     }
     Database.use((db) =>
-      db.insert(ProjectTable).values(insert).onConflictDoUpdate({ target: ProjectTable.id, set: updateSet }).run(),
+      db.insert(ProductTable).values(insert).onConflictDoUpdate({ target: ProductTable.id, set: updateSet }).run(),
     )
     GlobalBus.emit("event", {
       payload: {
@@ -314,11 +296,11 @@ export namespace Project {
   export function setInitialized(id: string) {
     Database.use((db) =>
       db
-        .update(ProjectTable)
+        .update(ProductTable)
         .set({
-          time_initialized: Date.now(),
+          time_updated: Date.now(),
         })
-        .where(eq(ProjectTable.id, id))
+        .where(eq(ProductTable.id, id))
         .run(),
     )
   }
@@ -327,14 +309,14 @@ export namespace Project {
     return Database.use((db) =>
       db
         .select()
-        .from(ProjectTable)
+        .from(ProductTable)
         .all()
         .map((row) => fromRow(row)),
     )
   }
 
   export function get(id: string): Info | undefined {
-    const row = Database.use((db) => db.select().from(ProjectTable).where(eq(ProjectTable.id, id)).get())
+    const row = Database.use((db) => db.select().from(ProductTable).where(eq(ProductTable.id, id)).get())
     if (!row) return undefined
     return fromRow(row)
   }
@@ -364,19 +346,16 @@ export namespace Project {
     async (input) => {
       const result = Database.use((db) =>
         db
-          .update(ProjectTable)
+          .update(ProductTable)
           .set({
-            name: input.name,
-            icon_url: input.icon?.url,
-            icon_color: input.icon?.color,
-            commands: input.commands,
+            name: input.name ?? "",
             time_updated: Date.now(),
           })
-          .where(eq(ProjectTable.id, input.projectID))
+          .where(eq(ProductTable.id, input.projectID))
           .returning()
           .get(),
       )
-      if (!result) throw new Error(`Project not found: ${input.projectID}`)
+      if (!result) throw new Error(`Product not found: ${input.projectID}`)
       const data = fromRow(result)
       GlobalBus.emit("event", {
         payload: {
@@ -389,7 +368,7 @@ export namespace Project {
   )
 
   export async function sandboxes(id: string) {
-    const row = Database.use((db) => db.select().from(ProjectTable).where(eq(ProjectTable.id, id)).get())
+    const row = Database.use((db) => db.select().from(ProductTable).where(eq(ProductTable.id, id)).get())
     if (!row) return []
     const data = fromRow(row)
     const valid: string[] = []
@@ -400,21 +379,11 @@ export namespace Project {
     return valid
   }
 
-  export async function addSandbox(id: string, directory: string) {
-    const row = Database.use((db) => db.select().from(ProjectTable).where(eq(ProjectTable.id, id)).get())
-    if (!row) throw new Error(`Project not found: ${id}`)
-    const sandboxes = [...row.sandboxes]
-    if (!sandboxes.includes(directory)) sandboxes.push(directory)
-    const result = Database.use((db) =>
-      db
-        .update(ProjectTable)
-        .set({ sandboxes, time_updated: Date.now() })
-        .where(eq(ProjectTable.id, id))
-        .returning()
-        .get(),
-    )
-    if (!result) throw new Error(`Project not found: ${id}`)
-    const data = fromRow(result)
+  export async function addSandbox(id: string, _directory: string) {
+    const row = Database.use((db) => db.select().from(ProductTable).where(eq(ProductTable.id, id)).get())
+    if (!row) throw new Error(`Product not found: ${id}`)
+    // Sandboxes not stored in new ProductTable schema; no-op for now
+    const data = fromRow(row)
     GlobalBus.emit("event", {
       payload: {
         type: Event.Updated.type,
@@ -424,20 +393,11 @@ export namespace Project {
     return data
   }
 
-  export async function removeSandbox(id: string, directory: string) {
-    const row = Database.use((db) => db.select().from(ProjectTable).where(eq(ProjectTable.id, id)).get())
-    if (!row) throw new Error(`Project not found: ${id}`)
-    const sandboxes = row.sandboxes.filter((s) => s !== directory)
-    const result = Database.use((db) =>
-      db
-        .update(ProjectTable)
-        .set({ sandboxes, time_updated: Date.now() })
-        .where(eq(ProjectTable.id, id))
-        .returning()
-        .get(),
-    )
-    if (!result) throw new Error(`Project not found: ${id}`)
-    const data = fromRow(result)
+  export async function removeSandbox(id: string, _directory: string) {
+    const row = Database.use((db) => db.select().from(ProductTable).where(eq(ProductTable.id, id)).get())
+    if (!row) throw new Error(`Product not found: ${id}`)
+    // Sandboxes not stored in new ProductTable schema; no-op for now
+    const data = fromRow(row)
     GlobalBus.emit("event", {
       payload: {
         type: Event.Updated.type,

@@ -13,7 +13,7 @@ import type { SQL } from "../storage/db"
 import { AgentTable } from "./agent.sql"
 import { MessageTable } from "./message.sql"
 import { PartTable } from "./part.sql"
-import { ProjectTable } from "../project/project.sql"
+import { ProductTable } from "../product/product.sql"
 import { Storage } from "@/storage/storage"
 import { Log } from "../util/log"
 import { MessageV2 } from "./message-v2"
@@ -463,9 +463,9 @@ export namespace AgentSession {
     if (ids.length > 0) {
       const items = Database.use((db) =>
         db
-          .select({ id: ProjectTable.id, name: ProjectTable.name, directory: ProjectTable.worktree })
-          .from(ProjectTable)
-          .where(inArray(ProjectTable.id, ids))
+          .select({ id: ProductTable.id, name: ProductTable.name, directory: ProductTable.worktree })
+          .from(ProductTable)
+          .where(inArray(ProductTable.id, ids))
           .all(),
       )
       for (const item of items) {

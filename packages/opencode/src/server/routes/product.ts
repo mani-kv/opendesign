@@ -2,48 +2,48 @@ import { Hono } from "hono"
 import { describeRoute, validator } from "hono-openapi"
 import { resolver } from "hono-openapi"
 import { Instance } from "../../project/instance"
-import { Project } from "../../project/project"
+import { Product } from "../../product"
 import z from "zod"
 import { errors } from "../error"
 import { lazy } from "../../util/lazy"
 import { InstanceBootstrap } from "../../project/bootstrap"
 
-export const ProjectRoutes = lazy(() =>
+export const ProductRoutes = lazy(() =>
   new Hono()
     .get(
       "/",
       describeRoute({
-        summary: "List all projects",
-        description: "Get a list of projects that have been opened with OpenCode.",
-        operationId: "project.list",
+        summary: "List all products",
+        description: "Get a list of products that have been opened with OpenCode.",
+        operationId: "product.list",
         responses: {
           200: {
-            description: "List of projects",
+            description: "List of products",
             content: {
               "application/json": {
-                schema: resolver(Project.Info.array()),
+                schema: resolver(Product.Info.array()),
               },
             },
           },
         },
       }),
       async (c) => {
-        const projects = await Project.list()
-        return c.json(projects)
+        const products = await Product.list()
+        return c.json(products)
       },
     )
     .get(
       "/current",
       describeRoute({
-        summary: "Get current project",
-        description: "Retrieve the currently active project that OpenCode is working with.",
-        operationId: "project.current",
+        summary: "Get current product",
+        description: "Retrieve the currently active product that OpenCode is working with.",
+        operationId: "product.current",
         responses: {
           200: {
-            description: "Current project information",
+            description: "Current product information",
             content: {
               "application/json": {
-                schema: resolver(Project.Info),
+                schema: resolver(Product.Info),
               },
             },
           },
@@ -57,14 +57,14 @@ export const ProjectRoutes = lazy(() =>
       "/git/init",
       describeRoute({
         summary: "Initialize git repository",
-        description: "Create a git repository for the current project and return the refreshed project info.",
-        operationId: "project.initGit",
+        description: "Create a git repository for the current product and return the refreshed product info.",
+        operationId: "product.initGit",
         responses: {
           200: {
-            description: "Project information after git initialization",
+            description: "Product information after git initialization",
             content: {
               "application/json": {
-                schema: resolver(Project.Info),
+                schema: resolver(Product.Info),
               },
             },
           },
@@ -73,7 +73,7 @@ export const ProjectRoutes = lazy(() =>
       async (c) => {
         const dir = Instance.directory
         const prev = Instance.project
-        const next = await Project.initGit({
+        const next = await Product.initGit({
           directory: dir,
           project: prev,
         })
@@ -90,15 +90,15 @@ export const ProjectRoutes = lazy(() =>
     .patch(
       "/:projectID",
       describeRoute({
-        summary: "Update project",
-        description: "Update project properties such as name, icon, and commands.",
-        operationId: "project.update",
+        summary: "Update product",
+        description: "Update product properties such as name, icon, and commands.",
+        operationId: "product.update",
         responses: {
           200: {
-            description: "Updated project information",
+            description: "Updated product information",
             content: {
               "application/json": {
-                schema: resolver(Project.Info),
+                schema: resolver(Product.Info),
               },
             },
           },
@@ -106,12 +106,12 @@ export const ProjectRoutes = lazy(() =>
         },
       }),
       validator("param", z.object({ projectID: z.string() })),
-      validator("json", Project.update.schema.omit({ projectID: true })),
+      validator("json", Product.update.schema.omit({ projectID: true })),
       async (c) => {
         const projectID = c.req.valid("param").projectID
         const body = c.req.valid("json")
-        const project = await Project.update({ ...body, projectID })
-        return c.json(project)
+        const product = await Product.update({ ...body, projectID })
+        return c.json(product)
       },
     ),
 )

@@ -2,7 +2,7 @@ import { Database } from "bun:sqlite"
 import { drizzle } from "drizzle-orm/bun-sqlite"
 import { Global } from "../global"
 import { Log } from "../util/log"
-import { ProjectTable } from "../project/project.sql"
+import { ProductTable } from "../product/product.sql"
 // TODO: legacy migration - these tables reference the OLD schema.
 // This migration will not work with the new agent-based schema.
 // Keeping imports for compilation but this module should be removed or rewritten.
@@ -182,7 +182,7 @@ export namespace JsonMigration {
           commands: data.commands,
         })
       }
-      stats.projects += insert(projectValues, ProjectTable, "project")
+      stats.projects += insert(projectValues, ProductTable, "project")
       step("projects", end - i)
     }
     log.info("migrated projects", { count: stats.projects, duration: Math.round(performance.now() - start) })

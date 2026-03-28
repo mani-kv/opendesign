@@ -3,7 +3,7 @@ import { Format } from "../format"
 import { LSP } from "../lsp"
 import { FileWatcher } from "../file/watcher"
 import { File } from "../file"
-import { Project } from "./project"
+import { Product } from "../product"
 import { Bus } from "../bus"
 import { Command } from "../command"
 import { Instance } from "./instance"
@@ -27,7 +27,7 @@ export async function InstanceBootstrap() {
 
   Bus.subscribe(Command.Event.Executed, async (payload) => {
     if (payload.properties.name === Command.Default.INIT) {
-      await Project.setInitialized(Instance.project.id)
+      await Product.setInitialized(Instance.project.id)
     }
   })
 }

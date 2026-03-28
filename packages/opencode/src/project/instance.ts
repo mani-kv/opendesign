@@ -1,6 +1,6 @@
 import { Log } from "@/util/log"
 import { Context } from "../util/context"
-import { Project } from "./project"
+import { Product } from "../product"
 import { State } from "./state"
 import { iife } from "@/util/iife"
 import { GlobalBus } from "@/bus/global"
@@ -9,7 +9,7 @@ import { Filesystem } from "@/util/filesystem"
 interface Context {
   directory: string
   worktree: string
-  project: Project.Info
+  project: Product.Info
 }
 const context = Context.create<Context>("instance")
 const cache = new Map<string, Promise<Context>>()
@@ -30,7 +30,7 @@ function emit(directory: string) {
   })
 }
 
-function boot(input: { directory: string; init?: () => Promise<any>; project?: Project.Info; worktree?: string }) {
+function boot(input: { directory: string; init?: () => Promise<any>; project?: Product.Info; worktree?: string }) {
   return iife(async () => {
     const ctx =
       input.project && input.worktree
@@ -39,7 +39,7 @@ function boot(input: { directory: string; init?: () => Promise<any>; project?: P
             worktree: input.worktree,
             project: input.project,
           }
-        : await Project.fromDirectory(input.directory).then(({ project, sandbox }) => ({
+        : await Product.fromDirectory(input.directory).then(({ project, sandbox }) => ({
             directory: input.directory,
             worktree: sandbox,
             project,
@@ -103,7 +103,7 @@ export const Instance = {
   state<S>(init: () => S, dispose?: (state: Awaited<S>) => Promise<void>): () => S {
     return State.create(() => Instance.directory, init, dispose)
   },
-  async reload(input: { directory: string; init?: () => Promise<any>; project?: Project.Info; worktree?: string }) {
+  async reload(input: { directory: string; init?: () => Promise<any>; project?: Product.Info; worktree?: string }) {
     const directory = Filesystem.resolve(input.directory)
     Log.Default.info("reloading instance", { directory })
     await State.dispose(directory)

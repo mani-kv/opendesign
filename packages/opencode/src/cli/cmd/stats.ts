@@ -4,7 +4,7 @@ import { AgentSession } from "../../agent"
 import { bootstrap } from "../bootstrap"
 import { Database } from "../../storage/db"
 import { AgentTable } from "../../agent/agent.sql"
-import { Project } from "../../project/project"
+import { Product } from "../../product"
 import { Instance } from "../../project/instance"
 
 interface SessionStats {
@@ -83,7 +83,7 @@ export const StatsCommand = cmd({
   },
 })
 
-async function getCurrentProject(): Promise<Project.Info> {
+async function getCurrentProject(): Promise<Product.Info> {
   return Instance.project
 }
 

@@ -4,7 +4,7 @@ import z from "zod"
 import { ToolRegistry } from "../../tool/registry"
 import { Worktree } from "../../worktree"
 import { Instance } from "../../project/instance"
-import { Project } from "../../project/project"
+import { Product } from "../../product"
 import { MCP } from "../../mcp"
 import { AgentSession } from "../../agent"
 import { zodToJsonSchema } from "zod-to-json-schema"
@@ -132,7 +132,7 @@ export const ExperimentalRoutes = lazy(() =>
         },
       }),
       async (c) => {
-        const sandboxes = await Project.sandboxes(Instance.project.id)
+        const sandboxes = await Product.sandboxes(Instance.project.id)
         return c.json(sandboxes)
       },
     )
@@ -158,7 +158,7 @@ export const ExperimentalRoutes = lazy(() =>
       async (c) => {
         const body = c.req.valid("json")
         await Worktree.remove(body)
-        await Project.removeSandbox(Instance.project.id, body.directory)
+        await Product.removeSandbox(Instance.project.id, body.directory)
         return c.json(true)
       },
     )
