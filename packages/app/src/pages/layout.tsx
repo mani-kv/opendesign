@@ -2039,7 +2039,14 @@ export default function Layout(props: ParentProps) {
             <Button
               variant="primary"
               size="large"
-              onClick={() => {
+              onClick={async () => {
+                const client = globalSDK.createClient({})
+                const features = workspace.projects.list(w.id)()
+                await Promise.all(
+                  features
+                    .filter((p) => !!(p as any).productId)
+                    .map((p) => client.feature.remove({ featureID: p.id }).catch(() => {})),
+                )
                 workspace.workspaces.remove(w.id)
                 const list = workspaceList().filter((x) => x.id !== w.id)
                 const next = list[0]
@@ -2070,8 +2077,12 @@ export default function Layout(props: ParentProps) {
             <Button
               variant="primary"
               size="large"
-              onClick={() => {
+              onClick={async () => {
                 const wasActive = store.activeProjectId === proj.id
+                if ((proj as any).productId) {
+                  const client = globalSDK.createClient({})
+                  await client.feature.remove({ featureID: proj.id }).catch(() => {})
+                }
                 workspace.projects.remove(proj.id)
                 if (wasActive) {
                   const list = workspace.projects.list(proj.workspaceId)()
@@ -2079,8 +2090,8 @@ export default function Layout(props: ParentProps) {
                   if (next) {
                     setStore("activeProjectId", next.id)
                     setStore("lastProjectByWorkspace", proj.workspaceId, { projectId: next.id, at: Date.now() })
-                    const nextPath = next.productId
-                      ? featureHref(next.productId, next.id)
+                    const nextPath = (next as any).productId
+                      ? featureHref((next as any).productId, next.id)
                       : sessionHref(projectDir(next), next.sessionId)
                     navigateWithSidebarReset(nextPath)
                   } else {
