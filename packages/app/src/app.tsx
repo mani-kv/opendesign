@@ -29,12 +29,14 @@ import { AgentsProvider } from "@/context/agents"
 
 import { TerminalProvider } from "@/context/terminal"
 import ProjectLayout from "@/pages/project-layout"
+import ProductLayout from "@/pages/product-layout"
 import Layout from "@/pages/layout"
 import { ErrorPage } from "./pages/error"
 import { Dynamic } from "solid-js/web"
 
 const Home = lazy(() => import("@/pages/home"))
 const Session = lazy(() => import("@/pages/session"))
+const Feature = lazy(() => import("@/pages/feature"))
 const Loading = () => <div class="size-full" />
 
 const HomeRoute = () => (
@@ -49,6 +51,12 @@ const SessionRoute = () => (
       <Session />
     </Suspense>
   </SessionProviders>
+)
+
+const FeatureRoute = () => (
+  <Suspense fallback={<Loading />}>
+    <Feature />
+  </Suspense>
 )
 
 const SessionIndexRoute = () => <Navigate href="session" />
@@ -167,6 +175,9 @@ export function AppInterface(props: {
               <Route path="/project/:projectId" component={ProjectLayout}>
                 <Route path="/" component={SessionIndexRoute} />
                 <Route path="/session/:id?" component={SessionRoute} />
+              </Route>
+              <Route path="/product/:productId" component={ProductLayout}>
+                <Route path="/feature/:featureId" component={FeatureRoute} />
               </Route>
             </Dynamic>
           </GlobalSyncProvider>
