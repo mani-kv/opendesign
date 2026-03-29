@@ -147,24 +147,21 @@ export default function Layout(props: ParentProps) {
   const command = useCommand()
   const theme = useTheme()
   const language = useLanguage()
+  const featureHref = (productId: string, featureId: string) =>
+    `/product/${productId}/feature/${featureId}`
+  /** @deprecated — session routes removed; kept as stub for dead code paths */
+  const sessionHref = (_dir: string, _sessionId?: string) => "/"
+  /** @deprecated */
   const projectDir = (proj: { id: string }) => {
     const home = globalSync.data.path.home ?? "/"
-    const base = home.replace(/[/\\]+$/, "")
-    return `${base}/.opendesign/projects/${proj.id}`
+    return `${home.replace(/[/\\]+$/, "")}/.opendesign/projects/${proj.id}`
   }
+  /** @deprecated */
   const projectIdFromDir = (dir: string) => {
     const home = globalSync.data.path.home ?? "/"
     const prefix = `${home.replace(/[/\\]+$/, "")}/.opendesign/projects/`
     return dir.startsWith(prefix) ? dir.slice(prefix.length).split(/[/\\]/)[0] : undefined
   }
-  const sessionHref = (dir: string, sessionId?: string) => {
-    const pid = projectIdFromDir(dir)
-    if (pid) return sessionId ? `/project/${pid}/session/${sessionId}` : `/project/${pid}/session`
-    const enc = base64Encode(dir)
-    return sessionId ? `/${enc}/session/${sessionId}` : `/${enc}/session`
-  }
-  const featureHref = (productId: string, featureId: string) =>
-    `/product/${productId}/feature/${featureId}`
   const currentProjectId = createMemo(() => params.projectId ?? "")
   const currentDir = createMemo(() => {
     const pid = currentProjectId()

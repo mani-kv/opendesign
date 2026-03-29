@@ -10,8 +10,6 @@ import { MetaProvider } from "@solidjs/meta"
 import { BaseRouterProps, Navigate, Route, Router } from "@solidjs/router"
 import { Component, ErrorBoundary, type JSX, lazy, type ParentProps, Show, Suspense } from "solid-js"
 import { CommandProvider } from "@/context/command"
-import { CommentsProvider } from "@/context/comments"
-import { FileProvider } from "@/context/file"
 import { GlobalSDKProvider } from "@/context/global-sdk"
 import { GlobalSyncProvider } from "@/context/global-sync"
 import { HighlightsProvider } from "@/context/highlights"
@@ -22,20 +20,16 @@ import { ModelsProvider } from "@/context/models"
 import { NotificationProvider } from "@/context/notification"
 import { PermissionProvider } from "@/context/permission"
 import { usePlatform } from "@/context/platform"
-import { PromptProvider } from "@/context/prompt"
 import { type ServerConnection, ServerProvider, useServer } from "@/context/server"
 import { SettingsProvider } from "@/context/settings"
 import { AgentsProvider } from "@/context/agents"
 
-import { TerminalProvider } from "@/context/terminal"
-import ProjectLayout from "@/pages/project-layout"
 import ProductLayout from "@/pages/product-layout"
 import Layout from "@/pages/layout"
 import { ErrorPage } from "./pages/error"
 import { Dynamic } from "solid-js/web"
 
 const Home = lazy(() => import("@/pages/home"))
-const Session = lazy(() => import("@/pages/session"))
 const Feature = lazy(() => import("@/pages/feature"))
 const Loading = () => <div class="size-full" />
 
@@ -45,21 +39,11 @@ const HomeRoute = () => (
   </Suspense>
 )
 
-const SessionRoute = () => (
-  <SessionProviders>
-    <Suspense fallback={<Loading />}>
-      <Session />
-    </Suspense>
-  </SessionProviders>
-)
-
 const FeatureRoute = () => (
   <Suspense fallback={<Loading />}>
     <Feature />
   </Suspense>
 )
-
-const SessionIndexRoute = () => <Navigate href="session" />
 
 function UiI18nBridge(props: ParentProps) {
   const language = useLanguage()
@@ -105,17 +89,6 @@ function AppShellProviders(props: ParentProps) {
   )
 }
 
-function SessionProviders(props: ParentProps) {
-  return (
-    <TerminalProvider>
-      <FileProvider>
-        <PromptProvider>
-          <CommentsProvider>{props.children}</CommentsProvider>
-        </PromptProvider>
-      </FileProvider>
-    </TerminalProvider>
-  )
-}
 
 function RouterRoot(props: ParentProps<{ appChildren?: JSX.Element }>) {
   return (
@@ -172,13 +145,10 @@ export function AppInterface(props: {
               root={(routerProps) => <RouterRoot appChildren={props.children}>{routerProps.children}</RouterRoot>}
             >
               <Route path="/" component={HomeRoute} />
-              <Route path="/project/:projectId" component={ProjectLayout}>
-                <Route path="/" component={SessionIndexRoute} />
-                <Route path="/session/:id?" component={SessionRoute} />
-              </Route>
               <Route path="/product/:productId" component={ProductLayout}>
                 <Route path="/feature/:featureId" component={FeatureRoute} />
               </Route>
+              <Route path="/project/*" component={() => <Navigate href="/" />} />
             </Dynamic>
           </GlobalSyncProvider>
         </GlobalSDKProvider>
