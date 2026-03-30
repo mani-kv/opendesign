@@ -228,14 +228,15 @@ export default function Layout(props: ParentProps) {
     const proj = (within24h ? projects.find((p) => p.id === last!.projectId) : undefined) ?? projects[0]
     setStore("activeProjectId", proj.id)
     setStore("lastProjectByWorkspace", w.id, { projectId: proj.id, at: Date.now() })
-    const path = proj.productId
-      ? featureHref(proj.productId, proj.id)
-      : sessionHref(projectDir(proj), proj.sessionId)
-    navigateWithSidebarReset(path)
+    if (proj.productId) {
+      navigateWithSidebarReset(featureHref(proj.productId, proj.id))
+    }
   }
   createEffect(() => {
     if (!pageReady() || !workspace.ready()) return
-    if (params.projectId || params.productId) return
+    if (params.projectId || params.productId || params.featureId) return
+    // Also check URL directly — params may not be resolved yet during initial load
+    if (location.pathname.includes("/product/") || location.pathname.includes("/feature/")) return
     const wsId = store.activeWorkspaceId ?? workspaceList()[0]?.id
     if (!wsId) return
     const list = workspace.projects.list(wsId)
@@ -246,10 +247,10 @@ export default function Layout(props: ParentProps) {
     const proj = (within24h && projects.find((p) => p.id === last.projectId)) ?? projects[0]
     if (!proj) return
     setStore("activeProjectId", proj.id)
-    const path = proj.productId
-      ? featureHref(proj.productId, proj.id)
-      : proj.sessionId ? `/project/${proj.id}/session/${proj.sessionId}` : `/project/${proj.id}/session`
-    navigateWithSidebarReset(path)
+    if (proj.productId) {
+      navigateWithSidebarReset(featureHref(proj.productId, proj.id))
+    }
+    // If no productId, don't navigate — stay on current page
   })
 
   const setBusy = (directory: string, value: boolean) => {
@@ -2087,10 +2088,9 @@ export default function Layout(props: ParentProps) {
                   if (next) {
                     setStore("activeProjectId", next.id)
                     setStore("lastProjectByWorkspace", proj.workspaceId, { projectId: next.id, at: Date.now() })
-                    const nextPath = (next as any).productId
-                      ? featureHref((next as any).productId, next.id)
-                      : sessionHref(projectDir(next), next.sessionId)
-                    navigateWithSidebarReset(nextPath)
+                    if ((next as any).productId) {
+                      navigateWithSidebarReset(featureHref((next as any).productId, next.id))
+                    }
                   } else {
                     setStore("activeProjectId", undefined)
                     navigateWithSidebarReset("/")
@@ -2209,10 +2209,9 @@ export default function Layout(props: ParentProps) {
                     onClick={() => {
                       setStore("activeProjectId", proj.id)
                       setStore("lastProjectByWorkspace", ws.id, { projectId: proj.id, at: Date.now() })
-                      const path = proj.productId
-                        ? featureHref(proj.productId, proj.id)
-                        : sessionHref(projectDir(proj), proj.sessionId)
-                      navigateWithSidebarReset(path)
+                      if (proj.productId) {
+                        navigateWithSidebarReset(featureHref(proj.productId, proj.id))
+                      }
                     }}
                   >
                     <span class="block truncate">{proj.name}</span>

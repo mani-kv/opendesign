@@ -543,6 +543,17 @@ export namespace MCP {
     return state().then((state) => state.clients)
   }
 
+  export async function callTool(clientName: string, toolName: string, args: Record<string, unknown>) {
+    const all = await clients()
+    const client = all[clientName]
+    if (!client) throw new Error(`MCP client not found: ${clientName}`)
+    return client.callTool(
+      { name: toolName, arguments: args },
+      CallToolResultSchema,
+      { resetTimeoutOnProgress: true, timeout: 30_000 },
+    )
+  }
+
   export async function connect(name: string) {
     const cfg = await Config.get()
     const config = cfg.mcp ?? {}

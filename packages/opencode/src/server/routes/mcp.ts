@@ -221,5 +221,41 @@ export const McpRoutes = lazy(() =>
         await MCP.disconnect(name)
         return c.json(true)
       },
+    )
+    .post(
+      "/:name/call-tool",
+      describeRoute({
+        summary: "Call MCP tool",
+        description: "Call a specific tool on an MCP server and return the result.",
+        operationId: "mcp.callTool",
+        responses: {
+          200: {
+            description: "Tool call result",
+            content: {
+              "application/json": {
+                schema: resolver(z.object({ content: z.array(z.unknown()) })),
+              },
+            },
+          },
+          ...errors(400, 404),
+        },
+      }),
+      validator(
+        "json",
+        z.object({
+          tool: z.string().describe("Tool name to call"),
+          args: z.record(z.string(), z.unknown()).optional().default({}),
+        }),
+      ),
+      async (c) => {
+        const name = c.req.param("name")
+        const { tool, args } = c.req.valid("json")
+        try {
+          const result = await MCP.callTool(name, tool, args)
+          return c.json(result)
+        } catch (e: any) {
+          return c.json({ error: e.message ?? "MCP tool call failed" }, 400)
+        }
+      },
     ),
 )

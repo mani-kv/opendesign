@@ -31,6 +31,7 @@ import { Dynamic } from "solid-js/web"
 
 const Home = lazy(() => import("@/pages/home"))
 const Feature = lazy(() => import("@/pages/feature"))
+const FigmaCallback = lazy(() => import("@/pages/figma-callback"))
 const Loading = () => <div class="size-full" />
 
 const HomeRoute = () => (
@@ -148,6 +149,7 @@ export function AppInterface(props: {
               <Route path="/product/:productId" component={ProductLayout}>
                 <Route path="/feature/:featureId" component={FeatureRoute} />
               </Route>
+              <Route path="/figma/callback" component={() => <Suspense fallback={<Loading />}><FigmaCallback /></Suspense>} />
               <Route path="/project/*" component={() => <Navigate href="/" />} />
             </Dynamic>
           </GlobalSyncProvider>

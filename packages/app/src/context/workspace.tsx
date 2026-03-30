@@ -42,6 +42,7 @@ function migrate(value: unknown): unknown {
         name: typeof x.name === "string" ? x.name : "Project",
         order: typeof x.order === "number" ? x.order : 0,
         sessionId,
+        productId: typeof x.productId === "string" ? x.productId : undefined,
       }
     }),
   }

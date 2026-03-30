@@ -3,6 +3,8 @@ import { useSearchParams } from "@solidjs/router"
 import { useProductParams } from "@/context/product-scope"
 import { AgentChatProvider, useAgentChat } from "@/context/agent-chat"
 import { createStore } from "solid-js/store"
+import { useGlobalSync } from "@/context/global-sync"
+import InfiniteCanvas from "@/components/canvas/infinite-canvas"
 
 type FeatureAgent = {
   id: string
@@ -13,6 +15,7 @@ type FeatureAgent = {
 
 export default function FeaturePage() {
   const params = useProductParams()
+  const globalSync = useGlobalSync()
   const [searchParams, setSearchParams] = useSearchParams()
 
   const [agents] = createStore<FeatureAgent[]>([])
@@ -26,18 +29,11 @@ export default function FeaturePage() {
 
   return (
     <div class="flex size-full">
-      {/* Canvas area — placeholder for Phase 2 */}
-      <div
-        class="flex-1 flex items-center justify-center bg-[var(--background)]"
-        style={{ "min-width": "0" }}
-      >
-        <div class="text-center text-[var(--color-text-dimmed)]">
-          <p class="text-lg font-medium">Canvas</p>
-          <p class="text-sm mt-1">Phase 2: HTML infinite canvas will render here</p>
-          <Show when={params.featureId}>
-            <p class="text-xs mt-2 font-mono opacity-60">Feature: {params.featureId}</p>
-          </Show>
-        </div>
+      {/* Canvas area */}
+      <div class="flex-1" style={{ "min-width": "0" }}>
+        <Show when={params.featureId} keyed fallback={<div class="size-full" />}>
+          {(fid) => <InfiniteCanvas featureId={fid} directory={globalSync.data.path.directory} />}
+        </Show>
       </div>
 
       {/* Agent chat sidebar */}

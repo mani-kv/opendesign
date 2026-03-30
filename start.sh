@@ -26,7 +26,22 @@ start_web() {
 }
 
 start_electron() {
-  bun run dev:desktop-electron
+  echo "Starting backend on port $BACKEND_PORT..."
+  bun run --cwd packages/opencode --conditions=browser ./src/index.ts serve --port "$BACKEND_PORT" &
+  BACKEND_PID=$!
+
+  cleanup() {
+    echo "Shutting down..."
+    kill "$BACKEND_PID" 2>/dev/null || true
+    exit 0
+  }
+  trap cleanup INT TERM
+
+  echo "Backend started (PID $BACKEND_PID). Starting Electron app..."
+  sleep 2
+  OPENCODE_PORT="$BACKEND_PORT" \
+  VITE_OPENCODE_SERVER_HOST=127.0.0.1 VITE_OPENCODE_SERVER_PORT="$BACKEND_PORT" \
+    bun run dev:desktop-electron
 }
 
 usage() {

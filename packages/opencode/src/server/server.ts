@@ -27,6 +27,7 @@ import { FeatureRoutes } from "./routes/feature"
 import { AgentSessionRoutes } from "./routes/agent-session"
 import { PtyRoutes } from "./routes/pty"
 import { McpRoutes } from "./routes/mcp"
+import { FigmaRoutes } from "./routes/figma"
 import { AgentFilesRoutes } from "./routes/agent-files"
 import { FileRoutes } from "./routes/file"
 import { ConfigRoutes } from "./routes/config"
@@ -123,6 +124,7 @@ export namespace Server {
           }),
         )
         .route("/global", GlobalRoutes())
+        .route("/figma", FigmaRoutes())
         .put(
           "/auth/:providerID",
           describeRoute({

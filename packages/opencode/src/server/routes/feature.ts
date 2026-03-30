@@ -132,6 +132,63 @@ export const FeatureRoutes = lazy(() =>
         return c.json(feature)
       },
     )
+    .get(
+      "/:featureID/canvas",
+      describeRoute({
+        summary: "Get feature canvas state",
+        description: "Retrieve the canvas state for a specific feature.",
+        operationId: "feature.canvas.get",
+        responses: {
+          200: {
+            description: "Canvas state JSON",
+            content: {
+              "application/json": {
+                schema: resolver(z.any()),
+              },
+            },
+          },
+          ...errors(404),
+        },
+      }),
+      validator("param", z.object({ featureID: z.string() })),
+      async (c) => {
+        const feature = await Feature.get(c.req.valid("param").featureID)
+        return c.json(feature.canvasState ?? null)
+      },
+    )
+    .put(
+      "/:featureID/canvas",
+      describeRoute({
+        summary: "Save feature canvas state",
+        description: "Save the canvas state (viewport + items) for a feature.",
+        operationId: "feature.canvas.put",
+        responses: {
+          200: {
+            description: "Saved canvas state",
+            content: {
+              "application/json": {
+                schema: resolver(z.any()),
+              },
+            },
+          },
+          ...errors(400, 404),
+        },
+      }),
+      validator("param", z.object({ featureID: z.string() })),
+      validator(
+        "json",
+        z.object({
+          viewport: z.object({ tx: z.number(), ty: z.number(), scale: z.number() }),
+          items: z.array(z.any()),
+        }),
+      ),
+      async (c) => {
+        const id = c.req.valid("param").featureID
+        const body = c.req.valid("json")
+        const feature = await Feature.update({ id, canvasState: body })
+        return c.json(feature.canvasState ?? null)
+      },
+    )
     .delete(
       "/:featureID",
       describeRoute({
