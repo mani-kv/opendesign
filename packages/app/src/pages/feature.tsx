@@ -5,6 +5,7 @@ import { AgentChatProvider, useAgentChat } from "@/context/agent-chat"
 import { createStore } from "solid-js/store"
 import { useGlobalSync } from "@/context/global-sync"
 import InfiniteCanvas from "@/components/canvas/infinite-canvas"
+import FeatureHeader from "@/components/canvas/feature-header"
 
 type FeatureAgent = {
   id: string
@@ -29,6 +30,7 @@ export default function FeaturePage() {
 
   return (
     <div class="flex size-full">
+      <FeatureHeader />
       {/* Canvas area */}
       <div class="flex-1" style={{ "min-width": "0" }}>
         <Show when={params.featureId} keyed fallback={<div class="size-full" />}>

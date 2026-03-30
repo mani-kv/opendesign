@@ -67,6 +67,25 @@ export default function InfiniteCanvas(props: { featureId: string; directory?: s
     return { dx, dy }
   }
 
+  // -- Item dragging --
+  const [selectedItemId, setSelectedItemId] = createSignal<string | null>(null)
+  const [isDragging, setIsDragging] = createSignal(false)
+  let dragStart = { x: 0, y: 0, itemX: 0, itemY: 0 }
+  let dragItemId = ""
+  let dragPointerId = -1
+
+  const startItemDrag = (id: string, e: PointerEvent) => {
+    const idx = items.findIndex((it) => it.id === id)
+    if (idx === -1) return
+    setSelectedItemId(id)
+    setIsDragging(true)
+    dragItemId = id
+    dragPointerId = e.pointerId
+    dragStart = { x: e.clientX, y: e.clientY, itemX: items[idx].x, itemY: items[idx].y }
+    rootRef.setPointerCapture(e.pointerId)
+    e.preventDefault()
+  }
+
   // -- Pan (pointer drag: Space+LMB, MMB, or LMB on background) --
   let panStart = { x: 0, y: 0, tx: 0, ty: 0 }
   let panPointerId = -1
@@ -87,16 +106,30 @@ export default function InfiniteCanvas(props: { featureId: string; directory?: s
     // Space + LMB = pan (hand tool)
     if (e.button === 0 && spaceHeld()) { startPan(e); return }
 
-    // LMB on background = pan (when no tool is active)
+    // LMB on background = pan + deselect
     if (e.button === 0) {
       const target = e.target as HTMLElement
       if (target === rootRef || target.hasAttribute("data-world")) {
+        setSelectedItemId(null)
         startPan(e)
       }
     }
   }
 
   const onPointerMove = (e: PointerEvent) => {
+    // Item dragging (in world coordinates — divide screen delta by scale)
+    if (isDragging() && e.pointerId === dragPointerId) {
+      const scale = viewport().scale
+      const dx = (e.clientX - dragStart.x) / scale
+      const dy = (e.clientY - dragStart.y) / scale
+      const idx = items.findIndex((it) => it.id === dragItemId)
+      if (idx !== -1) {
+        setItems(idx, "x", dragStart.itemX + dx)
+        setItems(idx, "y", dragStart.itemY + dy)
+      }
+      return
+    }
+    // Canvas panning
     if (!isPanning() || e.pointerId !== panPointerId) return
     const dx = e.clientX - panStart.x
     const dy = e.clientY - panStart.y
@@ -104,6 +137,12 @@ export default function InfiniteCanvas(props: { featureId: string; directory?: s
   }
 
   const onPointerUp = (e: PointerEvent) => {
+    if (isDragging() && e.pointerId === dragPointerId) {
+      setIsDragging(false)
+      dragPointerId = -1
+      rootRef.releasePointerCapture(e.pointerId)
+      return
+    }
     if (!isPanning() || e.pointerId !== panPointerId) return
     setIsPanning(false)
     panPointerId = -1
@@ -419,7 +458,7 @@ export default function InfiniteCanvas(props: { featureId: string; directory?: s
         height: "100%",
         overflow: "hidden",
         position: "relative",
-        cursor: isPanning() ? "grabbing" : spaceHeld() ? "grab" : "default",
+        cursor: isDragging() ? "move" : isPanning() ? "grabbing" : spaceHeld() ? "grab" : "default",
         "touch-action": "none",
         "user-select": "none",
         outline: "none",
@@ -441,7 +480,14 @@ export default function InfiniteCanvas(props: { featureId: string; directory?: s
           "will-change": "transform",
         }}
       >
-        <For each={items}>{(item) => <CanvasItem item={item} />}</For>
+        <For each={items}>{(item) => (
+          <CanvasItem
+            item={item}
+            scale={v().scale}
+            selected={selectedItemId() === item.id}
+            onDragStart={startItemDrag}
+          />
+        )}</For>
       </div>
 
       {/* Loading indicator */}
