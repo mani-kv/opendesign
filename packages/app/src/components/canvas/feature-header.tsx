@@ -45,7 +45,7 @@ export default function FeatureHeader() {
   const connectFigma = async () => {
     setFigmaLoading(true)
     try {
-      const redirectUri = `${window.location.origin}/figma/callback`
+      const redirectUri = `${window.location.origin}/figma/callback/index.html`
       const res = await fetch(`${serverUrl()}/figma/auth/url?redirect_uri=${encodeURIComponent(redirectUri)}`)
       if (res.ok) {
         const data = await res.json()
@@ -71,7 +71,7 @@ export default function FeatureHeader() {
 
   const completeFigmaAuth = async (code: string, state: string) => {
     try {
-      const redirectUri = `${window.location.origin}/figma/callback`
+      const redirectUri = `${window.location.origin}/figma/callback/index.html`
       const res = await fetch(`${serverUrl()}/figma/auth/callback`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

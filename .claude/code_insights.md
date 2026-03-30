@@ -165,6 +165,23 @@ Accumulated knowledge about this codebase. Read before starting any task. Update
 
 ---
 
+## SDK Rename: Session → Agent (2026-03-28)
+
+- `Session` type → `Agent` type (session-level entity)
+- `SessionMessageResponse` → `AgentMessageResponse`
+- `client.session.*` → `client.agent.*` (all session CRUD methods: create, get, delete, update, messages, message, prompt, command, fork, abort, summarize, etc.)
+- `client.session.list()` → `client.experimental.session.list()` (list of all sessions across projects)
+- `PermissionRequest.sessionID` → `PermissionRequest.agentID`
+- All `Part.*` types use `agentID` instead of `sessionID`
+- `EventMessagePartDelta.properties.sessionID` → `.agentID`
+- `"session.error"` event type → `"agent.error"` event type (with `props.agentID`)
+- `"session.status"` event type is UNCHANGED (still `EventSessionStatus` with `sessionID`)
+- `sdk.app.agents()` → `sdk.agentDef.list()` for agent definitions
+- **SDK type collision**: `AgentDefListResponses` incorrectly uses `Array<Agent>` (session type) but the API returns `AgentDef.Info[]` at runtime. Cast with `as unknown as AgentDef.Info[]` when using `agentDef.list()`.
+- `sdk.session.share()` was removed entirely — no replacement exists.
+
+---
+
 ## Agent Sandbox Tab (`packages/app/src/pages/session/`)
 
 - **Pane tab**: `"sandbox"` registered alongside `"canvas"` and `"figma"` in layout context. All pane defaults, migration logic, memos, and methods widened for 3-pane support.
@@ -277,3 +294,12 @@ _Last updated: 2026-03-26 — Layer 5: session/ directory fully deleted, all mod
 - **AgentChatProvider** (`packages/app/src/context/agent-chat.tsx`): Manages agent message state. SDK methods: `sdk.client.agent.messages({ agentID })` returns `Array<{ info: Message, parts: Part[] }>`, `sdk.client.agent.promptAsync({ agentID, parts })`, `sdk.client.agent.abort({ agentID })`.
 - **FeaturePage** (`packages/app/src/pages/feature.tsx`): Canvas placeholder + conditional agent chat sidebar (shown when `?agent=` param set). Agent tabs + minimal composer.
 - **Pre-existing typecheck errors FIXED** (2026-03-27 — Task 10): All frontend type errors resolved. Key mappings: `client.session.*` → `client.agent.*`, `client.project.*` → `client.product.*`, SDK type `Session` → `Agent`, SDK type `Project` → `Product`, `sessionID` → `agentID` on Message/Part/PermissionRequest. Agent definitions (name, mode, hidden, model, variant) use local `AgentDefInfo` type since SDK codegen collapsed them into the `Agent` instance type. `State.agent` renamed to `State.agentDef`, `State.session` holds `Agent[]` instances. `parentID` and `time.archived` removed from agent logic (not on `Agent` type). `share`/`unshare` SDK methods removed — calls are no-ops. `permission.respond()` → `permission.reply()`. Canvas GET/PUT routes removed — canvas loads empty state.
+
+## Canvas State Persistence (2026-03-29)
+
+- **Backend routes added** (`packages/opencode/src/server/routes/feature.ts`): `GET /feature/:featureID/canvas` returns `feature.canvasState` JSON; `PUT /feature/:featureID/canvas` accepts `{ viewport, items }` and calls `Feature.update({ id, canvasState })`.
+- **`canvas-state.ts`** now exports 3 functions: `loadCanvasStateSync` (localStorage only, synchronous), `loadCanvasState` (async — tries backend first, falls back to localStorage), `saveCanvasState` (async — writes localStorage immediately then backend). Both reads and writes keep localStorage as a fast cache.
+- **`infinite-canvas.tsx`** startup: seeds from `loadCanvasStateSync` for immediate render, then calls `loadCanvasState` on mount to get authoritative state from backend. The `createEffect` for auto-save is gated behind `saveEnabled = true` (set after async load completes) to prevent overwriting backend state with stale localStorage data on startup.
+- **Stale Figma URL recovery**: on mount, each `figma_raster` item with a non-data-URI `src` is tested by creating a temporary `Image`. On `onerror`, `refreshFigmaItemSrc` re-calls `/figma/image` to get a fresh Figma CDN URL and updates the item in-place via `setItems(idx, "src", newUrl)`.
+- **New image proxy endpoint** (`packages/opencode/src/server/routes/figma.ts`): `POST /figma/image/proxy` accepts `{ url }`, fetches the binary, returns `{ dataUri: "data:image/png;base64,..." }`. Used in `addFigmaRaster` to immediately convert the expiring Figma CDN URL into a self-contained data URI stored in canvas state.
+- **Storage flow for new items**: Figma URL → `/figma/image` (get CDN URL) → `/figma/image/proxy` (convert to data URI) → stored as `item.src`. Data URIs survive across sessions without re-fetching.

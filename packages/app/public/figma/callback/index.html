@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head><title>Figma — Connected</title></head>
+<body style="display:flex;align-items:center;justify-content:center;height:100vh;margin:0;font-family:system-ui;color:#666;background:#1a1a1a">
+<div style="text-align:center">
+  <p id="msg" style="font-size:16px;color:#ccc">Connecting to Figma...</p>
+</div>
+<script>
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  var code = params.get('code');
+  var state = params.get('state');
+  var error = params.get('error');
+  var msg = document.getElementById('msg');
+
+  if (error) {
+    msg.textContent = 'Figma authentication failed: ' + error;
+    msg.style.color = '#f66';
+    return;
+  }
+
+  if (!code || !state) {
+    msg.textContent = 'No authorization code received.';
+    msg.style.color = '#f66';
+    return;
+  }
+
+  // Try to send to opener
+  if (window.opener) {
+    try {
+      window.opener.postMessage(
+        { type: 'figma-oauth-callback', code: code, state: state },
+        window.location.origin
+      );
+      msg.textContent = 'Connected to Figma! This window will close...';
+      msg.style.color = '#0f0';
+      setTimeout(function() { window.close(); }, 1500);
+      return;
+    } catch(e) {
+      // opener not accessible
+    }
+  }
+
+  // No opener — redirect back to app with code in hash
+  msg.textContent = 'Connected! Redirecting...';
+  window.location.href = '/#figma-auth=' + encodeURIComponent(code) + '&state=' + encodeURIComponent(state);
+})();
+</script>
+</body>
+</html>

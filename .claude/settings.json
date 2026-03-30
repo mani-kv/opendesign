@@ -67,13 +67,20 @@
       "Bash(do echo:*)",
       "Bash(git status:*)",
       "Bash(grep -n \"archived\\\\|status\" /Users/Mani/Desktop/SideProjects/opendesign/packages/app/src/context/global-sync/*.ts)",
-      "Bash(rm -f \"$HOME/Library/Application Support/opencode/opencode.db\"*)",
-      "Bash(rm -f \"$HOME/.local/share/opencode/opencode.db\"*)",
       "Bash(ls /Users/Mani/Desktop/SideProjects/opendesign/packages/app/src/utils/*.test.ts)",
       "Bash(timeout 15 bun dev serve)",
       "Bash(export PATH=\"/Users/Mani/.bun/bin:$PATH\")",
       "Bash(curl -s http://localhost:4096/product)",
-      "Bash(curl -s http://localhost:4096/permission)"
+      "Bash(curl -s http://localhost:4096/permission)",
+      "Bash(PATH=\"/Users/Mani/.bun/bin:$PATH\" bun turbo typecheck --filter=@opencode-ai/desktop-electron)",
+      "Bash(ls /Users/Mani/Desktop/SideProjects/opendesign/packages/opendesign-figma-mcp/dist/*.d.ts)",
+      "Bash(PATH=\"/Users/Mani/.bun/bin:$PATH\" git push origin opendesign-v2)",
+      "Bash(sed -i '' '316s/sessionID: sessionId,/agentID: sessionId,/' packages/opencode/test/acp/event-subscription.test.ts)",
+      "Bash(sed -i '' '468s/sessionID: sessionB,/agentID: sessionB,/' packages/opencode/test/acp/event-subscription.test.ts)",
+      "Bash(sed -i '' '590s/sessionID: sessionId,/agentID: sessionId,/' packages/opencode/test/acp/event-subscription.test.ts)",
+      "Bash(/Users/Mani/.bun/bin/bun typecheck:*)",
+      "mcp__pal__consensus",
+      "Bash(kill 35581)"
     ],
     "additionalDirectories": [
       "/tmp"

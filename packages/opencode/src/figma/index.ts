@@ -212,21 +212,41 @@ export namespace Figma {
 
   async function request<T>(path: string): Promise<T> {
     const token = await getAccessToken()
+    console.log(`[figma-api] request: ${path}`)
     let attempt = 0
     while (true) {
-      const res = await fetch(`${FIGMA_API}${path}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      if (res.status === 401) throw new FigmaApiError("figma_auth_required", 401, "Figma authentication required")
-      if (res.status === 429) {
-        attempt++
-        if (attempt >= MAX_RETRIES) throw new FigmaApiError("figma_rate_limited", 429, "Figma rate limit exceeded")
-        const retryAfter = parseInt(res.headers.get("Retry-After") ?? "0", 10)
-        await new Promise((r) => setTimeout(r, Math.max(retryAfter * 1000, INITIAL_DELAY_MS * Math.pow(2, attempt - 1))))
-        continue
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 30_000) // 30s timeout
+      try {
+        const res = await fetch(`${FIGMA_API}${path}`, {
+          headers: { Authorization: `Bearer ${token}` },
+          signal: controller.signal,
+        })
+        clearTimeout(timeout)
+        console.log(`[figma-api] response: ${res.status} for ${path}`)
+        if (res.status === 401) throw new FigmaApiError("figma_auth_required", 401, "Figma authentication required")
+        if (res.status === 429) {
+          attempt++
+          if (attempt >= MAX_RETRIES) throw new FigmaApiError("figma_rate_limited", 429, "Figma rate limit exceeded")
+          const retryAfter = parseInt(res.headers.get("Retry-After") ?? "0", 10)
+          const rawDelay = Math.max(retryAfter * 1000, INITIAL_DELAY_MS * Math.pow(2, attempt - 1))
+          const delay = Math.min(rawDelay, 10_000) // cap at 10 seconds
+          console.log(`[figma-api] rate limited, retry #${attempt} in ${delay}ms (raw: ${rawDelay}ms)`)
+          await new Promise((r) => setTimeout(r, delay))
+          continue
+        }
+        if (!res.ok) {
+          const body = await res.text().catch(() => "")
+          console.log(`[figma-api] error: ${res.status} ${res.statusText} — ${body.substring(0, 200)}`)
+          throw new FigmaApiError("figma_api_error", res.status, `Figma API: ${res.status} ${res.statusText}`)
+        }
+        return res.json() as Promise<T>
+      } catch (e) {
+        clearTimeout(timeout)
+        if (e instanceof FigmaApiError) throw e
+        console.log(`[figma-api] fetch error for ${path}:`, e)
+        throw new FigmaApiError("figma_api_error", 500, `Figma API request failed: ${e}`)
       }
-      if (!res.ok) throw new FigmaApiError("figma_api_error", res.status, `Figma API: ${res.status} ${res.statusText}`)
-      return res.json() as Promise<T>
     }
   }
 

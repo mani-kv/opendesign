@@ -280,7 +280,7 @@ export default function InfiniteCanvas(props: { featureId: string; directory?: s
   const startFigmaAuth = async (server: string) => {
     setNeedsFigmaAuth(true)
     setLoading(false)
-    const redirectUri = `${window.location.origin}/figma/callback`
+    const redirectUri = `${window.location.origin}/figma/callback/index.html`
     try {
       const res = await fetch(`${server}/figma/auth/url?redirect_uri=${encodeURIComponent(redirectUri)}`)
       if (!res.ok) {
@@ -295,7 +295,7 @@ export default function InfiniteCanvas(props: { featureId: string; directory?: s
   }
 
   const completeFigmaAuth = async (code: string, state: string) => {
-    const redirectUri = `${window.location.origin}/figma/callback`
+    const redirectUri = `${window.location.origin}/figma/callback/index.html`
     try {
       const res = await fetch(`${serverUrl()}/figma/auth/callback`, {
         method: "POST",
@@ -349,31 +349,12 @@ export default function InfiniteCanvas(props: { featureId: string; directory?: s
         })
 
         if (res.status === 401) {
-          // Not authenticated — show auth prompt but still add placeholder
           startFigmaAuth(server)
         } else if (res.ok) {
           const contentType = res.headers.get("content-type") ?? ""
           if (contentType.includes("application/json")) {
             const data = await res.json()
-            if (data.imageUrl) {
-              // Proxy through backend to get a permanent data URI instead of expiring Figma URL
-              try {
-                const proxyRes = await fetch(`${server}/figma/image/proxy`, {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ url: data.imageUrl }),
-                })
-                if (proxyRes.ok) {
-                  const proxyData = await proxyRes.json()
-                  if (proxyData.dataUri) item.src = proxyData.dataUri
-                  else item.src = data.imageUrl
-                } else {
-                  item.src = data.imageUrl
-                }
-              } catch {
-                item.src = data.imageUrl
-              }
-            }
+            if (data.imageUrl) item.src = data.imageUrl
           }
         }
       } catch (e) {
